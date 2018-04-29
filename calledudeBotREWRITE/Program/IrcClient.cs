@@ -3,7 +3,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace calledudeBotREWRITE.Program
+namespace calledudeBot
 {
     public abstract class IrcClient : Bot
     {

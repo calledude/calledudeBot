@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Timers;
 
-namespace calledudeBotREWRITE.Program
+namespace calledudeBot
 {
     public class CommandHandler : Handler
     {

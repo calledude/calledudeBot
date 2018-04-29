@@ -4,10 +4,9 @@ using System.Threading.Tasks;
 using System.Timers;
 using Discord;
 using Discord.WebSocket;
-using calledudeBotREWRITE.Program;
 using Newtonsoft.Json;
 
-namespace calledudeBotREWRITE
+namespace calledudeBot
 {
     public class DiscordBot : Bot
     {

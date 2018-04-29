@@ -5,7 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using Open.WinKeyboardHook;
 
-namespace calledudeBotREWRITE.Program
+namespace calledudeBot
 {
     public class Hooky
     {

@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace calledudeBotREWRITE.Program
+namespace calledudeBot
 {
     //IDEA: Array of some sort for rest of arguments?
 

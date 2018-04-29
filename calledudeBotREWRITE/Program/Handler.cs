@@ -1,4 +1,4 @@
-﻿namespace calledudeBotREWRITE.Program
+﻿namespace calledudeBot
 {
     public class Handler
     {
