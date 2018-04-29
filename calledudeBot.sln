@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "calledudeBotREWRITE", "calledudeBotREWRITE\calledudeBotREWRITE.csproj", "{8FB52F7C-632D-462E-90A9-FA9C676AB579}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "calledudeBot", "calledudeBot\calledudeBot.csproj", "{8FB52F7C-632D-462E-90A9-FA9C676AB579}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +18,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {25E4A2DA-B28A-4AA5-9CBB-8FB35AB1D53E}
 	EndGlobalSection
 EndGlobal
