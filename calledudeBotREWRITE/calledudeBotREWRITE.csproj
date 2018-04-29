@@ -191,7 +191,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="JsonObject.cs" />
+    <Compile Include="Program\JsonObject.cs" />
     <Compile Include="Program\Bot.cs" />
     <Compile Include="Program\Command.cs" />
     <Compile Include="Program\CommandHandler.cs" />

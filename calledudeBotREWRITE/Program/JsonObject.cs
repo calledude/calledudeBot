@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace calledudeBotREWRITE
+namespace calledudeBot
 {
     public class Data
     {

@@ -1,10 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
-using calledudeBotREWRITE.Program;
 using System.Collections.Generic;
 
-namespace calledudeBotREWRITE
+namespace calledudeBot
 {
     public class TwitchBot : IrcClient
     {

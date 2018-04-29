@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
-using calledudeBotREWRITE.Program;
 
-namespace calledudeBotREWRITE
+namespace calledudeBot
 {
     public class OsuBot : IrcClient
     {

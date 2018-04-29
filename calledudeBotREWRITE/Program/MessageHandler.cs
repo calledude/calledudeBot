@@ -1,5 +1,4 @@
-﻿using calledudeBotREWRITE.Program;
-
+﻿
 //TODO: Figure out how the fuck this class is supposed to look like? 
 
 //1. Send message to the class and return it? i.e. Function(Sender, message) -> destination if needed
@@ -10,7 +9,7 @@
 
 //4. IRCCLIENT??
 
-namespace calledudeBotREWRITE
+namespace calledudeBot
 {
     public class MessageHandler : Handler
     {
