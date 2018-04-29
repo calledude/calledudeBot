@@ -7,8 +7,8 @@
     <ProjectGuid>{8FB52F7C-632D-462E-90A9-FA9C676AB579}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>calledudeBotREWRITE</RootNamespace>
-    <AssemblyName>calledudeBotREWRITE</AssemblyName>
+    <RootNamespace>calledudeBot</RootNamespace>
+    <AssemblyName>calledudeBot</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
