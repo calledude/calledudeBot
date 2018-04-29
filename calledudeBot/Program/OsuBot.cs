@@ -10,9 +10,8 @@ namespace calledudeBot
         public override void Start(string token)
         {
             this.token = token;
-            channelName = "calledude";
+            channelName = nick = "calledude";
             server = "cho.ppy.sh";
-            nick = "calledude";
             port = 6667;
             botName = "osu!";
 
