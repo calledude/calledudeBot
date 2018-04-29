@@ -20,7 +20,6 @@ namespace calledudeBot
         private MessageHandler messageHandler;
         private static bool modCheckLock = true;
         private static Timer timer;
-        private string response;
         private SpotifyLocalAPI spotify;
 
         public CommandHandler(MessageHandler messageHandler)
@@ -79,6 +78,7 @@ namespace calledudeBot
 
         private Message handleCommand(Message message)
         {
+            string response;
             var cmd = message.Content;
             var user = message.Sender;
             allowed = isAllowed(user.ToLower());
@@ -190,7 +190,7 @@ namespace calledudeBot
             if (cmd.Split(' ').Length > 2) //has user entered a command to enter? i.e. !addcmd !test someAnswer
             {
                 cmdToAdd = cmdToAdd.StartsWith("!") ? cmdToAdd : ("!" + cmdToAdd);
-                createCommand(cmd,cmdToAdd, true, out response);
+                response = createCommand(cmd,cmdToAdd, true);
             }
             else
             {
@@ -217,9 +217,9 @@ namespace calledudeBot
             }
         }
 
-        private void createCommand(string cmd, string cmdToAdd, bool writeToFile, out string response)
+        private string createCommand(string cmd, string cmdToAdd, bool writeToFile)
         {
-            response = $"Added command '{cmdToAdd}'";
+            string response = $"Added command '{cmdToAdd}'";
             Command f = new Command(cmd, cmdToAdd, writeToFile);
             foreach (Command c in commands)
             {
@@ -238,10 +238,11 @@ namespace calledudeBot
                         commands.Add(f);
                         removeCommand(c); //No duplicates pls
                     }
-                    return; //Critical to return here since we otherwise would add it to the command list.
+                    return response; //Critical to return here since we otherwise would add it to the command list.
                 }
             }
             commands.Add(f);
+            return response;
         }
 
         private void removeCommand(Command cmd)
