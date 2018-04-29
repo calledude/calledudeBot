@@ -1,14 +1,4 @@
 ﻿
-//TODO: Figure out how the fuck this class is supposed to look like? 
-
-//1. Send message to the class and return it? i.e. Function(Sender, message) -> destination if needed
-
-//2. Use static methods?
-
-//3. BOTH???
-
-//4. IRCCLIENT??
-
 namespace calledudeBot
 {
     public class MessageHandler : Handler
