@@ -20,11 +20,7 @@ namespace calledudeBot
 
         public async Task Start(string token, string twitchAPItoken)
         {
-            bot = new DiscordSocketClient(new DiscordSocketConfig
-            {
-                LogLevel = LogSeverity.Info
-            });
-            bot.Log += Log;
+            bot = new DiscordSocketClient(new DiscordSocketConfig());
             client.Headers.Add("Client-ID", twitchAPItoken);
             
             var timer = new Timer(30000);
@@ -45,12 +41,7 @@ namespace calledudeBot
 
         private Task onConnected()
         {
-            return Task.CompletedTask;
-        }
-
-        private Task Log(LogMessage msg)
-        {
-            Console.WriteLine($"[Discord]: {msg.Message} ({msg.Source})");
+            Console.WriteLine($"[Discord]: Connected to Discord.");
             return Task.CompletedTask;
         }
 
@@ -85,13 +76,11 @@ namespace calledudeBot
             var channel = bot.GetChannel(ChannelId) as SocketTextChannel;
             if(channel == null)
             {
-                //var chan = bot.GetChannel(ChannelId) as SocketUserMessage;
                 var chan = bot.GetChannel(ChannelId) as SocketDMChannel;
                 await chan?.SendMessageAsync(message);
                 return;
             }
             await channel?.SendMessageAsync(message);
-            /*           ^ This question mark is used to indicate that 'channel' may sometimes be null, and in cases that it is null, we will do nothing here. */
         }
 
         private async void determineLiveStatus(object sender, ElapsedEventArgs e)
