@@ -190,8 +190,7 @@ namespace calledudeBot
             if (cmd.Split(' ').Length > 2) //has user entered a command to enter? i.e. !addcmd !test someAnswer
             {
                 cmdToAdd = cmdToAdd.StartsWith("!") ? cmdToAdd : ("!" + cmdToAdd);
-                response = $"Added command '{cmdToAdd}'";
-                createCommand(cmd,cmdToAdd, true);
+                createCommand(cmd,cmdToAdd, true, out response);
             }
             else
             {
@@ -218,8 +217,9 @@ namespace calledudeBot
             }
         }
 
-        private void createCommand(string cmd, string cmdToAdd, bool writeToFile)
+        private void createCommand(string cmd, string cmdToAdd, bool writeToFile, out string response)
         {
+            response = $"Added command '{cmdToAdd}'";
             Command f = new Command(cmd, cmdToAdd, writeToFile);
             foreach (Command c in commands)
             {
@@ -278,11 +278,9 @@ namespace calledudeBot
         {
             var procName = "osu!";
             string nowPlaying = null;
+            var procList = Process.GetProcesses();
 
-
-            var processlist = Process.GetProcesses();
-
-            foreach (var p in processlist)
+            foreach (var p in procList)
             {
                 if (p.ProcessName == procName)
                 {
@@ -295,9 +293,7 @@ namespace calledudeBot
             {
                 nowPlaying = spotify.GetStatus().Track.ArtistResource.Name + " - " + spotify.GetStatus().Track.TrackResource.Name;
             }
-
             return nowPlaying;
-
         }
     }
 }
