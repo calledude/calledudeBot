@@ -12,7 +12,7 @@ namespace calledudeBot
         public TextReader input;
         public string nick;
         public string password;
-        public int port;
+        public int port = 6667;
         public string server;
         public string buf;
         public string channelName;

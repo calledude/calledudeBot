@@ -30,7 +30,7 @@ namespace calledudeBot
             osuBot = new OsuBot();
             twitchBot = new TwitchBot();
 
-            readCredentials();
+            getCredentials();
 
             discordThread.Start();
             osuThread.Start();
@@ -38,7 +38,7 @@ namespace calledudeBot
             hookyThread.Start();
         }
 
-        private static void readCredentials()
+        private static void getCredentials()
         {
             var credArr = File.ReadAllLines(credFile);
             List<string> credList = new List<string>(credArr);

@@ -5,6 +5,8 @@ using System.Text;
 using System.Windows.Forms;
 using Open.WinKeyboardHook;
 
+//TODO: Poll ApplicationIsActivated() instead?
+//                          to decrease system overhead
 namespace calledudeBot
 {
     public class Hooky
@@ -16,10 +18,6 @@ namespace calledudeBot
         private string MessageToSend = "";
         private int position;
         private TwitchBot twitchBot;
-
-
-        //TODO: Poll ApplicationIsActivated() instead?
-        //                          to decrease system overhead
 
         public Hooky(TwitchBot twitchBot)
         {

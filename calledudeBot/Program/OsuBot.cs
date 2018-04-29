@@ -12,7 +12,6 @@ namespace calledudeBot
             this.token = token;
             channelName = nick = "calledude";
             server = "cho.ppy.sh";
-            port = 6667;
             botName = "osu!";
 
             sock = new TcpClient();
@@ -23,7 +22,6 @@ namespace calledudeBot
             WriteLine("PASS " + token + "\r\n" +
                       "USER " + nick + " 0 * :" + nick + "\r\n" +
                       "NICK " + nick + "\r\n");
-
             Listen();
         }
 
@@ -33,7 +31,6 @@ namespace calledudeBot
             {
                 for (buf = input.ReadLine(); ; buf = input.ReadLine())
                 {
-                    //if (!buf.Contains("QUIT")) Console.WriteLine($"[{botName}]: {buf}");
                     if (buf.Split(' ')[1] == "001")
                     {
                         Console.WriteLine($"[{botName}]: Connected to osu!");

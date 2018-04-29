@@ -15,7 +15,6 @@ namespace calledudeBot
         {
             this.token = token;
             nick = "calledudeBot";
-            port = 6667;
             server = "irc.chat.twitch.tv";
             channelName = "#calledude";
             botName = "Twitch";
@@ -41,7 +40,6 @@ namespace calledudeBot
             {
                 for (buf = input.ReadLine(); ; buf = input.ReadLine())
                 {
-                    //Console.WriteLine($"[{botName}]: {buf}");
                     if (buf.StartsWith("PING "))
                     {
                         WriteLine(buf.Replace("PING", "PONG") + "\r\n");
