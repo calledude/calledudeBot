@@ -8,7 +8,6 @@ namespace calledudeBot.Bots
 {
     public class TwitchBot : IrcClient
     {
-        private string cmdFile = calledudeBot.cmdFile;
         private MessageHandler messageHandler;
         public static List<string> mods = new List<string>();
         
