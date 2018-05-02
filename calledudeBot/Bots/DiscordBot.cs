@@ -5,8 +5,9 @@ using System.Timers;
 using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
+using calledudeBot.Common;
 
-namespace calledudeBot
+namespace calledudeBot.Bots
 {
     public class DiscordBot : Bot
     {

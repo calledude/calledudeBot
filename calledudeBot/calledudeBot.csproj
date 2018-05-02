@@ -191,20 +191,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program\JsonObject.cs" />
-    <Compile Include="Program\Bot.cs" />
-    <Compile Include="Program\Command.cs" />
-    <Compile Include="Program\CommandHandler.cs" />
-    <Compile Include="Program\DiscordBot.cs" />
-    <Compile Include="Program\Handler.cs" />
-    <Compile Include="Program\Hooky.cs" />
-    <Compile Include="Program\IrcClient.cs" />
-    <Compile Include="Program\Message.cs" />
-    <Compile Include="Program\MessageHandler.cs" />
-    <Compile Include="Program\OsuBot.cs" />
-    <Compile Include="Program\Program.cs" />
+    <Compile Include="Services\ApiHandler.cs" />
+    <Compile Include="Services\JsonObject.cs" />
+    <Compile Include="Bots\Bot.cs" />
+    <Compile Include="Common\Command.cs" />
+    <Compile Include="Common\CommandHandler.cs" />
+    <Compile Include="Bots\DiscordBot.cs" />
+    <Compile Include="Common\Handler.cs" />
+    <Compile Include="Common\Hooky.cs" />
+    <Compile Include="Bots\IrcClient.cs" />
+    <Compile Include="Common\Message.cs" />
+    <Compile Include="Common\MessageHandler.cs" />
+    <Compile Include="Bots\OsuBot.cs" />
+    <Compile Include="Common\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Program\TwitchBot.cs" />
+    <Compile Include="Bots\TwitchBot.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

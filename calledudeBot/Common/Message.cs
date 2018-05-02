@@ -1,6 +1,7 @@
 ﻿using System.Linq;
+using calledudeBot.Bots;
 
-namespace calledudeBot
+namespace calledudeBot.Common
 {
     //IDEA: Array of some sort for rest of arguments?
 

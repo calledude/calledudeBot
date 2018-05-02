@@ -6,8 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Timers;
+using calledudeBot.Bots;
 
-namespace calledudeBot
+namespace calledudeBot.Common
 {
     public class CommandHandler : Handler
     {

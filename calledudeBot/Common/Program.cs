@@ -2,8 +2,9 @@
 using System.IO;
 using System.Threading;
 using System.Collections.Generic;
+using calledudeBot.Bots;
 
-namespace calledudeBot
+namespace calledudeBot.Common
 {
     public class calledudeBot
     {

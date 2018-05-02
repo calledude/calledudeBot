@@ -1,4 +1,4 @@
-﻿namespace calledudeBot
+﻿namespace calledudeBot.Common
 {
     public class Handler
     {
