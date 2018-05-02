@@ -22,8 +22,7 @@ namespace calledudeBot.Services
 
         public APIHandler(string URL, Caller caller, string token = null)
         {
-            Console.WriteLine(caller);
-            client.Headers.Add("Client-ID", token);
+            if (caller == Caller.Discord) client.Headers.Add("Client-ID", token);
 
             this.caller = caller;
             this.URL = URL;
