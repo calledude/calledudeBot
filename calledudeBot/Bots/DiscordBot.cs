@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Net;
 using System.Threading.Tasks;
-using System.Timers;
 using Discord;
 using Discord.WebSocket;
-using Newtonsoft.Json;
 using calledudeBot.Common;
 using calledudeBot.Services;
 
