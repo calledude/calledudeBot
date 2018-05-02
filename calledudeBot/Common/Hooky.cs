@@ -4,10 +4,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using Open.WinKeyboardHook;
+using calledudeBot.Bots;
 
 //TODO: Poll ApplicationIsActivated() instead?
 //                          to decrease system overhead
-namespace calledudeBot
+namespace calledudeBot.Common
 {
     public class Hooky
     {

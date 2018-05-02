@@ -1,4 +1,6 @@
-﻿namespace calledudeBot
+﻿using calledudeBot.Common;
+
+namespace calledudeBot.Bots
 {
     public abstract class Bot
     {

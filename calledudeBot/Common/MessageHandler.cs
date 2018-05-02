@@ -1,5 +1,6 @@
-﻿
-namespace calledudeBot
+﻿using calledudeBot.Bots;
+
+namespace calledudeBot.Common
 {
     public class MessageHandler : Handler
     {

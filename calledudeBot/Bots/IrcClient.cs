@@ -2,8 +2,9 @@
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
+using calledudeBot.Common;
 
-namespace calledudeBot
+namespace calledudeBot.Bots
 {
     public abstract class IrcClient : Bot
     {

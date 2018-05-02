@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net.Sockets;
 
-namespace calledudeBot
+namespace calledudeBot.Bots
 {
     public class OsuBot : IrcClient
     {
