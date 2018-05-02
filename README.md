@@ -16,6 +16,6 @@ Various API keys are also needed to make this work.
 * Ability to add custom commands
 
 #### Planned functionality:
-* osu! rank updates
+* osu! rank updates - **IN PROGRESS**
 * Spam protection
 * Automation of initial setup
