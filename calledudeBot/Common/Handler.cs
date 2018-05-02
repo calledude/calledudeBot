@@ -5,7 +5,7 @@
         public CommandHandler commandHandler;
         public enum CommandStatus
         {
-            Handled, NotHandled, NeedsAttention
+            Handled, NotHandled
         }
 
     }
