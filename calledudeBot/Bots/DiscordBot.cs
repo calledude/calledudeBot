@@ -6,6 +6,7 @@ using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
 using calledudeBot.Common;
+using calledudeBot.Services;
 
 namespace calledudeBot.Bots
 {
