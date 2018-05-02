@@ -22,6 +22,7 @@ namespace calledudeBot.Common
         private static string twitchAPItoken;
         private static string twitchIRCtoken;
         private static string osuIRCtoken;
+        public static string osuAPIToken;
 
         private static void Main(string[] args)
         {
@@ -50,6 +51,7 @@ namespace calledudeBot.Common
                 else if (s.StartsWith("TwitchAPI")) twitchAPItoken = s.Split(' ')[1];
                 else if (s.StartsWith("TwitchIRC")) twitchIRCtoken = s.Split(' ')[1];
                 else if (s.StartsWith("osuIRC")) osuIRCtoken = s.Split(' ')[1];
+                else if(s.StartsWith("osuAPI")) osuAPIToken = s.Split(' ')[1];
             }
         }
 

@@ -3,6 +3,8 @@ using System.IO;
 using System.Net.Sockets;
 using System.Collections.Generic;
 using calledudeBot.Common;
+using calledudeBot.Services;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Bots
 {
@@ -13,6 +15,9 @@ namespace calledudeBot.Bots
         
         public override void Start(string token)
         {
+            APIHandler api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={Common.calledudeBot.osuAPIToken}&u=mathi", Caller.Twitch);
+            api.DataReceived += checkUserUpdate;
+
             this.token = token;
             nick = "calledudeBot";
             server = "irc.chat.twitch.tv";
@@ -32,6 +37,15 @@ namespace calledudeBot.Bots
             updateMods();
 
             Listen();
+
+           
+
+        }
+
+        private Task checkUserUpdate(JsonData jsonData)
+        {
+            Console.WriteLine(jsonData.osuData[0].username);
+            return Task.CompletedTask;
         }
 
         public override void Listen()

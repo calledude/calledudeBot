@@ -13,7 +13,6 @@ namespace calledudeBot.Bots
     public class DiscordBot : Bot
     {
         private DiscordSocketClient bot;
-        private WebClient client = new WebClient();
         private ulong generalChannelID = 186887842285223936;
         private bool online;
         private string url = "https://api.twitch.tv/helix/streams?user_login=calledude";
@@ -22,15 +21,10 @@ namespace calledudeBot.Bots
 
         public async Task Start(string token, string twitchAPItoken)
         {
+            APIHandler api = new APIHandler(url, Caller.Discord, twitchAPItoken);
             bot = new DiscordSocketClient(new DiscordSocketConfig());
-            client.Headers.Add("Client-ID", twitchAPItoken);
-            
-            var timer = new Timer(30000);
-            timer.Elapsed += determineLiveStatus;
-            timer.AutoReset = true;
-            timer.Enabled = true;
-            timer.Start();
 
+            api.DataReceived += determineLiveStatus;
             bot.MessageReceived += HandleCommand;
             bot.Connected += onConnected;
             messageHandler = new MessageHandler(this);
@@ -85,15 +79,13 @@ namespace calledudeBot.Bots
             await channel?.SendMessageAsync(message);
         }
 
-        private async void determineLiveStatus(object sender, ElapsedEventArgs e)
+        private async Task determineLiveStatus(JsonData jsonData)
         {
-            string jsonString = client.DownloadString(url);
-            TwitchData twitchData = JsonConvert.DeserializeObject<TwitchData>(jsonString);
-            if (twitchData.data.Count != 0)
+            if (jsonData.data.Count != 0)
             {
                 if (!online)
                 {
-                    Data data = twitchData.data[0];
+                    Data data = jsonData.data[0];
                     await sendMessage(generalChannelID, "Calledude just went live with the title: \"" + data.title + "\" - Watch at: http://twitch.tv/calledude");
                     streamStarted = data.started_at;
                     online = true;

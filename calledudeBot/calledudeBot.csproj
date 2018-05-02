@@ -192,8 +192,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Services\ApiHandler.cs" />
-    <Compile Include="Services\OsuJson.cs" />
-    <Compile Include="Services\TwitchJson.cs" />
+    <Compile Include="Services\JsonData.cs" />
     <Compile Include="Bots\Bot.cs" />
     <Compile Include="Common\Command.cs" />
     <Compile Include="Common\CommandHandler.cs" />
