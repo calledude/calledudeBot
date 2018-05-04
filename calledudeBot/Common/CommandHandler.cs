@@ -165,9 +165,6 @@ namespace calledudeBot.Common
                     }
                     response = "These are the commands you can use:" + sb.ToString().Trim('»');
                 }
-
-
-
             }
         }
 
@@ -269,10 +266,13 @@ namespace calledudeBot.Common
             response = "Streamer isn't live.";
             if (default(DateTime) != d)
             {
-                response = "Calledude has been live for: ";
-                if (t.Hours > 0) response += $"{t.Hours}h";
-                if (t.Minutes > 0) response += $"{t.Minutes}m";
-                if (t.Seconds > 0) response += $"{t.Seconds}s";
+                StringBuilder sb = new StringBuilder();
+                
+                sb.Append("Stream uptime: ");
+                if (t.Hours > 0) sb.Append($"{t.Hours}h");
+                if (t.Minutes > 0) sb.Append($"{t.Minutes}m");
+                if (t.Seconds > 0) sb.Append($"{t.Seconds}s");
+                response = sb.ToString();
             }
         }
 

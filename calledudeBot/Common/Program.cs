@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Collections.Generic;
 using calledudeBot.Bots;
+using System.Diagnostics;
 
 namespace calledudeBot.Common
 {
@@ -26,13 +27,13 @@ namespace calledudeBot.Common
 
         private static void Main(string[] args)
         {
+            initialSetup();
+            getCredentials();
             Clean();
 
             discordBot = new DiscordBot();
             osuBot = new OsuBot();
             twitchBot = new TwitchBot();
-
-            getCredentials();
 
             discordThread.Start();
             osuThread.Start();
@@ -44,8 +45,7 @@ namespace calledudeBot.Common
         {
             var credArr = File.ReadAllLines(credFile);
             List<string> credList = new List<string>(credArr);
-
-            foreach(string s in credList)
+            foreach (string s in credList)
             {
                 if (s.StartsWith("DiscordToken")) discordToken = s.Split(' ')[1];
                 else if (s.StartsWith("TwitchAPI")) twitchAPItoken = s.Split(' ')[1];
@@ -53,6 +53,48 @@ namespace calledudeBot.Common
                 else if (s.StartsWith("osuIRC")) osuIRCtoken = s.Split(' ')[1];
                 else if(s.StartsWith("osuAPI")) osuAPIToken = s.Split(' ')[1];
             }
+            
+        }
+
+        private static void initialSetup()
+        {
+            var credArr = File.ReadAllLines(credFile);
+            List<string> credList = new List<string>(credArr);
+
+            if (credList.Count == 5) return;
+            File.Create(credFile).Close();
+            credList = new List<string>();
+
+            Console.WriteLine("Hey! I see you've not yet gone through the necessary steps to make the bot work. Let's do that shall we?");
+            Console.WriteLine("First you need to create a bot/app on the discord developer website.");
+            Thread.Sleep(5000);
+
+            Console.Write("Discord token: ");
+            Process.Start("https://discordapp.com/developers/applications/me");
+            discordToken = Console.ReadLine();
+            credList.Add("DiscordToken " + discordToken);
+
+            Console.Write("Twitch API token: ");
+            Process.Start("https://dev.twitch.tv/dashboard/apps");
+            twitchAPItoken = Console.ReadLine();
+            credList.Add("TwitchAPI " + twitchAPItoken);
+
+            Console.Write("Twitch IRC token: ");
+            Process.Start("http://www.twitchapps.com/tmi/");
+            twitchIRCtoken = Console.ReadLine();
+            credList.Add("TwitchIRC " + twitchIRCtoken);
+
+            Console.Write("osu! IRC token: ");
+            Process.Start("https://osu.ppy.sh/p/irc");
+            osuIRCtoken = Console.ReadLine();
+            credList.Add("osuIRC " + osuIRCtoken);
+
+            Console.Write("osu! API token: ");
+            Process.Start("https://osu.ppy.sh/p/api");
+            osuAPIToken = Console.ReadLine();
+            credList.Add("osuAPI " + osuAPIToken);
+
+            File.WriteAllLines(credFile, credList);
         }
 
         private static void Clean()
