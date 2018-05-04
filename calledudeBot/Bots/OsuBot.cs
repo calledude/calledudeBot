@@ -10,9 +10,9 @@ namespace calledudeBot.Bots
         public override void Start(string token)
         {
             this.token = token;
-            channelName = nick = "calledude";
+            channelName = nick = Common.calledudeBot.osuNick; ;
             server = "cho.ppy.sh";
-            botName = "osu!";
+            instanceName = "osu!";
 
             sock = new TcpClient();
             sock.Connect(server, port);
@@ -33,13 +33,13 @@ namespace calledudeBot.Bots
                 {
                     if (buf.Split(' ')[1] == "001")
                     {
-                        Console.WriteLine($"[{botName}]: Connected to osu!");
+                        Console.WriteLine($"[{instanceName}]: Connected to osu!");
                     }
 
                     if (buf.StartsWith("PING "))
                     {
                         WriteLine(buf.Replace("PING", "PONG") + "\r\n");
-                        Console.WriteLine($"[{botName}]: {buf.Replace("PING", "PONG")}");
+                        Console.WriteLine($"[{instanceName}]: {buf.Replace("PING", "PONG")}");
                     }
                 }
             }

@@ -10,14 +10,15 @@ namespace calledudeBot.Bots
     public class DiscordBot : Bot
     {
         private DiscordSocketClient bot;
-        private ulong generalChannelID = 186887842285223936;
+        private ulong generalChannelID = Common.calledudeBot.discordGeneralID;
         private bool online;
-        private string url = "https://api.twitch.tv/helix/streams?user_login=calledude";
+        private string twitchUsername = Common.calledudeBot.channelName.Substring(1);
         private MessageHandler messageHandler;
         private DateTime streamStarted;
 
         public async Task Start(string token, string twitchAPItoken)
         {
+            string url = $"https://api.twitch.tv/helix/streams?user_login={twitchUsername}";
             APIHandler api = new APIHandler(url, Caller.Discord, twitchAPItoken);
             bot = new DiscordSocketClient(new DiscordSocketConfig());
 
@@ -83,7 +84,7 @@ namespace calledudeBot.Bots
                 if (!online)
                 {
                     Data data = jsonData.data[0];
-                    await sendMessage(generalChannelID, "Calledude just went live with the title: \"" + data.title + "\" - Watch at: http://twitch.tv/calledude");
+                    await sendMessage(generalChannelID, $"{twitchUsername} just went live with the title: \"" + data.title + "\" - Watch at: http://twitch.tv/{twitchUsername}");
                     streamStarted = data.started_at;
                     online = true;
                 }
