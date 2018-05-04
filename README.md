@@ -18,4 +18,5 @@ Various API keys are also needed to make this work.
 #### Planned functionality:
 * osu! rank updates - **IN PROGRESS**
 * Spam protection
-* Automation of initial setup
+* Automation of initial setup - **Sort of fixed, small improvements might be done later**
+* Encryption of API keys
