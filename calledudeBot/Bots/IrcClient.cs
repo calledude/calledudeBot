@@ -17,7 +17,7 @@ namespace calledudeBot.Bots
         protected string server;
         protected string buf;
         protected string channelName;
-        protected string botName;
+        protected string instanceName;
         protected string token;
 
         public override void sendMessage(Message message)
@@ -30,7 +30,7 @@ namespace calledudeBot.Bots
 
         public virtual void reconnect()
         {
-            Console.WriteLine($"[{botName}]: Disconnected. Re-establishing connection..");
+            Console.WriteLine($"[{instanceName}]: Disconnected. Re-establishing connection..");
             sock.Dispose();
             while (!sock.Connected)
             {

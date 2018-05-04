@@ -12,17 +12,20 @@ namespace calledudeBot.Bots
     {
         private MessageHandler messageHandler;
         public static List<string> mods = new List<string>();
+        private string osuUsername;
         
         public override void Start(string token)
         {
-            APIHandler api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={Common.calledudeBot.osuAPIToken}&u=mathi", Caller.Twitch);
+            string osuAPIToken = Common.calledudeBot.osuAPIToken;
+            string osuNick = Common.calledudeBot.osuNick;
+            string botNick = Common.calledudeBot.botNick;
+            channelName = Common.calledudeBot.channelName;
+            APIHandler api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}", Caller.Twitch);
             api.DataReceived += checkUserUpdate;
 
             this.token = token;
-            nick = "calledudeBot";
             server = "irc.chat.twitch.tv";
-            channelName = "#calledude";
-            botName = "Twitch";
+            instanceName = "Twitch"; 
 
             messageHandler = new MessageHandler(this);
             sock = new TcpClient();
@@ -31,15 +34,12 @@ namespace calledudeBot.Bots
             input = new StreamReader(sock.GetStream());
 
             WriteLine("PASS " + token + "\r\n" +
-                      "USER " + nick + " 0 * :" + nick + "\r\n" +
-                      "NICK " + nick + "\r\n");
+                      "USER " + botNick + " 0 * :" + botNick + "\r\n" +
+                      "NICK " + botNick + "\r\n");
             WriteLine("CAP REQ :twitch.tv/commands");
             updateMods();
 
             Listen();
-
-           
-
         }
 
         private Task checkUserUpdate(JsonData jsonData)
@@ -75,7 +75,7 @@ namespace calledudeBot.Bots
                     else if (buf.Split(' ')[1] == "001")
                     {
                         WriteLine($"JOIN {channelName}");
-                        Console.WriteLine($"[{botName}]: Connected to Twitch.");
+                        Console.WriteLine($"[{instanceName}]: Connected to Twitch.");
                     }
                     else if (buf.Split(' ')[1] == "PRIVMSG") //this is something else, check for message
                     {
