@@ -8,17 +8,17 @@ namespace calledudeBot.Bots
 {
     public abstract class IrcClient : Bot
     {
-        public TcpClient sock;
-        public TextWriter output;
-        public TextReader input;
-        public string nick;
-        public string password;
-        public int port = 6667;
-        public string server;
-        public string buf;
-        public string channelName;
-        public string botName;
-        public string token;
+        protected TcpClient sock;
+        protected TextWriter output;
+        protected TextReader input;
+        protected string nick;
+        protected string password;
+        protected int port = 6667;
+        protected string server;
+        protected string buf;
+        protected string channelName;
+        protected string botName;
+        protected string token;
 
         public override void sendMessage(Message message)
         {
