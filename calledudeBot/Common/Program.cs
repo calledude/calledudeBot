@@ -102,39 +102,42 @@ namespace calledudeBot.Common
             Console.Write("Ok then! What's your osu! username?: ");
             osuNick = Console.ReadLine();
             credList.Add("OsuNick " + osuNick);
-
            
             Console.WriteLine("Alright, done with the annoying nickname questions. Now on to the good stuff! :)");
             Console.WriteLine("Now, this is where stuff starts to get a bit tricky. I'll help you out. (A bit)");
             Console.Write("What channel on your discord server do you want the announcements to be made on? (Long number): ");
-            Thread.Sleep(3000);
+            Thread.Sleep(4000);
             Process.Start("https://support.discordapp.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID");
             discordGeneralID = Convert.ToUInt64(Console.ReadLine());
             credList.Add("DiscordGeneralID " + discordGeneralID);
 
-
             Console.WriteLine("First you need to create a bot/app on the discord developer website.");
             Console.Write("Discord token: ");
+            Thread.Sleep(3000);
             Process.Start("https://discordapp.com/developers/applications/me");
             discordToken = Console.ReadLine();
             credList.Add("DiscordToken " + discordToken);
 
-            Console.Write("Twitch API token: ");
+            Console.Write("Twitch API token (Called 'Client ID' on twitch): ");
+            Thread.Sleep(2000);
             Process.Start("https://dev.twitch.tv/dashboard/apps");
             twitchAPItoken = Console.ReadLine();
             credList.Add("TwitchAPI " + twitchAPItoken);
 
             Console.Write("Twitch IRC token: ");
+            Thread.Sleep(2000);
             Process.Start("http://www.twitchapps.com/tmi/");
             twitchIRCtoken = Console.ReadLine();
             credList.Add("TwitchIRC " + twitchIRCtoken);
 
-            Console.Write("osu! IRC token: ");
+            Console.Write("osu! IRC password: ");
+            Thread.Sleep(2000);
             Process.Start("https://osu.ppy.sh/p/irc");
             osuIRCtoken = Console.ReadLine();
             credList.Add("osuIRC " + osuIRCtoken);
 
-            Console.Write("osu! API token: ");
+            Console.Write("osu! API key: ");
+            Thread.Sleep(2000);
             Process.Start("https://osu.ppy.sh/p/api");
             osuAPIToken = Console.ReadLine();
             credList.Add("osuAPI " + osuAPIToken);
