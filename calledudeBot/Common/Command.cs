@@ -7,31 +7,23 @@ namespace calledudeBot.Common
 {
     class Command
     {
-        private string cmdName;
         private string response;
-        private string description;
         private string cmdFile = calledudeBot.cmdFile;
-        private bool isSpecial;
-        private bool userAllowed = true;
         private MethodInfo specialMethod;
         private CommandHandler commandHandler;
         private string arg;
 
-        public string Name
-        {
-            get { return cmdName; }
-        }
+        public string Name { get; }
 
         public CommandHandler handlerInstance
         {
             set { commandHandler = value; }
         }
-
         public string Response
         {
             get
             {
-                if(isSpecial)
+                if(IsSpecial)
                 {
                     string[] args = { arg, response };
                     specialMethod.Invoke(commandHandler, args);
@@ -41,19 +33,9 @@ namespace calledudeBot.Common
             }
             set { response = value; }
         }
-        public string Description
-        {
-            get { return description; }
-            set { description = value; }
-        }
-        public bool IsSpecial
-        {
-            get { return isSpecial; }
-        }
-        public bool UserAllowed
-        {
-            get { return userAllowed; }
-        }
+        public string Description { get; set; }
+        public bool IsSpecial { get; }
+        public bool UserAllowed { get; }
         public string Arguments
         {
             set { arg = value; }
@@ -64,7 +46,7 @@ namespace calledudeBot.Common
             if (cmd.Contains('<'))
             {
                 int descriptionIndex = cmd.IndexOf('<');
-                description = cmd.Substring(descriptionIndex).Trim('<', '>');
+                Description = cmd.Substring(descriptionIndex).Trim('<', '>');
                 cmd = cmd.Remove(descriptionIndex);
             }
             if (!isSpecial)
@@ -74,19 +56,17 @@ namespace calledudeBot.Common
             }
             else
             {
-                this.isSpecial = true;
-                if (cmdToAdd == "!addcmd" || cmdToAdd == "!delcmd") userAllowed = false;
+                IsSpecial = true;
+                if (cmdToAdd == "!addcmd" || cmdToAdd == "!delcmd") UserAllowed = false;
                 string cmdFunc = cmd.Trim();
                 Type thisType = typeof(CommandHandler);
                 specialMethod = thisType.GetMethod(cmdFunc, BindingFlags.NonPublic | BindingFlags.Instance);
             }
-
-            cmdName = cmdToAdd;
-            
+            Name = cmdToAdd;
             
             if (writeToFile)
             {
-                string line = cmdName + " " + response + " <" + description + ">";
+                string line = Name + " " + Response + " <" + Description + ">";
                 File.AppendAllText(cmdFile, line + Environment.NewLine);
             }
 

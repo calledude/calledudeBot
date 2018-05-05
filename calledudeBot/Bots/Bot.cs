@@ -1,4 +1,4 @@
-﻿using calledudeBot.Common;
+﻿using calledudeBot.Chat;
 
 namespace calledudeBot.Bots
 {

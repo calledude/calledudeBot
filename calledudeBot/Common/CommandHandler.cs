@@ -7,33 +7,24 @@ using System.Linq;
 using System.Text;
 using System.Timers;
 using calledudeBot.Bots;
+using calledudeBot.Chat;
 
 namespace calledudeBot.Common
 {
     public class CommandHandler : Handler
     {
         private static List<Command> commands = new List<Command>();
-        private TwitchBot twitch;
-        private static List<string> mods = TwitchBot.mods;
+        
         private string cmdFile = calledudeBot.cmdFile;
         private static bool initiated = false; //Let's make sure we don't read our commands several times, eh? :^)
         private bool allowed = false;
         private MessageHandler messageHandler;
-        private static bool modCheckLock = true;
-        private static Timer timer;
         private SpotifyLocalAPI spotify;
 
         public CommandHandler(MessageHandler messageHandler)
         {
-            twitch = calledudeBot.twitchBot;
             this.messageHandler = messageHandler;
             if(!initiated) init();
-        }
-
-        private void modLockEvent(object sender, ElapsedEventArgs e)
-        {
-            modCheckLock = false;
-            timer.Stop();
         }
 
         private void init()
@@ -47,21 +38,12 @@ namespace calledudeBot.Common
                 createCommand(line, line.Split(' ')[0], false);
             }
             Command addCmd = new Command("addCmd <Adds a command to the command list>", "!addcmd", false, true);
-            commands.Add(addCmd);
             Command help = new Command("helpCmd <Lists all available commands>", "!help", false, true);
-            commands.Add(help);
             Command np = new Command("playingCmd <Shows which song is currently playing>", "!np", false, true);
-            commands.Add(np);
             Command song = new Command("playingCmd <Shows which song is currently playing>", "!song", false, true);
-            commands.Add(song);
             Command delCmd = new Command("delCmd <Deletes a command from the command list>", "!delcmd", false, true);
-            commands.Add(delCmd);
             Command uptime = new Command("uptime <Shows how long the stream has been live>", "!uptime", false, true);
-            commands.Add(uptime);
-
-            timer = new Timer(30000);
-            timer.Elapsed += modLockEvent;
-            timer.Start();
+            commands.AddRange(new List<Command> { addCmd, help, np, song, delCmd, uptime });
 
             Console.WriteLine($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
         }
@@ -82,7 +64,7 @@ namespace calledudeBot.Common
             string response;
             var cmd = message.Content;
             var user = message.Sender;
-            allowed = isAllowed(user.ToLower());
+            allowed = message.Sender.isMod;
 
             response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
             foreach (Command c in commands)
@@ -102,22 +84,6 @@ namespace calledudeBot.Common
             }
             message.Content = response;
             return message;
-
-        }
-
-        private bool isAllowed(string user)
-        {
-            if (!modCheckLock)
-            {
-                twitch.updateMods();
-                modCheckLock = true;
-                timer.Start();
-            }
-            foreach(string m in mods)
-            {
-                if (m == user) return true;
-            }
-            return false;
         }
 
         private bool hasSpecialChars(string str)

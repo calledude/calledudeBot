@@ -130,7 +130,7 @@ namespace calledudeBot.Common
                     MessageToSend = MessageToSend.Replace("\t", "").Replace("\r", "").Replace("\n", "");
                     MessageToSend = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(MessageToSend));
                     position = 0;
-                    twitchBot.sendMessage(new Message(MessageToSend));
+                    twitchBot.sendMessage(new Chat.Message(MessageToSend));
                     MessageToSend = "";
                 }
             }
