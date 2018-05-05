@@ -67,11 +67,11 @@ namespace calledudeBot.Common
 
         private static void initialSetup()
         {
+            if(!File.Exists(credFile)) File.Create(credFile).Close();
             var credArr = File.ReadAllLines(credFile);
             List<string> credList = new List<string>(credArr);
 
             if (credList.Count == 9) return;
-            File.Create(credFile).Close();
             credList = new List<string>();
 
             Console.WriteLine("Hey! I see you've not yet gone through the necessary steps to make the bot work. Let's do that shall we?");
