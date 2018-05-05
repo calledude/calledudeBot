@@ -2,8 +2,8 @@
 using System.IO;
 using System.Threading;
 using System.Collections.Generic;
-using calledudeBot.Bots;
 using System.Diagnostics;
+using calledudeBot.Bots;
 
 namespace calledudeBot.Common
 {
@@ -11,7 +11,6 @@ namespace calledudeBot.Common
     {
         public static string cmdFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\cmds.txt";
         public static string credFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\credentials";
-        public static MessageHandler messageHandler;
         public static OsuBot osuBot;
         public static DiscordBot discordBot;
         public static TwitchBot twitchBot;
@@ -20,14 +19,8 @@ namespace calledudeBot.Common
         private static Thread twitchThread = new Thread(Twitch);
         private static Thread hookyThread = new Thread(Hooky);
 
-        private static string discordToken;
-        private static string twitchAPItoken;
-        private static string twitchIRCtoken;
-        private static string osuIRCtoken;
-        public static string osuAPIToken;
-        public static string botNick;
-        public static string channelName;
-        public static string osuNick;
+        private static string discordToken, twitchAPItoken, twitchIRCtoken, osuIRCtoken;
+        public static string osuAPIToken, botNick, channelName, osuNick;
         public static ulong discordGeneralID;
 
         private static void Main(string[] args)

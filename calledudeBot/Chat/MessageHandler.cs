@@ -1,6 +1,7 @@
 ﻿using calledudeBot.Bots;
+using calledudeBot.Common;
 
-namespace calledudeBot.Common
+namespace calledudeBot.Chat
 {
     public class MessageHandler : Handler
     {
@@ -12,7 +13,7 @@ namespace calledudeBot.Common
             this.bot = bot;
             if (typeof(TwitchBot) == bot.GetType())
             {
-                osu = calledudeBot.osuBot;
+                osu = Common.calledudeBot.osuBot;
             }
             
             commandHandler = new CommandHandler(this);

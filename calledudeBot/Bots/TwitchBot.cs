@@ -2,18 +2,20 @@
 using System.IO;
 using System.Net.Sockets;
 using System.Collections.Generic;
-using calledudeBot.Common;
+using calledudeBot.Chat;
 using calledudeBot.Services;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace calledudeBot.Bots
 {
     public class TwitchBot : IrcClient
     {
         private MessageHandler messageHandler;
-        public static List<string> mods = new List<string>();
-        private string osuUsername;
-        
+        public List<string> mods = new List<string>();
+        private Timer timer;
+        private bool modCheckLock = false;
+
         public override void Start(string token)
         {
             string osuAPIToken = Common.calledudeBot.osuAPIToken;
@@ -37,7 +39,11 @@ namespace calledudeBot.Bots
                       "USER " + botNick + " 0 * :" + botNick + "\r\n" +
                       "NICK " + botNick + "\r\n");
             WriteLine("CAP REQ :twitch.tv/commands");
-            updateMods();
+            getMods();
+
+            timer = new Timer(30000);
+            timer.Elapsed += modLockEvent;
+            timer.Start();
 
             Listen();
         }
@@ -91,9 +97,16 @@ namespace calledudeBot.Bots
             }
         }
 
-        public void updateMods()
+        private void modLockEvent(object sender, ElapsedEventArgs e)
         {
-            WriteLine($"PRIVMSG {channelName} /mods");
+            modCheckLock = false;
+            timer.Stop();
+        }
+
+        public List<string> getMods()
+        {
+            if(!modCheckLock) WriteLine($"PRIVMSG {channelName} /mods");
+            return mods;
         }
 
 

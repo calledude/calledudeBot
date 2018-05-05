@@ -1,36 +1,15 @@
 ﻿using System.Linq;
 using calledudeBot.Bots;
 
-namespace calledudeBot.Common
+namespace calledudeBot.Chat
 {
-    //IDEA: Array of some sort for rest of arguments?
-
     public class Message
     {
         private string message;
-        private string user;
-        private Bot creator;
-        private ulong destination;
-
-        public string Content
-        {
-            get { return message; }
-            set { message = value; }
-        }
-        public string Sender
-        {
-            get { return user; }
-            set { user = value; }
-        }
-        public Bot Origin
-        {
-            get { return creator; }
-        }
-        public ulong Destination
-        {
-            get { return destination; }
-            set { destination = value; }
-        }
+        public string Content { get; set; }
+        public User Sender{ get; set; }
+        public Bot Origin { get; }
+        public ulong Destination { get; set;}
 
         public Message(string message)
         {
@@ -39,7 +18,7 @@ namespace calledudeBot.Common
 
         public Message(string message, Bot bot)
         {
-            creator = bot;
+            Origin = bot;
             this.message = message;
             if(typeof(TwitchBot) == bot.GetType())
             {
@@ -47,9 +26,8 @@ namespace calledudeBot.Common
             }
         }
 
-
         //:calledude!calledude@calledude.tmi.twitch.tv PRIVMSG #calledude :hej
-        void decodeMessage()
+        private void decodeMessage()
         {
             //Get name of sender
             var indexUpper = message.IndexOf('!');
@@ -57,7 +35,7 @@ namespace calledudeBot.Common
             var nameLength = indexUpper - indexLower;
 
             var name = message.Substring(indexLower, nameLength);
-            user = char.ToUpper(name.First()) + name.Substring(1).ToLower(); //capitalize first letter in username
+            Sender = new User(char.ToUpper(name.First()) + name.Substring(1).ToLower()); //capitalize first letter in username
 
             //Get content
             var stringFormatted = new string[message.Split(' ').Length - 3];
@@ -68,9 +46,7 @@ namespace calledudeBot.Common
                 stringFormatted[counter] = message.Split(' ')[i];
                 counter++;
             }
-
-            message = string.Join(" ", stringFormatted).Substring(1); //Deletes ":" from the first letter in the message
-
+            Content = string.Join(" ", stringFormatted).Substring(1); //Deletes ":" from the first letter in the message
         }
     }
 }

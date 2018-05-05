@@ -6,7 +6,6 @@ namespace calledudeBot.Bots
 {
     public class OsuBot : IrcClient
     {
-
         public override void Start(string token)
         {
             this.token = token;

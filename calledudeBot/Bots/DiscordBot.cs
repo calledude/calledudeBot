@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using calledudeBot.Common;
+using calledudeBot.Chat;
 using calledudeBot.Services;
 
 namespace calledudeBot.Bots
@@ -47,7 +47,7 @@ namespace calledudeBot.Bots
 
             Message msg = new Message(message.Content, this)
             {
-                Sender = message.Author.Username,
+                Sender = new User(message.Author.Username),
                 Destination = message.Channel.Id
             };
             messageHandler.determineResponse(msg);

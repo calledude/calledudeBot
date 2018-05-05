@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
-using calledudeBot.Common;
+using calledudeBot.Chat;
 
 namespace calledudeBot.Bots
 {

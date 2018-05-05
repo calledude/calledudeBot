@@ -192,6 +192,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Chat\User.cs" />
     <Compile Include="Services\ApiHandler.cs" />
     <Compile Include="Services\JsonData.cs" />
     <Compile Include="Bots\Bot.cs" />
@@ -201,8 +202,8 @@
     <Compile Include="Common\Handler.cs" />
     <Compile Include="Common\Hooky.cs" />
     <Compile Include="Bots\IrcClient.cs" />
-    <Compile Include="Common\Message.cs" />
-    <Compile Include="Common\MessageHandler.cs" />
+    <Compile Include="Chat\Message.cs" />
+    <Compile Include="Chat\MessageHandler.cs" />
     <Compile Include="Bots\OsuBot.cs" />
     <Compile Include="Common\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
