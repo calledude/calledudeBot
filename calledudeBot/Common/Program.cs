@@ -118,6 +118,20 @@ namespace calledudeBot.Common
             discordToken = Console.ReadLine();
             credList.Add("DiscordToken " + discordToken);
 
+            //https://discordapp.com/oauth2/authorize?client_id=201013813019934721&scope=bot
+            Console.WriteLine("Have you figured out how to get the bot to join your own channel? Y/N");
+            ConsoleKey ck = ConsoleKey.A;
+            while (ck != ConsoleKey.Y && ck != ConsoleKey.N)
+            {
+                ck = Console.ReadKey(false).Key;
+            }
+            Console.WriteLine();
+            if (ck == ConsoleKey.N)
+            {
+                Console.Write("Alright, enter the bots Client-ID here: ");
+                Process.Start($"https://discordapp.com/oauth2/authorize?client_id={Console.ReadLine()}&scope=bot");
+            }
+
             Console.Write("Twitch API token (Called 'Client ID' on twitch): ");
             Thread.Sleep(2000);
             Process.Start("https://dev.twitch.tv/dashboard/apps");
