@@ -5,7 +5,6 @@ namespace calledudeBot.Chat
 {
     public class Message
     {
-        private string message;
         public string Content { get; set; }
         public User Sender{ get; set; }
         public Bot Origin { get; }
@@ -13,13 +12,13 @@ namespace calledudeBot.Chat
 
         public Message(string message)
         {
-            this.message = message;
+            Content = message;
         }
 
         public Message(string message, Bot bot)
         {
             Origin = bot;
-            this.message = message;
+            Content = message;
             if(typeof(TwitchBot) == bot.GetType())
             {
                 decodeMessage();
@@ -30,20 +29,20 @@ namespace calledudeBot.Chat
         private void decodeMessage()
         {
             //Get name of sender
-            var indexUpper = message.IndexOf('!');
-            var indexLower = message.IndexOf(':') + 1;
+            var indexUpper = Content.IndexOf('!');
+            var indexLower = Content.IndexOf(':') + 1;
             var nameLength = indexUpper - indexLower;
 
-            var name = message.Substring(indexLower, nameLength);
+            var name = Content.Substring(indexLower, nameLength);
             Sender = new User(char.ToUpper(name.First()) + name.Substring(1).ToLower()); //capitalize first letter in username
 
             //Get content
-            var stringFormatted = new string[message.Split(' ').Length - 3];
+            var stringFormatted = new string[Content.Split(' ').Length - 3];
             var counter = 0;
 
-            for (var i = 3; i < message.Split(' ').Length; i++)
+            for (var i = 3; i < Content.Split(' ').Length; i++)
             {
-                stringFormatted[counter] = message.Split(' ')[i];
+                stringFormatted[counter] = Content.Split(' ')[i];
                 counter++;
             }
             Content = string.Join(" ", stringFormatted).Substring(1); //Deletes ":" from the first letter in the message
