@@ -70,11 +70,11 @@ namespace calledudeBot.Common
                 }
                 else if (e.KeyCode == Keys.Left)
                 {
-                    if (position > 0) position -= 1;
+                    if (position > 0) position--;
                 }
                 else if (e.KeyCode == Keys.Right)
                 {
-                    if (position < MessageToSend.Length - 1) position += 1;
+                    if (position < MessageToSend.Length) position++;
                 }
                 else if (e.KeyCode == Keys.Back)
                 {
@@ -83,13 +83,11 @@ namespace calledudeBot.Common
                         MessageToSend = "";
                         allIsSelected = false;
                         position = 0;
-                        return;
                     }
-
-                    if (MessageToSend.Length > 0 && position > 0)
+                    else if (MessageToSend.Length > 0 && position > 0)
                     {
                         MessageToSend = MessageToSend.Remove(position - 1, 1);
-                        if (position > 0) position -= 1;
+                        if (position > 0) position--;
                     }
                 }
                 else if (e.KeyCode == Keys.Delete)
@@ -120,8 +118,8 @@ namespace calledudeBot.Common
                     char.IsWhiteSpace(e.KeyChar) || char.IsPunctuation(e.KeyChar) || char.IsSeparator(e.KeyChar))
                 {
                     MessageToSend = MessageToSend.Insert(position, e.KeyChar.ToString());
-                    if (position <= MessageToSend.Length - 1) position += 1;
-                    if (MessageToSend.Length == 0) position += 1;
+                    if (position < MessageToSend.Length) position++;
+                    if (MessageToSend.Length == 0) position++;
                 }
 
                 if (e.KeyChar == (char) Keys.Return && MessageToSend.Length > 0)
@@ -143,8 +141,6 @@ namespace calledudeBot.Common
             if (activatedHandle == IntPtr.Zero) return false; // No window is currently activated
             var procName = "osu!";
             var procId = 0;
-
-
             var processlist = Process.GetProcesses();
 
             foreach (var theprocess in processlist)
@@ -155,8 +151,6 @@ namespace calledudeBot.Common
                     break;
                 }
             }
-
-
             GetWindowThreadProcessId(activatedHandle, out var activeProcId);
 
             return activeProcId == procId;
