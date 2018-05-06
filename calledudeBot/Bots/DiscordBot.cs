@@ -84,8 +84,8 @@ namespace calledudeBot.Bots
                 if (!online)
                 {
                     Data data = jsonData.data[0];
-                    await sendMessage(generalChannelID, $"{twitchUsername} just went live with the title: \"{data.title}\" - Watch at: http://twitch.tv/{twitchUsername}/");
-                    streamStarted = data.started_at;
+                    await sendMessage(generalChannelID, $"{twitchUsername} just went live with the title: \"{data.title}\" - Watch at: https://twitch.tv/{twitchUsername}/");
+                    streamStarted = data.started_at.ToLocalTime();
                     online = true;
                 }
             }

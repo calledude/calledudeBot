@@ -168,7 +168,6 @@ namespace calledudeBot.Common
         private void delCmd(string cmd, out string response)
         {
             response = "You ok there bud? Try again.";
-
             cmd = cmd.ToLower();
             string cmdToDel = cmd.Split(' ')[1];
             cmdToDel = cmdToDel.StartsWith("!") ? cmdToDel : ("!" + cmdToDel);
@@ -238,8 +237,8 @@ namespace calledudeBot.Common
                 StringBuilder sb = new StringBuilder();
                 
                 sb.Append("Stream uptime: ");
-                if (t.Hours > 0) sb.Append($"{t.Hours}h");
-                if (t.Minutes > 0) sb.Append($"{t.Minutes}m");
+                if (t.Hours > 0) sb.Append($"{t.Hours}h ");
+                if (t.Minutes > 0) sb.Append($"{t.Minutes}m ");
                 if (t.Seconds > 0) sb.Append($"{t.Seconds}s");
                 response = sb.ToString();
             }
