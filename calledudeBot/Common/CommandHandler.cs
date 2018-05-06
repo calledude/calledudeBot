@@ -63,7 +63,6 @@ namespace calledudeBot.Common
         {
             string response;
             var cmd = message.Content;
-            var user = message.Sender;
             allowed = message.Sender.isMod;
 
             response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
