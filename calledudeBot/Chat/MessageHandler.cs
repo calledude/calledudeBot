@@ -1,5 +1,8 @@
 ﻿using calledudeBot.Bots;
 using calledudeBot.Common;
+using System;
+using System.Collections.Generic;
+using System.Timers;
 
 namespace calledudeBot.Chat
 {
@@ -7,6 +10,10 @@ namespace calledudeBot.Chat
     {
         private OsuBot osu;
         private Bot bot;
+        private Queue<Message> messageQueue = new Queue<Message>();
+        private DateTime lastMessage;
+        private Timer relayTimer;
+
 
         public MessageHandler(Bot bot)
         {
@@ -14,8 +21,10 @@ namespace calledudeBot.Chat
             if (typeof(TwitchBot) == bot.GetType())
             {
                 osu = Common.calledudeBot.osuBot;
+                relayTimer = new Timer(200);
+                relayTimer.Elapsed += tryRelay;
+                relayTimer.Start();
             }
-            
             commandHandler = new CommandHandler(this);
         }
 
@@ -25,9 +34,19 @@ namespace calledudeBot.Chat
 
             if (status == CommandStatus.NotHandled && osu != null) //if osu isnt null, then twitchBot is the caller.
             {
-                relay(message);
+                messageQueue.Enqueue(message);
+                tryRelay(null, null);
             }
 
+        }
+
+        private void tryRelay(object sender, ElapsedEventArgs e)
+        {
+            if (DateTime.Now - lastMessage > TimeSpan.FromMilliseconds(500) && messageQueue.Count > 0)
+            {
+                relay(messageQueue.Dequeue());
+                lastMessage = DateTime.Now;
+            }
         }
 
         public void respond(Message message)
@@ -37,7 +56,7 @@ namespace calledudeBot.Chat
 
         private void relay(Message message)
         {
-            message.Content = $"{message.Sender}: {message.Content}"; 
+            message.Content = $"{message.Sender.Name}: {message.Content}"; 
             osu.sendMessage(message);
         }
     }
