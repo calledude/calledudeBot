@@ -39,11 +39,15 @@ namespace calledudeBot.Common
             }
             Command addCmd = new Command("addCmd <Adds a command to the command list>", "!addcmd", false, true);
             Command help = new Command("helpCmd <Lists all available commands>", "!help", false, true);
-            Command np = new Command("playingCmd <Shows which song is currently playing>", "!np", false, true);
-            Command song = new Command("playingCmd <Shows which song is currently playing>", "!song", false, true);
+
+            Command np = new Command("playingCmd <Shows which song is currently playing>", "!np", false, true)
+            {
+                AlternateName = new string[] { "!song", "!playing" }
+            };
+
             Command delCmd = new Command("delCmd <Deletes a command from the command list>", "!delcmd", false, true);
             Command uptime = new Command("uptime <Shows how long the stream has been live>", "!uptime", false, true);
-            commands.AddRange(new List<Command> { addCmd, help, np, song, delCmd, uptime });
+            commands.AddRange(new List<Command> { addCmd, help, np, delCmd, uptime });
 
             Console.WriteLine($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
         }
@@ -68,7 +72,7 @@ namespace calledudeBot.Common
             response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
             foreach (Command c in commands)
             {
-                if (cmd.ToLower().StartsWith(c.Name))
+                if (cmd.ToLower().StartsWith(c.Name)) // or alternate?
                 {
                     c.Arguments = cmd;
                     c.handlerInstance = this;

@@ -40,6 +40,10 @@ namespace calledudeBot.Common
         {
             set { arg = value; }
         }
+        public string[] AlternateName
+        {
+            get; set;
+        }
 
         public Command(string cmd, string cmdToAdd, bool writeToFile, bool isSpecial = false)
         {
