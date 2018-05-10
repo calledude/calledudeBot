@@ -5,8 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Timers;
-using calledudeBot.Bots;
 using calledudeBot.Chat;
 
 namespace calledudeBot.Common
@@ -30,21 +28,23 @@ namespace calledudeBot.Common
         private void init()
         {
             initiated = true;
-            var cmdArr = File.ReadAllLines(cmdFile);
             spotify = new SpotifyLocalAPI();
             spotify.Connect();
+
+            var cmdArr = File.ReadAllLines(cmdFile);
             foreach (string line in cmdArr)
             {
                 createCommand(line, line.Split(' ')[0], false);
             }
             Command addCmd = new Command("addCmd <Adds a command to the command list>", "!addcmd", false, true);
-            Command help = new Command("helpCmd <Lists all available commands>", "!help", false, true);
-
+            Command help = new Command("helpCmd <Lists all available commands>", "!help", false, true)
+            {
+                AlternateName = new string[] { "!commands" , "!cmds"}
+            };
             Command np = new Command("playingCmd <Shows which song is currently playing>", "!np", false, true)
             {
                 AlternateName = new string[] { "!song", "!playing" }
             };
-
             Command delCmd = new Command("delCmd <Deletes a command from the command list>", "!delcmd", false, true);
             Command uptime = new Command("uptime <Shows how long the stream has been live>", "!uptime", false, true);
             commands.AddRange(new List<Command> { addCmd, help, np, delCmd, uptime });
@@ -72,7 +72,7 @@ namespace calledudeBot.Common
             response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
             foreach (Command c in commands)
             {
-                if (cmd.ToLower().StartsWith(c.Name)) // or alternate?
+                if (cmd.ToLower().StartsWith(c.Name) || (c.AlternateName?.Any(x => cmd.ToLower().StartsWith(x)) ?? false))
                 {
                     c.Arguments = cmd;
                     c.handlerInstance = this;
@@ -95,7 +95,7 @@ namespace calledudeBot.Common
             return str.Any(c => !Char.IsLetterOrDigit(c));
         }
 
-        private void helpCmd(string cmd, out string response)
+        private void helpCmd(string cmd, out string response) //Implement different !help for discord?
         {
             response = "";
             if (commands.Count == 0)
@@ -103,8 +103,6 @@ namespace calledudeBot.Common
                 response = "There are no commands available at this time.";
                 return;
             }
-            //Implement different !help for discord?
-
             
             if (cmd.Split(' ').Length == 2) //"!help <command>"
             {
@@ -120,20 +118,16 @@ namespace calledudeBot.Common
                     }
                 }
             }
-
             else if (cmd.Split(' ').Length == 1) //"!help" only
             {
                 StringBuilder sb = new StringBuilder(commands.Count);
 
-                if (commands.Count > 0)
+                foreach (Command c in commands)
                 {
-                    foreach (Command c in commands)
-                    {
-                        if (!c.UserAllowed && !allowed) continue;
-                        sb.Append(" " + c.Name + " »");
-                    }
-                    response = "These are the commands you can use:" + sb.ToString().Trim('»');
+                    if (!c.UserAllowed && !allowed) continue;
+                    sb.Append(" " + c.Name + " »");
                 }
+                response = "These are the commands you can use:" + sb.ToString().Trim('»');
             }
         }
 
