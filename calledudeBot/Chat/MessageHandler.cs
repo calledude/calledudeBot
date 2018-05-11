@@ -13,18 +13,18 @@ namespace calledudeBot.Chat
         private DateTime lastMessage;
         private Timer relayTimer;
 
-
         public MessageHandler(Bot bot)
         {
+            commandHandler = new CommandHandler(this);
             this.bot = bot;
             if (typeof(TwitchBot) == bot.GetType())
             {
+                commandHandler.init();
                 osu = calledudeBot.osuBot;
                 relayTimer = new Timer(200);
                 relayTimer.Elapsed += tryRelay;
                 relayTimer.Start();
             }
-            commandHandler = new CommandHandler(this);
         }
 
         public void determineResponse(Message message)

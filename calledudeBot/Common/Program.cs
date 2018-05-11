@@ -25,6 +25,7 @@ namespace calledudeBot
 
         private static void Main(string[] args)
         {
+            Console.Title = "calledudeBot";
             initialSetup();
             getCredentials();
             Clean();

@@ -60,7 +60,6 @@ namespace calledudeBot.Bots
             {
                 for (buf = input.ReadLine(); ; buf = input.ReadLine())
                 {
-                    Console.WriteLine(buf);
                     if (buf.StartsWith("PING "))
                     {
                         WriteLine(buf.Replace("PING", "PONG") + "\r\n");

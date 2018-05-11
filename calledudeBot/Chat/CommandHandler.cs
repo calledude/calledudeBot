@@ -13,7 +13,6 @@ namespace calledudeBot.Chat
         private static List<Command> commands = new List<Command>();
         
         private string cmdFile = calledudeBot.cmdFile;
-        private static bool initiated = false; //Let's make sure we don't read our commands several times, eh? :^)
         private bool allowed = false;
         private MessageHandler messageHandler;
         private SpotifyLocalAPI spotify;
@@ -21,14 +20,15 @@ namespace calledudeBot.Chat
         public CommandHandler(MessageHandler messageHandler)
         {
             this.messageHandler = messageHandler;
-            if(!initiated) init();
         }
 
-        private void init()
+        public void init()
         {
-            initiated = true;
             spotify = new SpotifyLocalAPI();
-            spotify.Connect();
+            if(!spotify.Connect())
+            {
+                Console.WriteLine("[CommandHandler]: Couldn't connect to spotify.");
+            }
 
             var cmdArr = File.ReadAllLines(cmdFile);
             foreach (string line in cmdArr)
@@ -43,7 +43,6 @@ namespace calledudeBot.Chat
                 new Command("<Shows which song is currently playing>", "!np", playingCmd){ AlternateName = new string[] { "!song", "!playing" } },
                 new Command("<Shows how long the stream has been live>", "!uptime", uptime)
             });
-
             Console.WriteLine($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
         }
 

@@ -69,7 +69,6 @@ namespace calledudeBot.Bots
                 }
             }
             return null;
-            
         }
 
         public override void sendMessage(Message message)
