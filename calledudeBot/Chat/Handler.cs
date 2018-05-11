@@ -1,4 +1,4 @@
-﻿namespace calledudeBot.Common
+﻿namespace calledudeBot.Chat
 {
     public class Handler
     {

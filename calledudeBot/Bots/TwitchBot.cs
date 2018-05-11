@@ -18,10 +18,10 @@ namespace calledudeBot.Bots
 
         public override void Start(string token)
         {
-            string osuAPIToken = Common.calledudeBot.osuAPIToken;
-            string osuNick = Common.calledudeBot.osuNick;
-            string botNick = Common.calledudeBot.botNick;
-            channelName = Common.calledudeBot.channelName;
+            string osuAPIToken = calledudeBot.osuAPIToken;
+            string osuNick = calledudeBot.osuNick;
+            string botNick = calledudeBot.botNick;
+            channelName = calledudeBot.channelName;
             APIHandler api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}", Caller.Twitch);
             api.DataReceived += checkUserUpdate;
 

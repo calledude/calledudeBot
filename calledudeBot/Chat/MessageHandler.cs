@@ -1,5 +1,4 @@
 ﻿using calledudeBot.Bots;
-using calledudeBot.Common;
 using System;
 using System.Collections.Generic;
 using System.Timers;
@@ -20,7 +19,7 @@ namespace calledudeBot.Chat
             this.bot = bot;
             if (typeof(TwitchBot) == bot.GetType())
             {
-                osu = Common.calledudeBot.osuBot;
+                osu = calledudeBot.osuBot;
                 relayTimer = new Timer(200);
                 relayTimer.Elapsed += tryRelay;
                 relayTimer.Start();
