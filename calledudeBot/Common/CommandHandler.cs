@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using calledudeBot.Chat;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Common
 {
@@ -36,18 +37,25 @@ namespace calledudeBot.Common
             {
                 createCommand(line, line.Split(' ')[0], false);
             }
-            Command addCmd = new Command("addCmd <Adds a command to the command list>", "!addcmd", false, true);
-            Command help = new Command("helpCmd <Lists all available commands>", "!help", false, true)
+            Command cmdAdd = new Command("<Adds a command to the command list>", "!addcmd", addCmd)
+            {
+                UserAllowed = false
+            };
+            Command cmdDel = new Command("<Deletes a command from the command list>", "!delcmd", delCmd)
+            {
+                UserAllowed = false
+            };
+            Command help = new Command("<Lists all available commands>", "!help", helpCmd)
             {
                 AlternateName = new string[] { "!commands" , "!cmds"}
             };
-            Command np = new Command("playingCmd <Shows which song is currently playing>", "!np", false, true)
+            Command np = new Command("<Shows which song is currently playing>", "!np", playingCmd)
             {
                 AlternateName = new string[] { "!song", "!playing" }
             };
-            Command delCmd = new Command("delCmd <Deletes a command from the command list>", "!delcmd", false, true);
-            Command uptime = new Command("uptime <Shows how long the stream has been live>", "!uptime", false, true);
-            commands.AddRange(new List<Command> { addCmd, help, np, delCmd, uptime });
+            Command uptimeCmd = new Command("<Shows how long the stream has been live>", "!uptime", uptime);
+            commands.AddRange(new List<Command> { cmdAdd, help, np, cmdDel, uptimeCmd });
+
 
             Console.WriteLine($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
         }
@@ -144,10 +152,9 @@ namespace calledudeBot.Common
             string cmdToAdd = cmd.Split(' ')[1].ToLower();
             if (hasSpecialChars(cmdToAdd))
             {
-                response = "Oi, mate, cut it off or I'll fucking shank you";
+                response = "What are you trying to do? No mid-command special characters, please.";
                 return;
             }
-
             if (cmd.Split(' ').Length > 2) //has user entered a command to enter? i.e. !addcmd !test someAnswer
             {
                 cmdToAdd = cmdToAdd.StartsWith("!") ? cmdToAdd : ("!" + cmdToAdd);
@@ -180,7 +187,7 @@ namespace calledudeBot.Common
         private string createCommand(string cmd, string cmdToAdd, bool writeToFile)
         {
             string response = $"Added command '{cmdToAdd}'";
-            Command f = new Command(cmd, cmdToAdd, writeToFile);
+            Command f = new Command(cmd, cmdToAdd, null, writeToFile);
             foreach (Command c in commands)
             {
                 if (c.Name == cmdToAdd)
@@ -210,11 +217,11 @@ namespace calledudeBot.Common
             commands.Remove(cmd);
             List<string> cmds = new List<string>();
 
-            for(int i = 0; i < commands.Count; i++)
+            foreach(Command c in commands)
             {
-                if (commands[i].IsSpecial) continue;
-                string description = string.IsNullOrEmpty(commands[i].Description) ? null : "<" + commands[i].Description + ">";
-                string line = commands[i].Name + " " + commands[i].Response + " " + description;
+                if (c.IsSpecial) continue;
+                string description = string.IsNullOrEmpty(c.Description) ? null : "<" + c.Description + ">";
+                string line = c.Name + " " + c.Response + " " + description;
                 cmds.Add(line);
             }
             File.WriteAllLines(cmdFile, cmds);

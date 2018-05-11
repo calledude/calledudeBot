@@ -1,18 +1,17 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace calledudeBot.Common
 {
     class Command
     {
+        public delegate void Action<T1, T2>(T1 obj, out T2 obj2);
+        private Action<string, string> specialFunc;
         private string response;
         private string cmdFile = calledudeBot.cmdFile;
-        private MethodInfo specialMethod;
         private CommandHandler commandHandler;
         private string arg;
-
         public string Name { get; }
 
         public CommandHandler handlerInstance
@@ -25,9 +24,7 @@ namespace calledudeBot.Common
             {
                 if(IsSpecial)
                 {
-                    string[] args = { arg, response };
-                    specialMethod.Invoke(commandHandler, args);
-                    response = args[1];
+                    specialFunc.Invoke(arg, out response);
                 }
                 return response;
             }
@@ -35,7 +32,7 @@ namespace calledudeBot.Common
         }
         public string Description { get; set; }
         public bool IsSpecial { get; }
-        public bool UserAllowed { get; }
+        public bool UserAllowed { get; set; }
         public string Arguments
         {
             set { arg = value; }
@@ -45,7 +42,7 @@ namespace calledudeBot.Common
             get; set;
         }
 
-        public Command(string cmd, string cmdToAdd, bool writeToFile, bool isSpecial = false)
+        public Command(string cmd, string cmdToAdd, Action<string, string> specialFunc = null, bool writeToFile = false)
         {
             if (cmd.Contains('<'))
             {
@@ -53,7 +50,7 @@ namespace calledudeBot.Common
                 Description = cmd.Substring(descriptionIndex).Trim('<', '>');
                 cmd = cmd.Remove(descriptionIndex);
             }
-            if (!isSpecial)
+            if (specialFunc == null)
             {
                 int responseIndex = writeToFile ? cmd.IndexOf(cmd.Split(' ')[2]) : cmd.IndexOf(cmd.Split(' ')[1]);
                 response = cmd.Substring(responseIndex).Trim();
@@ -61,10 +58,7 @@ namespace calledudeBot.Common
             else
             {
                 IsSpecial = true;
-                if (cmdToAdd == "!addcmd" || cmdToAdd == "!delcmd") UserAllowed = false;
-                string cmdFunc = cmd.Trim();
-                Type thisType = typeof(CommandHandler);
-                specialMethod = thisType.GetMethod(cmdFunc, BindingFlags.NonPublic | BindingFlags.Instance);
+                this.specialFunc = specialFunc;
             }
             Name = cmdToAdd;
             
