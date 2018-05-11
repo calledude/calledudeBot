@@ -60,6 +60,7 @@ namespace calledudeBot.Chat
                 IsSpecial = true;
                 this.specialFunc = specialFunc;
             }
+            UserAllowed = true;
             Name = cmdToAdd;
             
             if (writeToFile)
