@@ -14,7 +14,7 @@ namespace calledudeBot.Chat
         {
             Origin = bot;
             Content = message;
-            if(typeof(TwitchBot) == bot.GetType())
+            if(typeof(TwitchBot) == bot?.GetType())
             {
                 decodeMessage();
             }
