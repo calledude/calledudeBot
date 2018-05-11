@@ -28,6 +28,9 @@ namespace calledudeBot.Services
             timer.AutoReset = true;
             timer.Enabled = true;
             timer.Start();
+
+            requestData(null, null);
+
         }
 
         private void requestData(object sender, ElapsedEventArgs e)
