@@ -73,11 +73,14 @@ namespace calledudeBot.Chat
                     c.handlerInstance = this;
                     if (c.IsSpecial && !c.UserAllowed)
                     {
-                        response = "You're not allowed to use that command";
-                        message.Content = allowed ? c.Response : response;
-                        return message; //Critical to return here since we would otherwise let the user execute the command regardless if they're allowed or not.
+                        response = allowed ? c.Response : "You're not allowed to use that command";
+                        break;
                     }
-                    response = c.Response;
+                    else
+                    {
+                        response = c.Response;
+                        break;
+                    }
                 }
             }
             message.Content = response;
