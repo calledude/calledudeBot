@@ -10,12 +10,7 @@ namespace calledudeBot.Chat
         public Bot Origin { get; }
         public ulong Destination { get; set;}
 
-        public Message(string message)
-        {
-            Content = message;
-        }
-
-        public Message(string message, Bot bot)
+        public Message(string message, Bot bot = null)
         {
             Origin = bot;
             Content = message;
