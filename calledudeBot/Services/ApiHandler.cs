@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Net;
-using System.Threading.Tasks;
 using System.Timers;
 
 namespace calledudeBot.Services
@@ -15,7 +14,7 @@ namespace calledudeBot.Services
         private string URL;
         private Caller caller;
         private WebClient client = new WebClient();
-        public event Func<JsonData, Task> DataReceived;
+        public event Action<JsonData> DataReceived;
 
         public APIHandler(string URL, Caller caller, string token = null)
         {
@@ -23,14 +22,17 @@ namespace calledudeBot.Services
 
             this.caller = caller;
             this.URL = URL;
-            var timer = new Timer(30000);
+        }
+
+        public void Start()
+        {
+            var timer = new System.Timers.Timer(30000);
             timer.Elapsed += requestData;
             timer.AutoReset = true;
             timer.Enabled = true;
             timer.Start();
 
             requestData(null, null);
-
         }
 
         private void requestData(object sender, ElapsedEventArgs e)

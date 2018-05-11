@@ -24,6 +24,7 @@ namespace calledudeBot.Bots
             channelName = calledudeBot.channelName;
             APIHandler api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}", Caller.Twitch);
             api.DataReceived += checkUserUpdate;
+            api.Start();
 
             this.token = token;
             server = "irc.chat.twitch.tv";
@@ -48,10 +49,9 @@ namespace calledudeBot.Bots
             Listen();
         }
 
-        private Task checkUserUpdate(JsonData jsonData)
+        private void checkUserUpdate(JsonData jsonData)
         {
             Console.WriteLine(jsonData.osuData[0].username);
-            return Task.CompletedTask;
         }
 
         public override void Listen()

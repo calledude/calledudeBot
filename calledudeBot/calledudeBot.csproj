@@ -196,10 +196,10 @@
     <Compile Include="Services\ApiHandler.cs" />
     <Compile Include="Services\JsonData.cs" />
     <Compile Include="Bots\Bot.cs" />
-    <Compile Include="Common\Command.cs" />
-    <Compile Include="Common\CommandHandler.cs" />
+    <Compile Include="Chat\Command.cs" />
+    <Compile Include="Chat\CommandHandler.cs" />
     <Compile Include="Bots\DiscordBot.cs" />
-    <Compile Include="Common\Handler.cs" />
+    <Compile Include="Chat\Handler.cs" />
     <Compile Include="Common\Hooky.cs" />
     <Compile Include="Bots\IrcClient.cs" />
     <Compile Include="Chat\Message.cs" />

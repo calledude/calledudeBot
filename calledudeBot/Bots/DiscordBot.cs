@@ -20,9 +20,11 @@ namespace calledudeBot.Bots
         {
             string url = $"https://api.twitch.tv/helix/streams?user_login={twitchUsername}";
             APIHandler api = new APIHandler(url, Caller.Discord, twitchAPItoken);
-            bot = new DiscordSocketClient(new DiscordSocketConfig());
+            bot = new DiscordSocketClient();
 
             api.DataReceived += determineLiveStatus;
+            api.Start();
+
             bot.MessageReceived += HandleCommand;
             bot.Connected += onConnected;
             messageHandler = new MessageHandler(this);
@@ -77,7 +79,7 @@ namespace calledudeBot.Bots
             await channel?.SendMessageAsync(message);
         }
 
-        private async Task determineLiveStatus(JsonData jsonData)
+        private async void determineLiveStatus(JsonData jsonData)
         {
             if (jsonData.data.Count != 0)
             {
