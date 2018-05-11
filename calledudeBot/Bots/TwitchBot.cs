@@ -6,6 +6,7 @@ using calledudeBot.Chat;
 using calledudeBot.Services;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Linq;
 
 namespace calledudeBot.Bots
 {
@@ -40,7 +41,6 @@ namespace calledudeBot.Bots
                       "USER " + botNick + " 0 * :" + botNick + "\r\n" +
                       "NICK " + botNick + "\r\n");
             WriteLine("CAP REQ :twitch.tv/commands");
-            getMods();
 
             timer = new Timer(30000);
             timer.Elapsed += modLockEvent;
@@ -60,6 +60,7 @@ namespace calledudeBot.Bots
             {
                 for (buf = input.ReadLine(); ; buf = input.ReadLine())
                 {
+                    Console.WriteLine(buf);
                     if (buf.StartsWith("PING "))
                     {
                         WriteLine(buf.Replace("PING", "PONG") + "\r\n");
@@ -72,16 +73,16 @@ namespace calledudeBot.Bots
                     {
                         int modsIndex = buf.LastIndexOf(':') + 1;
                         var modsArr = buf.Substring(modsIndex).Split(',');
-                        mods.Clear();
-                        foreach (string s in modsArr)
-                        {
-                            mods.Add(s.Trim());
-                        }
+                        mods = modsArr.Select(x => x.Trim()).ToList();
                     }
                     else if (buf.Split(' ')[1] == "001")
                     {
                         WriteLine($"JOIN {channelName}");
                         Console.WriteLine($"[{instanceName}]: Connected to Twitch.");
+                    }
+                    else if(buf.Split(' ')[1] == "366")
+                    {
+                        getMods();
                     }
                     else if (buf.Split(' ')[1] == "PRIVMSG") //this is something else, check for message
                     {

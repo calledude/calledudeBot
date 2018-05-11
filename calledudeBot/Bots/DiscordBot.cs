@@ -49,12 +49,27 @@ namespace calledudeBot.Bots
 
             Message msg = new Message(message.Content, this)
             {
-                Sender = new User(message.Author.Username),
+                Sender = new User(message.Author),
                 Destination = message.Channel.Id
             };
             messageHandler.determineResponse(msg);
 
             return Task.CompletedTask;
+        }
+
+        public SocketRole getAdminRole()
+        {
+            var s = bot.GetGuild(generalChannelID).Roles;
+
+            foreach(SocketRole role in s)
+            {
+                if(role.Permissions.BanMembers || role.Permissions.KickMembers)
+                {
+                    return role;
+                }
+            }
+            return null;
+            
         }
 
         public override void sendMessage(Message message)
