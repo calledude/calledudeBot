@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using calledudeBot.Bots;
 
-namespace calledudeBot.Common
+namespace calledudeBot
 {
     public class calledudeBot
     {

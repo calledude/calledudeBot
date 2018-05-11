@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace calledudeBot.Common
+namespace calledudeBot.Chat
 {
     class Command
     {

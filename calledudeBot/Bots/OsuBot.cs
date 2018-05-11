@@ -9,7 +9,7 @@ namespace calledudeBot.Bots
         public override void Start(string token)
         {
             this.token = token;
-            channelName = nick = Common.calledudeBot.osuNick; ;
+            channelName = nick = calledudeBot.osuNick; ;
             server = "cho.ppy.sh";
             instanceName = "osu!";
 

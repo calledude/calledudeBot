@@ -5,10 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using calledudeBot.Chat;
-using System.Threading.Tasks;
 
-namespace calledudeBot.Common
+namespace calledudeBot.Chat
 {
     public class CommandHandler : Handler
     {
@@ -37,25 +35,14 @@ namespace calledudeBot.Common
             {
                 createCommand(line, line.Split(' ')[0], false);
             }
-            Command cmdAdd = new Command("<Adds a command to the command list>", "!addcmd", addCmd)
+            commands.AddRange(new List<Command>
             {
-                UserAllowed = false
-            };
-            Command cmdDel = new Command("<Deletes a command from the command list>", "!delcmd", delCmd)
-            {
-                UserAllowed = false
-            };
-            Command help = new Command("<Lists all available commands>", "!help", helpCmd)
-            {
-                AlternateName = new string[] { "!commands" , "!cmds"}
-            };
-            Command np = new Command("<Shows which song is currently playing>", "!np", playingCmd)
-            {
-                AlternateName = new string[] { "!song", "!playing" }
-            };
-            Command uptimeCmd = new Command("<Shows how long the stream has been live>", "!uptime", uptime);
-            commands.AddRange(new List<Command> { cmdAdd, help, np, cmdDel, uptimeCmd });
-
+                new Command("<Adds a command to the command list>", "!addcmd", addCmd) { UserAllowed = false },
+                new Command("<Deletes a command from the command list>", "!delcmd", delCmd) { UserAllowed = false },
+                new Command("<Lists all available commands>", "!help", helpCmd) { AlternateName = new string[] { "!commands", "!cmds" } },
+                new Command("<Shows which song is currently playing>", "!np", playingCmd){ AlternateName = new string[] { "!song", "!playing" } },
+                new Command("<Shows how long the stream has been live>", "!uptime", uptime)
+            });
 
             Console.WriteLine($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
         }
@@ -262,7 +249,7 @@ namespace calledudeBot.Common
 
             if (string.IsNullOrEmpty(nowPlaying))
             {
-                nowPlaying = spotify.GetStatus().Track.ArtistResource.Name + " - " + spotify.GetStatus().Track.TrackResource.Name;
+                nowPlaying = spotify.GetStatus()?.Track.ArtistResource.Name + " - " + spotify.GetStatus().Track.TrackResource.Name;
             }
             return nowPlaying;
         }

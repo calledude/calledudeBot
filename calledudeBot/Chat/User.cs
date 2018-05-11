@@ -5,7 +5,7 @@ namespace calledudeBot.Chat
 {
     public class User
     {
-        private static TwitchBot twitch = Common.calledudeBot.twitchBot;
+        private static TwitchBot twitch = calledudeBot.twitchBot;
         public string Name { get; }
         public bool isMod
         {

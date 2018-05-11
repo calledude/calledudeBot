@@ -10,9 +10,9 @@ namespace calledudeBot.Bots
     public class DiscordBot : Bot
     {
         private DiscordSocketClient bot;
-        private ulong generalChannelID = Common.calledudeBot.discordGeneralID;
+        private ulong generalChannelID = calledudeBot.discordGeneralID;
         private bool online;
-        private string twitchUsername = Common.calledudeBot.channelName.Substring(1);
+        private string twitchUsername = calledudeBot.channelName.Substring(1);
         private MessageHandler messageHandler;
         private DateTime streamStarted;
 

@@ -8,7 +8,7 @@ using calledudeBot.Bots;
 
 //TODO: Poll ApplicationIsActivated() instead?
 //                          to decrease system overhead
-namespace calledudeBot.Common
+namespace calledudeBot
 {
     public class Hooky
     {
