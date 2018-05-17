@@ -84,7 +84,8 @@ namespace calledudeBot.Bots
         private async Task sendMessage(ulong ChannelId, string message)
         {
             var channel = bot.GetChannel(ChannelId) as SocketTextChannel;
-            if(channel == null)
+
+            if (channel == null)
             {
                 var chan = bot.GetChannel(ChannelId) as SocketDMChannel;
                 await chan?.SendMessageAsync(message);
