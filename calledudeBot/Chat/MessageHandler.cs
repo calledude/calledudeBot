@@ -8,7 +8,7 @@ namespace calledudeBot.Chat
     public class MessageHandler : Handler
     {
         private OsuBot osu;
-        private Bot bot;
+        public Bot bot;
         private Queue<Message> messageQueue = new Queue<Message>();
         private DateTime lastMessage;
         private Timer relayTimer;
@@ -36,7 +36,6 @@ namespace calledudeBot.Chat
                 messageQueue.Enqueue(message);
                 tryRelay(null, null);
             }
-
         }
 
         private void tryRelay(object sender, ElapsedEventArgs e)
