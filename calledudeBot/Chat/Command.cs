@@ -10,7 +10,6 @@ namespace calledudeBot.Chat
     public class Command
     {
         private List<Command> commands = CommandHandler.commands;
-        private delegate void Action<T1, T2>(T1 obj, out T2 obj2);
         private Action<Message> specialFunc;
         private string response;
         private string cmdFile = calledudeBot.cmdFile;
@@ -29,10 +28,7 @@ namespace calledudeBot.Chat
         public string Description { get; set; }
         public bool IsSpecial { get; }
         public bool UserAllowed { get; set; }
-        public string Arguments
-        {
-            set { arg = value; }
-        }
+
         public string[] AlternateName { get; set; }
         public CommandHandler HandlerInstance { get; set; }
         public Message Message { get; set; }
@@ -133,8 +129,7 @@ namespace calledudeBot.Chat
                 nowPlaying = CommandHandler.spotify.GetStatus()?.Track.ArtistResource.Name + " - " + CommandHandler.spotify.GetStatus().Track.TrackResource.Name;
             }
 
-            if (nowPlaying == null) response = "No song is playing right now.";
-            else response = $"Song playing right now: {nowPlaying}";
+            response = nowPlaying == null ? "No song is playing right now." : $"Song playing right now: {nowPlaying}";
         }
         private void addCmd(Message message)
         {
@@ -184,26 +179,26 @@ namespace calledudeBot.Chat
         private string createCommand(string cmd, string cmdToAdd, bool writeToFile)
         {
             string response = $"Added command '{cmdToAdd}'";
+            List<Command> tempCmds = commands;
             Command f = new Command(cmd, cmdToAdd, false, writeToFile);
-            foreach (Command c in commands)
+
+            foreach (Command c in tempCmds)
             {
-                if (c.Name == cmdToAdd)
+                if (c.Name != cmdToAdd) continue;
+                if (f.Description != c.Description || f.Response != c.Response)
                 {
-                    response = $"Command '{cmdToAdd}' already exists.";
-                    if (f.Description != c.Description || f.Response != c.Response)
+                    if (string.IsNullOrEmpty(f.Description) && !string.IsNullOrEmpty(c.Description))
                     {
+                        f.Description = c.Description;
+                        response = $"Changed command {cmdToAdd} successfully but kept the description since you didn't provide any.";
+                    }
+                    else
                         response = $"Changed command '{cmdToAdd}' successfully.";
 
-                        if (string.IsNullOrEmpty(f.Description) && !string.IsNullOrEmpty(c.Description))
-                        {
-                            f.Description = c.Description;
-                            response = $"Changed command {cmdToAdd} successfully but kept the description since you didn't provide any.";
-                        }
-                        commands.Add(f);
-                        removeCommand(c); //No duplicates pls
-                    }
-                    return response; //Critical to return here since we otherwise would add it to the command list.
+                    removeCommand(c); //No duplicates pls
                 }
+                else
+                    return $"Command '{cmdToAdd}' already exists."; //Critical to return here since we otherwise would add it to the command list.
             }
             commands.Add(f);
             return response;

@@ -41,93 +41,91 @@ namespace calledudeBot
 
         private void key_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode.ToString().Contains("Control"))
-                if (ApplicationIsActivated())
-                    CONTROLKEY = false;
+            if (!e.KeyCode.ToString().Contains("Control")) return;
+            if (ApplicationIsActivated())
+                CONTROLKEY = false;
         }
 
         private void key_KeyDown(object sender, KeyEventArgs e)
         {
-            if (ApplicationIsActivated())
-                if (e.KeyCode == Keys.F9)
+            if (!ApplicationIsActivated()) return;
+            if (e.KeyCode == Keys.F9)
+            {
+                KEYF9 = !KEYF9;
+            }
+            else if (e.KeyCode == Keys.F11)
+            {
+                if (KEYF9)
                 {
-                    KEYF9 = KEYF9 ? false : true;
+                    KEYF9 = false;
                 }
-                else if (e.KeyCode == Keys.F11)
+            }
+            else if (e.KeyCode == Keys.A && CONTROLKEY)
+            {
+                allIsSelected = true;
+            }
+            else if (e.KeyCode.ToString().Contains("Control"))
+            {
+                CONTROLKEY = true;
+            }
+            else if (e.KeyCode == Keys.Left)
+            {
+                if (position > 0) position--;
+            }
+            else if (e.KeyCode == Keys.Right)
+            {
+                if (position < MessageToSend.Length) position++;
+            }
+            else if (e.KeyCode == Keys.Back)
+            {
+                if (allIsSelected)
                 {
-                    if (KEYF9)
-                    {
-                        KEYF9 = false;
-                    }
+                    MessageToSend = "";
+                    allIsSelected = false;
+                    position = 0;
                 }
-                else if (e.KeyCode == Keys.A && CONTROLKEY)
+                else if (MessageToSend.Length > 0 && position > 0)
                 {
-                    allIsSelected = true;
-                }
-                else if (e.KeyCode.ToString().Contains("Control"))
-                {
-                    CONTROLKEY = true;
-                }
-                else if (e.KeyCode == Keys.Left)
-                {
+                    MessageToSend = MessageToSend.Remove(position - 1, 1);
                     if (position > 0) position--;
                 }
-                else if (e.KeyCode == Keys.Right)
+            }
+            else if (e.KeyCode == Keys.Delete)
+            {
+                if (allIsSelected)
                 {
-                    if (position < MessageToSend.Length) position++;
+                    MessageToSend = "";
+                    allIsSelected = false;
+                    position = 0;
                 }
-                else if (e.KeyCode == Keys.Back)
-                {
-                    if (allIsSelected)
-                    {
-                        MessageToSend = "";
-                        allIsSelected = false;
-                        position = 0;
-                    }
-                    else if (MessageToSend.Length > 0 && position > 0)
-                    {
-                        MessageToSend = MessageToSend.Remove(position - 1, 1);
-                        if (position > 0) position--;
-                    }
-                }
-                else if (e.KeyCode == Keys.Delete)
-                {
-                    if (allIsSelected)
-                    {
-                        MessageToSend = "";
-                        allIsSelected = false;
-                        position = 0;
-                    }
 
-                    if (MessageToSend.Length > 0 && position < MessageToSend.Length)
-                        MessageToSend = MessageToSend.Remove(position, 1);
-                }
+                if (MessageToSend.Length > 0 && position < MessageToSend.Length)
+                    MessageToSend = MessageToSend.Remove(position, 1);
+            }
         }
 
         private void key_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (KEYF9 && ApplicationIsActivated())
+            if (!KEYF9 || !ApplicationIsActivated()) return;
+            if (e.KeyChar == (char) Keys.Escape)
             {
-                if (e.KeyChar == (char) Keys.Escape)
-                {
-                    KEYF9 = false;
-                    return;
-                }
+                KEYF9 = false;
+                return;
+            }
 
-                if (char.IsLetterOrDigit(e.KeyChar) || char.IsSymbol(e.KeyChar) ||
-                    char.IsWhiteSpace(e.KeyChar) || char.IsPunctuation(e.KeyChar) || char.IsSeparator(e.KeyChar))
-                {
-                    MessageToSend = MessageToSend.Insert(position, e.KeyChar.ToString());
-                    if (position < MessageToSend.Length) position++;
-                    if (MessageToSend.Length == 0) position++;
-                }
+            if (char.IsLetterOrDigit(e.KeyChar) || char.IsSymbol(e.KeyChar) ||
+                char.IsWhiteSpace(e.KeyChar) || char.IsPunctuation(e.KeyChar) || char.IsSeparator(e.KeyChar))
+            {
+                MessageToSend = MessageToSend.Insert(position, e.KeyChar.ToString());
+                if (position < MessageToSend.Length) position++;
+                if (MessageToSend.Length == 0) position++;
+            }
 
-                if (e.KeyChar == (char) Keys.Return && MessageToSend.Length > 0)
-                {
-                    position = 0;
-                    twitchBot.sendMessage(new Chat.Message(MessageToSend));
-                    MessageToSend = "";
-                }
+            if (e.KeyChar == (char) Keys.Return && MessageToSend.Length > 0)
+            {
+                position = 0;
+                twitchBot.sendMessage(new Chat.Message(MessageToSend));
+                MessageToSend = "";
             }
         }
 

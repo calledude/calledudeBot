@@ -12,7 +12,6 @@ namespace calledudeBot.Bots
         protected TextWriter output;
         protected TextReader input;
         protected string nick;
-        protected string password;
         protected int port = 6667;
         protected string server;
         protected string buf;
@@ -20,15 +19,15 @@ namespace calledudeBot.Bots
         protected string instanceName;
         protected string token;
 
+        public abstract void Start(string token);
+        public abstract void Listen();
+
         public override void sendMessage(Message message)
         {
             WriteLine($"PRIVMSG {channelName} :{message.Content}");
         }
 
-        public abstract void Start(string token);
-        public abstract void Listen();
-
-        public virtual void reconnect()
+        protected virtual void reconnect()
         {
             Console.WriteLine($"[{instanceName}]: Disconnected. Re-establishing connection..");
             sock.Dispose();
@@ -39,7 +38,7 @@ namespace calledudeBot.Bots
             }
         }
 
-        public virtual void WriteLine(string message)
+        protected virtual void WriteLine(string message)
         {
             output.WriteLine(message);
             output.Flush();

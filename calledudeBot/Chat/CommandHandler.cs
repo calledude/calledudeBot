@@ -11,7 +11,6 @@ namespace calledudeBot.Chat
         internal static List<Command> commands = new List<Command>();
         internal static SpotifyLocalAPI spotify;
         private string cmdFile = calledudeBot.cmdFile;
-        private bool allowed = false;
         private MessageHandler messageHandler;
 
         public CommandHandler(MessageHandler messageHandler)
@@ -45,21 +44,17 @@ namespace calledudeBot.Chat
 
         public CommandStatus determineCommand(Message message) // Is it a command?
         {
-            if (message.Content.StartsWith("!"))
-            {
-                Message response = handleCommand(message);
-                messageHandler.respond(response);
-                return CommandStatus.Handled;
-            }
-            return CommandStatus.NotHandled;
+            if (!message.Content.StartsWith("!")) return CommandStatus.NotHandled;
+            Message response = handleCommand(message);
+            messageHandler.respond(response);
+            return CommandStatus.Handled;
         }
 
         private Message handleCommand(Message message)
         {
-            string response;
+            string response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
             var cmd = message.Content;
 
-            response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
             foreach (Command c in commands)
             {
                 if (cmd.ToLower().StartsWith(c.Name) || (c.AlternateName?.Any(x => cmd.ToLower().StartsWith(x)) ?? false))
