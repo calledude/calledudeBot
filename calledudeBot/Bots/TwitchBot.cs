@@ -16,6 +16,7 @@ namespace calledudeBot.Bots
         public List<string> mods = new List<string>();
         private Timer timer;
         private bool modCheckLock = false;
+        private OsuData oldOsuData;
 
         public override void Start(string token)
         {
@@ -51,7 +52,36 @@ namespace calledudeBot.Bots
 
         private void checkUserUpdate(JsonData jsonData)
         {
-            Console.WriteLine(jsonData.osuData[0].username);
+            OsuData newOsuData = jsonData.osuData[0];
+            if(oldOsuData != null)
+            {
+                if(newOsuData.pp_rank != oldOsuData.pp_rank)
+                {
+                    int diff = newOsuData.pp_rank - oldOsuData.pp_rank;
+                    if(diff < 0)
+                    {
+                        Console.WriteLine($"{newOsuData.username} gained {-diff} ranks.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{newOsuData.username} lost {diff} ranks.");
+                    }
+                }
+                if(newOsuData.pp_raw != oldOsuData.pp_raw)
+                {
+                    float diff = newOsuData.pp_raw - oldOsuData.pp_raw;
+                    string formatted = string.Format("{0:0.00}", diff < 0 ? -diff : diff);
+                    if(diff < 0)
+                    {
+                        Console.WriteLine($"{newOsuData.username} lost {formatted} pp.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{newOsuData.username} gained {formatted} pp.");
+                    }
+                }
+            }
+            oldOsuData = newOsuData;
         }
 
         public override void Listen()

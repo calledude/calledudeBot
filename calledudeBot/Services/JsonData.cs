@@ -16,12 +16,11 @@ namespace calledudeBot.Services
     {
         public string user_id { get; set; }
         public string username { get; set; }
-        public string playcount { get; set; }
-        public string pp_rank { get; set; }
+        public int pp_rank { get; set; }
         public string level { get; set; }
-        public string pp_raw { get; set; }
-        public string accuracy { get; set; }
-        public string pp_country_rank { get; set; }
+        public float pp_raw { get; set; }
+        public float accuracy { get; set; }
+        public int pp_country_rank { get; set; }
         public List<object> events { get; set; }
     }
     //Twitch related data
