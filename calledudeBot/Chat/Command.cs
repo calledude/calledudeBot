@@ -10,7 +10,7 @@ namespace calledudeBot.Chat
     public class Command
     {
         private List<Command> commands = CommandHandler.commands;
-        public delegate void Action<T1, T2>(T1 obj, out T2 obj2);
+        private delegate void Action<T1, T2>(T1 obj, out T2 obj2);
         private Action<Message> specialFunc;
         private string response;
         private string cmdFile = calledudeBot.cmdFile;

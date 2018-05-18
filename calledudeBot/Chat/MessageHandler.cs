@@ -8,7 +8,7 @@ namespace calledudeBot.Chat
     public class MessageHandler : Handler
     {
         private OsuBot osu;
-        public Bot bot;
+        private Bot bot;
         private Queue<Message> messageQueue = new Queue<Message>();
         private DateTime lastMessage;
         private Timer relayTimer;
