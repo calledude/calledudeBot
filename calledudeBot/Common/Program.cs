@@ -10,7 +10,7 @@ namespace calledudeBot
     public class calledudeBot
     {
         public static string cmdFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\cmds.txt";
-        public static string credFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\credentials";
+        private static string credFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\credentials";
         public static OsuBot osuBot;
         public static DiscordBot discordBot;
         public static TwitchBot twitchBot;
@@ -82,15 +82,13 @@ namespace calledudeBot
                 c = Console.ReadKey(false).Key;
             }
             Console.WriteLine();
-            if (c == ConsoleKey.Y)
-            {
-                channelName = "#" + botNick;
-            }
+            if (c == ConsoleKey.Y) channelName = "#" + botNick;
             else
             {
                 Console.Write("Please enter your nickname on twitch: ");
                 channelName = "#" + Console.ReadLine();
             }
+
             credList.Add("ChannelName " + channelName);
 
             Console.Write("Ok then! What's your osu! username?: ");
@@ -169,11 +167,9 @@ namespace calledudeBot
             var length = cleanUpArr.Length;
 
             List<string> cleanList = new List<string>();
-            
 
-            for (var i = 0; i < cleanUpArr.Length; i++)
+            foreach (string line in cleanUpArr)
             {
-                var line = cleanUpArr[i];
                 if (!string.IsNullOrWhiteSpace(line))
                 {
                     cleanList.Add(line);

@@ -31,7 +31,7 @@ namespace calledudeBot.Chat
         {
             var status = commandHandler.determineCommand(message);
 
-            if (status == CommandStatus.NotHandled && osu != null) //if osu isnt null, then twitchBot is the caller.
+            if (status == CommandStatus.NotHandled && message.Origin == bot) //We only want to relay messages from twitch
             {
                 messageQueue.Enqueue(message);
                 tryRelay(null, null);

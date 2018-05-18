@@ -13,9 +13,9 @@ namespace calledudeBot.Bots
     public class TwitchBot : IrcClient
     {
         private MessageHandler messageHandler;
-        public List<string> mods = new List<string>();
+        private List<string> mods = new List<string>();
         private Timer timer;
-        private bool modCheckLock = false;
+        private bool modCheckLock;
         private OsuData oldOsuData;
 
         public override void Start(string token)
@@ -95,9 +95,6 @@ namespace calledudeBot.Bots
                         WriteLine(buf.Replace("PING", "PONG") + "\r\n");
                         Console.WriteLine($"[Twitch]: {buf.Replace("PING", "PONG")}");
                     }
-
-                    if (buf[0] != ':') continue;
-
                     else if (buf.StartsWith($":tmi.twitch.tv NOTICE {channelName} :The moderators of this channel are:"))
                     {
                         int modsIndex = buf.LastIndexOf(':') + 1;
