@@ -27,15 +27,21 @@ namespace calledudeBot.Chat
 
         private bool isAllowed(string user)
         {
-            List<string> mods = twitch.getMods();
-            foreach (string m in mods)
+            if(user == null)
             {
-                if (string.Compare(m, user, true) == 0) return true;
+                List<string> mods = twitch.getMods();
+                foreach (string m in mods)
+                {
+                    if (string.Compare(m, user, true) == 0) return true;
+                }
             }
-            SocketRole adminRole = discord.getAdminRole();
-            foreach (SocketGuildUser usr in adminRole.Members)
+            else
             {
-                if (usr.Id == this.user?.Id) return true;
+                SocketRole adminRole = discord.getAdminRole();
+                foreach (SocketGuildUser usr in adminRole.Members)
+                {
+                    if (usr.Id == this.user?.Id) return true;
+                }
             }
             return false;
         }
