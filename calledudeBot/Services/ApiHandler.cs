@@ -26,7 +26,7 @@ namespace calledudeBot.Services
 
         public void Start()
         {
-            var timer = new System.Timers.Timer(30000);
+            var timer = new Timer(30000);
             timer.Elapsed += requestData;
             timer.AutoReset = true;
             timer.Enabled = true;
