@@ -27,7 +27,7 @@ namespace calledudeBot.Chat
 
         private bool isAllowed(string user)
         {
-            if(user == null)
+            if(this.user == null)
             {
                 List<string> mods = twitch.getMods();
                 foreach (string m in mods)

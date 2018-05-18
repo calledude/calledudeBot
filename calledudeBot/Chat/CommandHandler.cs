@@ -35,8 +35,8 @@ namespace calledudeBot.Chat
             {
                 new Command("<Adds a command to the command list>", "!addcmd", true) { UserAllowed = false },
                 new Command("<Deletes a command from the command list>", "!delcmd", true) { UserAllowed = false },
-                new Command("<Lists all available commands>", "!help", true) { AlternateName = new string[] { "!commands", "!cmds" } },
-                new Command("<Shows which song is currently playing>", "!np", true) { AlternateName = new string[] { "!song", "!playing" } },
+                new Command("<Lists all available commands>", "!help", true) { AlternateName = new List<string> { "!commands", "!cmds" } },
+                new Command("<Shows which song is currently playing>", "!np", true) { AlternateName = new List<string> { "!song", "!playing" } },
                 new Command("<Shows how long the stream has been live>", "!uptime", true)
             });
             Console.WriteLine($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
