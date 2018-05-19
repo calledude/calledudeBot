@@ -41,7 +41,7 @@ namespace calledudeBot.Services
             if(caller == Caller.Twitch)
             {
                 jsonString = "{\"osuData\":" + jsonString + "}"; //I hate json
-             }
+            }
             JsonData jsonData = JsonConvert.DeserializeObject<JsonData>(jsonString);
             DataReceived?.Invoke(jsonData);
         }
