@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using System.Collections.Generic;
 using calledudeBot.Chat;
 using calledudeBot.Services;
-using System.Threading.Tasks;
 using System.Timers;
 using System.Linq;
 
@@ -17,7 +16,6 @@ namespace calledudeBot.Bots
         private Timer timer;
         private bool modCheckLock;
         private OsuData oldOsuData;
-
         public override void Start(string token)
         {
             string osuAPIToken = calledudeBot.osuAPIToken;
@@ -53,32 +51,20 @@ namespace calledudeBot.Bots
         private void checkUserUpdate(JsonData jsonData)
         {
             OsuData newOsuData = jsonData.osuData[0];
-            if(oldOsuData != null)
+            if (oldOsuData != null)
             {
-                if(newOsuData.pp_rank != oldOsuData.pp_rank)
+                if (oldOsuData.pp_rank != newOsuData.pp_rank)
                 {
                     int diff = newOsuData.pp_rank - oldOsuData.pp_rank;
-                    if(diff < 0)
-                    {
-                        Console.WriteLine($"{newOsuData.username} gained {-diff} ranks.");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{newOsuData.username} lost {diff} ranks.");
-                    }
+                    sendMessage(new Message(newOsuData.username + (diff < 0 ? " gained " : " lost ") + $"{Math.Abs(diff)} ranks."));
+
                 }
-                if(newOsuData.pp_raw != oldOsuData.pp_raw)
+
+                if (Math.Abs(newOsuData.pp_raw - oldOsuData.pp_raw) >= 0.1)
                 {
                     float diff = newOsuData.pp_raw - oldOsuData.pp_raw;
                     string formatted = string.Format("{0:0.00}", diff < 0 ? -diff : diff);
-                    if(diff < 0)
-                    {
-                        Console.WriteLine($"{newOsuData.username} lost {formatted} pp.");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{newOsuData.username} gained {formatted} pp.");
-                    }
+                    sendMessage(new Message(newOsuData.username + (diff < 0 ? " lost " : " gained ") + $"{formatted} pp."));
                 }
             }
             oldOsuData = newOsuData;
