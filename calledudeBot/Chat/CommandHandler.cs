@@ -27,6 +27,7 @@ namespace calledudeBot.Chat
             }
 
             var cmdArr = File.ReadAllLines(cmdFile);
+            commands = new List<Command>();
             foreach (string line in cmdArr)
             {
                 commands.Add(new Command(line, line.Split(' ')[0]));
@@ -59,7 +60,6 @@ namespace calledudeBot.Chat
             {
                 if (cmd.ToLower().StartsWith(c.Name) || (c.AlternateName?.Any(x => cmd.ToLower().StartsWith(x)) ?? false))
                 {
-                    c.HandlerInstance = this;
                     c.Message = message;
                     response = c.Response;
                     break; //Avoids exception if we were adding a command.

@@ -7,7 +7,8 @@ namespace calledudeBot.Services
 {
     public enum Caller
     {
-        Discord, Twitch
+        Discord, Twitch,
+        MessageHandler
     }
     public class APIHandler
     {
@@ -44,6 +45,16 @@ namespace calledudeBot.Services
             }
             JsonData jsonData = JsonConvert.DeserializeObject<JsonData>(jsonString);
             DataReceived?.Invoke(jsonData);
+        }
+
+        public JsonData requestOnce()
+        {
+            string jsonString = client.DownloadString(URL);
+            if (caller == Caller.MessageHandler)
+            {
+                jsonString = "{\"osuSongData\":" + jsonString + "}"; //I hate json
+            }
+            return JsonConvert.DeserializeObject<JsonData>(jsonString);
         }
     }
 }

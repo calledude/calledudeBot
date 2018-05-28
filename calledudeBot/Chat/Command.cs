@@ -10,17 +10,22 @@ namespace calledudeBot.Chat
     public class Command
     {
         private List<Command> commands = CommandHandler.commands;
-        private Action<Message> specialFunc;
         private string response;
         private string cmdFile = calledudeBot.cmdFile;
-        private string arg;
 
         public string Name { get; }
         public string Response
         {
             get
             {
-                if(IsSpecial) specialFunc.Invoke(Message);
+                if (IsSpecial)
+                {
+                    if (Name == "!addcmd") addCmd(Message);
+                    else if (Name == "!delcmd") delCmd(Message);
+                    else if (Name == "!help") helpCmd(Message);
+                    else if (Name == "!np") playingCmd(Message);
+                    else if (Name == "!uptime") uptime(Message);
+                }
                 return response;
             }
             set { response = value; }
@@ -29,7 +34,6 @@ namespace calledudeBot.Chat
         public bool IsSpecial { get; }
         public bool UserAllowed { get; set; }
         public List<string> AlternateName { get; set; }
-        public CommandHandler HandlerInstance { get; set; }
         public Message Message { get; set; }
 
         public Command(string cmd, string cmdToAdd, bool isSpecial = false, bool writeToFile = false)
@@ -48,11 +52,6 @@ namespace calledudeBot.Chat
             else
             {
                 IsSpecial = true;
-                if (cmdToAdd == "!addcmd") specialFunc = addCmd;
-                else if (cmdToAdd == "!delcmd") specialFunc = delCmd;
-                else if (cmdToAdd == "!help") specialFunc = helpCmd;
-                else if (cmdToAdd == "!np") specialFunc = playingCmd;
-                else if (cmdToAdd == "!uptime") specialFunc = uptime;
             }
             UserAllowed = true;
             Name = cmdToAdd;
@@ -245,8 +244,6 @@ namespace calledudeBot.Chat
                 response = sb.ToString();
             }
         }
-
-
 
     }
 }
