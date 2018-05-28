@@ -11,6 +11,9 @@ namespace calledudeBot.Services
         //Twitch
         public List<Data> data { get; set; }
 
+        //osuSongData
+        public List<OsuSongData> osuSongData { get; set; }
+
     }
     public class OsuData
     {
@@ -23,6 +26,14 @@ namespace calledudeBot.Services
         public int pp_country_rank { get; set; }
         public List<object> events { get; set; }
     }
+
+    public class OsuSongData
+    {
+        public string version { get; set; }
+        public string artist { get; set; }
+        public string title { get; set; }
+    }
+
     //Twitch related data
     public class Data
     {

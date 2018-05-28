@@ -1,6 +1,10 @@
 ﻿using calledudeBot.Bots;
+using calledudeBot.Services;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Timers;
 
 namespace calledudeBot.Chat
@@ -12,6 +16,7 @@ namespace calledudeBot.Chat
         private Queue<Message> messageQueue = new Queue<Message>();
         private DateTime lastMessage;
         private Timer relayTimer;
+        string osuAPIToken = calledudeBot.osuAPIToken;
 
         public MessageHandler(Bot bot)
         {
@@ -30,11 +35,17 @@ namespace calledudeBot.Chat
         public void determineResponse(Message message)
         {
             var status = commandHandler.determineCommand(message);
-
-            if (status == CommandStatus.NotHandled && message.Origin == bot) //We only want to relay messages from twitch
+            if (status == CommandStatus.NotHandled)
             {
-                messageQueue.Enqueue(message);
-                tryRelay(null, null);
+                if (message.Content.Contains("osu.ppy.sh"))
+                {
+                    requestSong(message);
+                }
+                if (message.Origin == bot) //We only want to relay messages from twitch
+                {
+                    messageQueue.Enqueue(message);
+                    tryRelay(null, null);
+                }
             }
         }
 
@@ -56,6 +67,29 @@ namespace calledudeBot.Chat
         {
             message.Content = $"{message.Sender.Name}: {message.Content}"; 
             osu.sendMessage(message);
+        }
+
+        public bool CheckURLValid(string source)
+        {
+            Uri uriResult;
+            return Uri.TryCreate(source, UriKind.RelativeOrAbsolute, out uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+        }
+
+        //[http://osu.ppy.sh/b/795232 fhana - Wonder Stella [Stella]]
+        private void requestSong(Message message)
+        {
+            if (CheckURLValid(message.Content))
+            {
+                string beatmapID = message.Content.Split('/')[4];
+
+                APIHandler api = new APIHandler($"https://osu.ppy.sh/api/get_beatmaps?k={osuAPIToken}&b={beatmapID}", Caller.MessageHandler);
+                JsonData data = api.requestOnce();
+                if(data.osuSongData.Count > 0)
+                {
+                    OsuSongData o = data.osuSongData[0];
+                    message.Content = "[http://osu.ppy.sh/b/" + beatmapID + " " + o.artist + " - " + o.title + " [" + o.version + "]]";
+                }
+            }
         }
     }
 }

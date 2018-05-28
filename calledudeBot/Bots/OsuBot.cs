@@ -34,8 +34,7 @@ namespace calledudeBot.Bots
                     {
                         Console.WriteLine($"[{instanceName}]: Connected to osu!");
                     }
-
-                    if (buf.StartsWith("PING "))
+                    else if (buf.StartsWith("PING "))
                     {
                         WriteLine(buf.Replace("PING", "PONG") + "\r\n");
                         Console.WriteLine($"[{instanceName}]: {buf.Replace("PING", "PONG")}");
