@@ -185,6 +185,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Chat\SpecialCommands.cs" />
     <Compile Include="Chat\User.cs" />
     <Compile Include="Services\ApiHandler.cs" />
     <Compile Include="Services\JsonData.cs" />

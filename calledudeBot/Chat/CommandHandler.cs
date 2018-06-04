@@ -30,7 +30,8 @@ namespace calledudeBot.Chat
             commands = new List<Command>();
             foreach (string line in cmdArr)
             {
-                commands.Add(new Command(line, line.Split(' ')[0]));
+                Command c = new Command(line, line.Split(' ')[0]);
+                commands.Add(c);
             }
             commands.AddRange(new List<Command>
             {
@@ -60,8 +61,7 @@ namespace calledudeBot.Chat
             {
                 if (cmd.ToLower().StartsWith(c.Name) || (c.AlternateName?.Any(x => cmd.ToLower().StartsWith(x)) ?? false))
                 {
-                    c.Message = message;
-                    response = c.Response;
+                    response = c.getResponse(message);
                     break; //Avoids exception if we were adding a command.
                 }
             }
