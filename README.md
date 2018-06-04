@@ -16,6 +16,7 @@ Why did you even read this?
 * Announcing when stream goes live on discord
 * Various commands such as !np and !uptime
 * Ability to add custom commands
+* Requesting osu! beatmaps in twitch chat (relayed to osu!)
 
 #### Planned functionality:
 * osu! rank updates - **IN PROGRESS**
