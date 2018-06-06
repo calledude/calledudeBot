@@ -14,6 +14,7 @@ namespace calledudeBot
         public static OsuBot osuBot;
         public static DiscordBot discordBot;
         public static TwitchBot twitchBot;
+        private static Hooky hooky;
         private static Thread osuThread = new Thread(Osu);
         private static Thread discordThread = new Thread(Discord);
         private static Thread twitchThread = new Thread(Twitch);
@@ -33,6 +34,7 @@ namespace calledudeBot
             discordBot = new DiscordBot();
             osuBot = new OsuBot();
             twitchBot = new TwitchBot();
+            hooky = new Hooky(twitchBot);
 
             discordThread.Start();
             osuThread.Start();
@@ -196,7 +198,7 @@ namespace calledudeBot
 
         private static void Hooky()
         {
-            new Hooky(twitchBot).Start();
+            hooky.Start();
         }
     }
 }
