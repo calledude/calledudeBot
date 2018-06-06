@@ -130,7 +130,7 @@ namespace calledudeBot
         }
 
 
-        private static bool ApplicationIsActivated()
+        private bool ApplicationIsActivated()
         {
             var activatedHandle = GetForegroundWindow();
             if (activatedHandle == IntPtr.Zero) return false; // No window is currently activated
