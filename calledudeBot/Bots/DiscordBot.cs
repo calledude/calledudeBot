@@ -96,7 +96,7 @@ namespace calledudeBot.Bots
 
         private async void determineLiveStatus(JsonData jsonData)
         {
-            if (jsonData.data.Count != 0)
+            if(jsonData?.data?.Count > 0)
             {
                 if (!online)
                 {

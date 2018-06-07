@@ -50,8 +50,8 @@ namespace calledudeBot.Bots
 
         private void checkUserUpdate(JsonData jsonData)
         {
-            OsuData newOsuData = jsonData.osuData[0];
-            if (oldOsuData != null)
+            OsuData newOsuData = jsonData?.osuData[0];
+            if (oldOsuData != null && newOsuData != null)
             {
                 if(oldOsuData.pp_rank != newOsuData.pp_rank && Math.Abs(newOsuData.pp_raw - oldOsuData.pp_raw) >= 0.1)
                 {
