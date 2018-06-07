@@ -73,7 +73,7 @@ namespace calledudeBot.Chat
 
             APIHandler api = new APIHandler($"https://osu.ppy.sh/api/get_beatmaps?k={osuAPIToken}&b={beatmapID}", Caller.MessageHandler);
             JsonData data = api.requestOnce();
-            if (data.osuSongData.Count > 0)
+            if (data?.osuSongData?.Count > 0)
             {
                 OsuSongData o = data.osuSongData[0];
                 message.Content = "[http://osu.ppy.sh/b/" + beatmapID + " " + o.artist + " - " + o.title + " [" + o.version + "]]";
