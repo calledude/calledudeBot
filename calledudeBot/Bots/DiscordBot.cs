@@ -15,15 +15,15 @@ namespace calledudeBot.Bots
         private string twitchUsername = calledudeBot.channelName.Substring(1);
         private MessageHandler messageHandler;
         private DateTime streamStarted;
+        private APIHandler api;
 
         public async Task Start(string token, string twitchAPItoken)
         {
             string url = $"https://api.twitch.tv/helix/streams?user_login={twitchUsername}";
-            APIHandler api = new APIHandler(url, Caller.Discord, twitchAPItoken);
+            api = new APIHandler(url, Caller.Discord, twitchAPItoken);
             bot = new DiscordSocketClient();
 
             api.DataReceived += determineLiveStatus;
-            api.Start();
 
             bot.MessageReceived += HandleCommand;
             bot.Connected += onConnected;
@@ -38,6 +38,7 @@ namespace calledudeBot.Bots
         private Task onConnected()
         {
             Console.WriteLine($"[Discord]: Connected to Discord.");
+            api.Start();
             return Task.CompletedTask;
         }
 
