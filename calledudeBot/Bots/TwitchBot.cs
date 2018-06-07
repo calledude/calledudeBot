@@ -57,17 +57,13 @@ namespace calledudeBot.Bots
                 {
                     int rankDiff = newOsuData.pp_rank - oldOsuData.pp_rank;
                     float ppDiff = newOsuData.pp_raw - oldOsuData.pp_raw;
-                    sendMessage(new Message(newOsuData.username + (rankDiff < 0 ? " gained " : " lost ") + $"{Math.Abs(rankDiff)} ranks."));
 
-                }/*
-                if (oldOsuData.pp_rank != newOsuData.pp_rank)
-                {
+                    string formatted = string.Format("{0:0.00}", ppDiff < 0 ? -ppDiff : ppDiff);
+                    string rankMessage = $"{Math.Abs(rankDiff)} ranks (#{newOsuData.pp_rank}). ";
+                    string ppMessage = $"PP: {formatted}pp ({newOsuData.pp_raw}pp)";
+
+                    sendMessage(new Message(newOsuData.username + " just" + (rankDiff < 0 ? " gained " : " lost ") + rankMessage + (ppDiff < 0 ? "+" : "-") + ppMessage));
                 }
-                if (Math.Abs(newOsuData.pp_raw - oldOsuData.pp_raw) >= 0.1)
-                {
-                    string formatted = string.Format("{0:0.00}", diff < 0 ? -diff : diff);
-                    sendMessage(new Message(newOsuData.username + (diff < 0 ? " lost " : " gained ") + $"{formatted} pp."));
-                }*/
             }
             oldOsuData = newOsuData;
         }
