@@ -74,31 +74,31 @@ namespace calledudeBot.Bots
             {
                 for (buf = input.ReadLine(); ; buf = input.ReadLine())
                 {
-                    Console.WriteLine(buf);
-                    if (buf.StartsWith("PING "))
+                    var b = buf.Split(' ');
+                    if(b[0] == "PING")
                     {
                         WriteLine(buf.Replace("PING", "PONG") + "\r\n");
                         Console.WriteLine($"[Twitch]: {buf.Replace("PING", "PONG")}");
+                    }
+                    else if (b[1] == "001")
+                    {
+                        WriteLine($"JOIN {channelName}");
+                        Console.WriteLine($"[{instanceName}]: Connected to Twitch.");
+                    }
+                    else if(b[1] == "366")
+                    {
+                        getMods();
+                    }
+                    else if (b[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
+                    {
+                        Message message = new Message(buf, this);
+                        messageHandler.determineResponse(message);
                     }
                     else if (buf.StartsWith($":tmi.twitch.tv NOTICE {channelName} :The moderators of this channel are:"))
                     {
                         int modsIndex = buf.LastIndexOf(':') + 1;
                         var modsArr = buf.Substring(modsIndex).Split(',');
                         mods = modsArr.Select(x => x.Trim()).ToList();
-                    }
-                    else if (buf.Split(' ')[1] == "001")
-                    {
-                        WriteLine($"JOIN {channelName}");
-                        Console.WriteLine($"[{instanceName}]: Connected to Twitch.");
-                    }
-                    else if(buf.Split(' ')[1] == "366")
-                    {
-                        getMods();
-                    }
-                    else if (buf.Split(' ')[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
-                    {
-                        Message message = new Message(buf, this);
-                        messageHandler.determineResponse(message);
                     }
                 }
             }
