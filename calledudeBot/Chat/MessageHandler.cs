@@ -38,7 +38,7 @@ namespace calledudeBot.Chat
                 {
                     requestSong(message);
                 }
-                if (message.Origin == bot) //We only want to relay messages from twitch
+                if (message.Origin.GetType() == typeof(TwitchBot)) //We only want to relay messages from twitch
                 {
                     messageQueue.Enqueue(message);
                     tryRelay(null, null);

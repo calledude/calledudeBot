@@ -46,7 +46,7 @@ namespace calledudeBot.Bots
         {
             // Don't process the command if it was a System Message or if we sent it ourselves
             var message = messageParam as SocketUserMessage;
-            if (message == null || message.Author == bot.CurrentUser) return Task.CompletedTask;
+            if (message == null || bot.CurrentUser.Id == message.Author.Id) return Task.CompletedTask;
 
             Message msg = new Message(message.Content, this)
             {
@@ -74,14 +74,8 @@ namespace calledudeBot.Bots
 
         public override void sendMessage(Message message)
         {
-            var dest = message.Destination;
-            var channel = bot.GetChannel(dest) as SocketTextChannel;
-            if (!(channel is SocketTextChannel))
-            {
-                var chan = bot.GetChannel(dest) as SocketDMChannel;
-                chan?.SendMessageAsync(message.Content);
-                return;
-            }
+            var channel = bot.GetChannel(message.Destination) as IMessageChannel;
+
             channel.SendMessageAsync(message.Content);
         }
 
