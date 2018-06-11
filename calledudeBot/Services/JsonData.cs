@@ -6,16 +6,16 @@ namespace calledudeBot.Services
     public class JsonData
     {
         //osu
-        public List<OsuData> osuData { get; set; }
+        public List<OsuUserData> osuUserData { get; set; }
 
         //Twitch
-        public List<Data> data { get; set; }
+        public List<TwitchData> twitchData { get; set; }
 
         //osuSongData
         public List<OsuSongData> osuSongData { get; set; }
 
     }
-    public class OsuData
+    public class OsuUserData
     {
         public string user_id { get; set; }
         public string username { get; set; }
@@ -34,8 +34,7 @@ namespace calledudeBot.Services
         public string title { get; set; }
     }
 
-    //Twitch related data
-    public class Data
+    public class TwitchData
     {
         public string title { get; set; }
         public DateTime started_at { get; set; }

@@ -15,14 +15,14 @@ namespace calledudeBot.Bots
         private List<string> mods = new List<string>();
         private Timer timer;
         private bool modCheckLock;
-        private OsuData oldOsuData;
+        private OsuUserData oldOsuData;
         public override void Start(string token)
         {
             string osuAPIToken = calledudeBot.osuAPIToken;
             string osuNick = calledudeBot.osuNick;
             string botNick = calledudeBot.botNick;
             channelName = calledudeBot.channelName;
-            APIHandler api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}", Caller.Twitch);
+            APIHandler api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}", RequestData.OsuUser);
             api.DataReceived += checkUserUpdate;
             api.Start();
 
@@ -41,7 +41,7 @@ namespace calledudeBot.Bots
                       "NICK " + botNick + "\r\n");
             WriteLine("CAP REQ :twitch.tv/commands");
 
-            timer = new Timer(30000);
+            timer = new Timer(60000);
             timer.Elapsed += modLockEvent;
             timer.Start();
 
@@ -50,7 +50,7 @@ namespace calledudeBot.Bots
 
         private void checkUserUpdate(JsonData jsonData)
         {
-            OsuData newOsuData = jsonData?.osuData[0];
+            OsuUserData newOsuData = jsonData?.osuUserData[0];
             if (oldOsuData != null && newOsuData != null)
             {
                 if(oldOsuData.pp_rank != newOsuData.pp_rank && Math.Abs(newOsuData.pp_raw - oldOsuData.pp_raw) >= 0.1)
@@ -74,6 +74,7 @@ namespace calledudeBot.Bots
             {
                 for (buf = input.ReadLine(); ; buf = input.ReadLine())
                 {
+                    Console.WriteLine(buf);
                     if (buf.StartsWith("PING "))
                     {
                         WriteLine(buf.Replace("PING", "PONG") + "\r\n");
@@ -94,7 +95,7 @@ namespace calledudeBot.Bots
                     {
                         getMods();
                     }
-                    else if (buf.Split(' ')[1] == "PRIVMSG") //this is something else, check for message
+                    else if (buf.Split(' ')[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
                     {
                         Message message = new Message(buf, this);
                         messageHandler.determineResponse(message);
@@ -117,6 +118,8 @@ namespace calledudeBot.Bots
         public List<string> getMods()
         {
             if(!modCheckLock) WriteLine($"PRIVMSG {channelName} /mods");
+            modCheckLock = true;
+            timer.Start();
             return mods;
         }
 
