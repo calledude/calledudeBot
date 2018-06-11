@@ -5,23 +5,23 @@ using System.Timers;
 
 namespace calledudeBot.Services
 {
-    public enum Caller
+    public enum RequestData
     {
-        Discord, Twitch,
-        MessageHandler
+        TwitchUser, OsuUser, OsuSong
     }
+
     public class APIHandler
     {
         private string URL;
-        private Caller caller;
+        private RequestData requestedData;
         private WebClient client = new WebClient();
         public event Action<JsonData> DataReceived;
 
-        public APIHandler(string URL, Caller caller, string token = null)
+        public APIHandler(string URL, RequestData requestedData, string token = null)
         {
-            if (caller == Caller.Discord) client.Headers.Add("Client-ID", token);
+            if (requestedData == RequestData.TwitchUser) client.Headers.Add("Client-ID", token);
 
-            this.caller = caller;
+            this.requestedData = requestedData;
             this.URL = URL;
         }
 
@@ -39,9 +39,9 @@ namespace calledudeBot.Services
         private void requestData(object sender, ElapsedEventArgs e)
         {
             string jsonString = client.DownloadString(URL);
-            if(caller == Caller.Twitch)
+            if(requestedData == RequestData.OsuUser)
             {
-                jsonString = "{\"osuData\":" + jsonString + "}"; //I hate json
+                jsonString = "{\"osuUserData\":" + jsonString + "}"; //I hate json
             }
             JsonData jsonData = JsonConvert.DeserializeObject<JsonData>(jsonString);
             DataReceived?.Invoke(jsonData);
@@ -50,7 +50,7 @@ namespace calledudeBot.Services
         public JsonData requestOnce()
         {
             string jsonString = client.DownloadString(URL);
-            if (caller == Caller.MessageHandler)
+            if (requestedData == RequestData.OsuSong)
             {
                 jsonString = "{\"osuSongData\":" + jsonString + "}"; //I hate json
             }

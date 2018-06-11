@@ -22,7 +22,7 @@ namespace calledudeBot
 
         private static string discordToken, twitchAPItoken, twitchIRCtoken, osuIRCtoken;
         public static string osuAPIToken, botNick, channelName, osuNick;
-        public static ulong discordGeneralID;
+        public static ulong announceChanID;
 
         private static void Main(string[] args)
         {
@@ -51,7 +51,7 @@ namespace calledudeBot
                 if (s.StartsWith("BotNick")) botNick = s.Split(' ')[1];
                 else if (s.StartsWith("ChannelName")) channelName = s.Split(' ')[1];
                 else if (s.StartsWith("OsuNick")) osuNick = s.Split(' ')[1];
-                else if (s.StartsWith("DiscordGeneralID")) discordGeneralID = Convert.ToUInt64(s.Split(' ')[1]);
+                else if (s.StartsWith("AnnouncementChannelID")) announceChanID = Convert.ToUInt64(s.Split(' ')[1]);
                 else if (s.StartsWith("DiscordToken")) discordToken = s.Split(' ')[1];
                 else if (s.StartsWith("TwitchAPI")) twitchAPItoken = s.Split(' ')[1];
                 else if (s.StartsWith("TwitchIRC")) twitchIRCtoken = s.Split(' ')[1];
@@ -102,8 +102,8 @@ namespace calledudeBot
             Console.Write("What channel on your discord server do you want the announcements to be made on? (Long number): ");
             Thread.Sleep(4000);
             Process.Start("https://support.discordapp.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID");
-            discordGeneralID = Convert.ToUInt64(Console.ReadLine());
-            credList.Add("DiscordGeneralID " + discordGeneralID);
+            announceChanID = Convert.ToUInt64(Console.ReadLine());
+            credList.Add("AnnouncementChannelID " + announceChanID);
 
             Console.WriteLine("First you need to create a bot/app on the discord developer website.");
             Console.Write("Discord token: ");

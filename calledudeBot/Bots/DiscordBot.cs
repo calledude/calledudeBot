@@ -10,7 +10,7 @@ namespace calledudeBot.Bots
     public class DiscordBot : Bot
     {
         private DiscordSocketClient bot;
-        private ulong generalChannelID = calledudeBot.discordGeneralID;
+        private ulong announceChanID = calledudeBot.announceChanID;
         private bool online;
         private string twitchUsername = calledudeBot.channelName.Substring(1);
         private MessageHandler messageHandler;
@@ -20,7 +20,7 @@ namespace calledudeBot.Bots
         public async Task Start(string token, string twitchAPItoken)
         {
             string url = $"https://api.twitch.tv/helix/streams?user_login={twitchUsername}";
-            api = new APIHandler(url, Caller.Discord, twitchAPItoken);
+            api = new APIHandler(url, RequestData.TwitchUser, twitchAPItoken);
             bot = new DiscordSocketClient();
 
             api.DataReceived += determineLiveStatus;
@@ -60,7 +60,7 @@ namespace calledudeBot.Bots
 
         public SocketRole getAdminRole()
         {
-            var s = bot.GetGuild(generalChannelID).Roles;
+            var s = bot.GetGuild(announceChanID).Roles;
 
             foreach(SocketRole role in s)
             {
@@ -74,35 +74,30 @@ namespace calledudeBot.Bots
 
         public override void sendMessage(Message message)
         {
-            sendMessageAsync(message);
-        }
-
-        private async void sendMessageAsync(Message message)
-        {
-            await sendMessage(message.Destination, message.Content);
-        }
-
-        private async Task sendMessage(ulong ChannelId, string message)
-        {
-            var channel = bot.GetChannel(ChannelId) as SocketTextChannel;
-
-            if (channel == null)
+            var dest = message.Destination;
+            var channel = bot.GetChannel(dest) as SocketTextChannel;
+            if (!(channel is SocketTextChannel))
             {
-                var chan = bot.GetChannel(ChannelId) as SocketDMChannel;
-                await chan?.SendMessageAsync(message);
+                var chan = bot.GetChannel(dest) as SocketDMChannel;
+                chan?.SendMessageAsync(message.Content);
                 return;
             }
-            await channel?.SendMessageAsync(message);
+            channel.SendMessageAsync(message.Content);
         }
 
-        private async void determineLiveStatus(JsonData jsonData)
+        private void determineLiveStatus(JsonData jsonData)
         {
-            if(jsonData?.data?.Count > 0)
+            if(jsonData?.twitchData?.Count > 0)
             {
                 if (!online)
                 {
-                    Data data = jsonData.data[0];
-                    await sendMessage(generalChannelID, $"{twitchUsername} just went live with the title: \"{data.title}\" - Watch at: https://twitch.tv/{twitchUsername}/");
+                    TwitchData data = jsonData.twitchData[0];
+                    Message msg = new Message($"{twitchUsername} just went live with the title: \"{data.title}\" - Watch at: https://twitch.tv/{twitchUsername}/", this)
+                    {
+                        Destination = announceChanID
+                    };
+                    sendMessage(msg);
+
                     streamStarted = data.started_at.ToLocalTime();
                     online = true;
                 }
