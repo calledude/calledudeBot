@@ -74,7 +74,6 @@ namespace calledudeBot.Bots
             {
                 for (buf = input.ReadLine(); ; buf = input.ReadLine())
                 {
-                    Console.WriteLine(buf);
                     var b = buf.Split(' ');
                     if (b[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
                     {
