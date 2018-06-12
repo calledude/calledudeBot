@@ -43,6 +43,10 @@ namespace calledudeBot.Services
             {
                 jsonString = "{\"osuUserData\":" + jsonString + "}"; //I hate json
             }
+            else if(requestedData == RequestData.TwitchUser)
+            {
+                jsonString = jsonString.Replace("data", "twitchData");
+            }
             JsonData jsonData = JsonConvert.DeserializeObject<JsonData>(jsonString);
             DataReceived?.Invoke(jsonData);
         }
