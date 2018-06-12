@@ -13,7 +13,7 @@ namespace calledudeBot.Bots
     {
         private MessageHandler messageHandler;
         private List<string> mods = new List<string>();
-        private Timer timer;
+        private Timer modLockTimer;
         private bool modCheckLock;
         private OsuUserData oldOsuData;
         public override void Start(string token)
@@ -41,9 +41,9 @@ namespace calledudeBot.Bots
                       "NICK " + botNick + "\r\n");
             WriteLine("CAP REQ :twitch.tv/commands");
 
-            timer = new Timer(60000);
-            timer.Elapsed += modLockEvent;
-            timer.Start();
+            modLockTimer = new Timer(60000);
+            modLockTimer.Elapsed += modLockEvent;
+            modLockTimer.Start();
 
             Listen();
         }
@@ -74,22 +74,9 @@ namespace calledudeBot.Bots
             {
                 for (buf = input.ReadLine(); ; buf = input.ReadLine())
                 {
+                    Console.WriteLine(buf);
                     var b = buf.Split(' ');
-                    if(b[0] == "PING")
-                    {
-                        WriteLine(buf.Replace("PING", "PONG") + "\r\n");
-                        Console.WriteLine($"[Twitch]: {buf.Replace("PING", "PONG")}");
-                    }
-                    else if (b[1] == "001")
-                    {
-                        WriteLine($"JOIN {channelName}");
-                        Console.WriteLine($"[{instanceName}]: Connected to Twitch.");
-                    }
-                    else if(b[1] == "366")
-                    {
-                        getMods();
-                    }
-                    else if (b[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
+                    if (b[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
                     {
                         Message message = new Message(buf, this);
                         messageHandler.determineResponse(message);
@@ -100,6 +87,21 @@ namespace calledudeBot.Bots
                         var modsArr = buf.Substring(modsIndex).Split(',');
                         mods = modsArr.Select(x => x.Trim()).ToList();
                     }
+                    else if (b[0] == "PING")
+                    {
+                        WriteLine(buf.Replace("PING", "PONG") + "\r\n");
+                        Console.WriteLine($"[Twitch]: {buf.Replace("PING", "PONG")}");
+                    }
+                    else if (b[1] == "001")
+                    {
+                        WriteLine($"JOIN {channelName}");
+                        Console.WriteLine($"[{instanceName}]: Connected to Twitch.");
+                    }
+                    else if (b[1] == "366")
+                    {
+                        getMods();
+                    }
+                    
                 }
             }
             catch (Exception e)
@@ -112,14 +114,14 @@ namespace calledudeBot.Bots
         private void modLockEvent(object sender, ElapsedEventArgs e)
         {
             modCheckLock = false;
-            timer.Stop();
+            modLockTimer.Stop(); 
         }
 
         public List<string> getMods()
         {
             if(!modCheckLock) WriteLine($"PRIVMSG {channelName} /mods");
             modCheckLock = true;
-            timer.Start();
+            modLockTimer.Start();
             return mods;
         }
 
