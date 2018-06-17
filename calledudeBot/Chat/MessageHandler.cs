@@ -19,9 +19,9 @@ namespace calledudeBot.Chat
         {
             commandHandler = new CommandHandler(this);
             this.bot = bot;
+
             if (typeof(TwitchBot) == bot.GetType())
             {
-                commandHandler.init();
                 osu = calledudeBot.osuBot;
                 relayTimer = new Timer(200);
                 relayTimer.Elapsed += tryRelay;

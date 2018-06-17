@@ -12,14 +12,21 @@ namespace calledudeBot.Chat
         internal static SpotifyLocalAPI spotify;
         private string cmdFile = calledudeBot.cmdFile;
         private MessageHandler messageHandler;
+        private static bool initialized;
+        private static object m = new object();
 
         public CommandHandler(MessageHandler messageHandler)
         {
             this.messageHandler = messageHandler;
+            lock (m)
+            {
+                if (!initialized) init();
+            }
         }
 
-        public void init()
+        private void init()
         {
+            initialized = true;
             spotify = new SpotifyLocalAPI();
             if(!spotify.Connect())
             {
@@ -27,7 +34,6 @@ namespace calledudeBot.Chat
             }
 
             var cmdArr = File.ReadAllLines(cmdFile);
-            commands = new List<Command>();
             foreach (string line in cmdArr)
             {
                 Command c = new Command(line, line.Split(' ')[0]);
