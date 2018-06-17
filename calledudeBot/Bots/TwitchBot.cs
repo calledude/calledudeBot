@@ -16,6 +16,7 @@ namespace calledudeBot.Bots
         private Timer modLockTimer;
         private bool modCheckLock;
         private OsuUserData oldOsuData;
+
         public override void Start(string token)
         {
             string osuAPIToken = calledudeBot.osuAPIToken;
@@ -58,11 +59,12 @@ namespace calledudeBot.Bots
                     int rankDiff = newOsuData.pp_rank - oldOsuData.pp_rank;
                     float ppDiff = newOsuData.pp_raw - oldOsuData.pp_raw;
 
-                    string formatted = string.Format("{0:0.00}", ppDiff < 0 ? -ppDiff : ppDiff);
-                    string rankMessage = $"{Math.Abs(rankDiff)} ranks (#{newOsuData.pp_rank}). ";
-                    string ppMessage = $"PP: {formatted}pp ({newOsuData.pp_raw}pp)";
+                    string formatted = string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.00}", Math.Abs(ppDiff));
+                    string totalPP = newOsuData.pp_raw.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
-                    sendMessage(new Message(newOsuData.username + " just" + (rankDiff < 0 ? " gained " : " lost ") + rankMessage + (ppDiff < 0 ? "+" : "-") + ppMessage));
+                    string rankMessage = $"{Math.Abs(rankDiff)} ranks (#{newOsuData.pp_rank}). ";
+                    string ppMessage = $"PP: {(ppDiff < 0 ? "-" : "+")}{formatted}pp ({totalPP}pp)";
+                    sendMessage(new Message($"{newOsuData.username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}"));
                 }
             }
             oldOsuData = newOsuData;
