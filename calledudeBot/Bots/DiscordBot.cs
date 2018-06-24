@@ -10,14 +10,26 @@ namespace calledudeBot.Bots
     public class DiscordBot : Bot
     {
         private DiscordSocketClient bot;
-        private ulong announceChanID = Convert.ToUInt64(calledudeBot.announceChanID);
-        private bool online;
-        private string twitchUsername = calledudeBot.channelName.Substring(1);
         private MessageHandler messageHandler;
         private DateTime streamStarted;
         private APIHandler api;
 
-        public async Task Start(string token, string twitchAPItoken)
+        private ulong announceChanID;
+        private bool isOnline;
+        private string twitchUsername;
+
+        private string twitchAPItoken;
+
+        public DiscordBot(string token, string twitchAPItoken, string channelName, string announceChanID)
+        {
+            this.token = token;
+            this.twitchAPItoken = twitchAPItoken;
+            this.announceChanID = Convert.ToUInt64(announceChanID);
+            twitchUsername = channelName.Substring(1);
+            messageHandler = new MessageHandler(this);
+        }
+
+        public override async void Start()
         {
             string url = $"https://api.twitch.tv/helix/streams?user_login={twitchUsername}";
             api = new APIHandler(url, RequestData.TwitchUser, twitchAPItoken);
@@ -26,8 +38,8 @@ namespace calledudeBot.Bots
             api.DataReceived += determineLiveStatus;
 
             bot.MessageReceived += HandleCommand;
-            bot.Connected += onConnected;
-            messageHandler = new MessageHandler(this);
+            bot.Connected += onConnect;
+            bot.Disconnected += onDisconnect;
 
             await bot.LoginAsync(TokenType.Bot, token);
             await bot.StartAsync();
@@ -35,10 +47,16 @@ namespace calledudeBot.Bots
             await Task.Delay(-1);
         }
 
-        private Task onConnected()
+        private Task onConnect()
         {
-            Console.WriteLine($"[Discord]: Connected to Discord.");
+            Console.Out.WriteLineAsync($"[Discord]: Connected to Discord.");
             api.Start();
+            return Task.CompletedTask;
+        }
+
+        private Task onDisconnect(Exception e)
+        {
+            Console.Out.WriteLineAsync($"[Discord]: Disconnected from Discord.");
             return Task.CompletedTask;
         }
 
@@ -75,7 +93,6 @@ namespace calledudeBot.Bots
         public override void sendMessage(Message message)
         {
             var channel = bot.GetChannel(message.Destination) as IMessageChannel;
-
             channel.SendMessageAsync(message.Content);
         }
 
@@ -83,7 +100,7 @@ namespace calledudeBot.Bots
         {
             if(jsonData?.twitchData?.Count > 0)
             {
-                if (!online)
+                if (!isOnline)
                 {
                     TwitchData data = jsonData.twitchData[0];
                     Message msg = new Message($"{twitchUsername} just went live with the title: \"{data.title}\" - Watch at: https://twitch.tv/{twitchUsername}/", this)
@@ -93,18 +110,18 @@ namespace calledudeBot.Bots
                     sendMessage(msg);
 
                     streamStarted = data.started_at.ToLocalTime();
-                    online = true;
+                    isOnline = true;
                 }
             }
             else
             {
-                online = false;
+                isOnline = false;
             }
         }
 
         public DateTime wentLiveAt()
         {
-            if (online)
+            if (isOnline)
                 return streamStarted;
             else
                 return new DateTime();

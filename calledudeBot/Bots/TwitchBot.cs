@@ -6,6 +6,7 @@ using calledudeBot.Chat;
 using calledudeBot.Services;
 using System.Timers;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Bots
 {
@@ -16,29 +17,31 @@ namespace calledudeBot.Bots
         private Timer modLockTimer;
         private bool modCheckLock;
         private OsuUserData oldOsuData;
+        private APIHandler api;
+        private string botNick;
 
-        public override void Start(string token)
+        public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName)
         {
-            string osuAPIToken = calledudeBot.osuAPIToken;
-            string osuNick = calledudeBot.osuNick;
-            string botNick = calledudeBot.botNick;
-            channelName = calledudeBot.channelName;
-            APIHandler api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}", RequestData.OsuUser);
-            api.DataReceived += checkUserUpdate;
-            api.Start();
-
             this.token = token;
-            server = "irc.chat.twitch.tv";
-            instanceName = "Twitch"; 
+            this.botNick = botNick;
+            this.channelName = channelName;
 
+            server = "irc.chat.twitch.tv";
+            instanceName = "Twitch";
             messageHandler = new MessageHandler(this);
+
+            api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}", RequestData.OsuUser);
+            api.DataReceived += checkUserUpdate;
+        }
+
+        public override void Start()
+        {
             sock = new TcpClient();
             sock.Connect(server, port);
             output = new StreamWriter(sock.GetStream());
             input = new StreamReader(sock.GetStream());
 
             WriteLine("PASS " + token + "\r\n" +
-                      "USER " + botNick + " 0 * :" + botNick + "\r\n" +
                       "NICK " + botNick + "\r\n");
             WriteLine("CAP REQ :twitch.tv/commands");
 
@@ -46,28 +49,9 @@ namespace calledudeBot.Bots
             modLockTimer.Elapsed += modLockEvent;
             modLockTimer.Start();
 
+            api.Start();
+
             Listen();
-        }
-
-        private void checkUserUpdate(JsonData jsonData)
-        {
-            OsuUserData newOsuData = jsonData?.osuUserData[0];
-            if (oldOsuData != null && newOsuData != null)
-            {
-                if(oldOsuData.pp_rank != newOsuData.pp_rank && Math.Abs(newOsuData.pp_raw - oldOsuData.pp_raw) >= 0.1)
-                {
-                    int rankDiff = newOsuData.pp_rank - oldOsuData.pp_rank;
-                    float ppDiff = newOsuData.pp_raw - oldOsuData.pp_raw;
-
-                    string formatted = string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.00}", Math.Abs(ppDiff));
-                    string totalPP = newOsuData.pp_raw.ToString(System.Globalization.CultureInfo.InvariantCulture);
-
-                    string rankMessage = $"{Math.Abs(rankDiff)} ranks (#{newOsuData.pp_rank}). ";
-                    string ppMessage = $"PP: {(ppDiff < 0 ? "-" : "+")}{formatted}pp ({totalPP}pp)";
-                    sendMessage(new Message($"{newOsuData.username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}"));
-                }
-            }
-            oldOsuData = newOsuData;
         }
 
         public override void Listen()
@@ -90,19 +74,19 @@ namespace calledudeBot.Bots
                     }
                     else if (b[0] == "PING")
                     {
-                        WriteLine(buf.Replace("PING", "PONG") + "\r\n");
-                        Console.WriteLine($"[Twitch]: {buf.Replace("PING", "PONG")}");
+                        string pong = buf.Replace("PING", "PONG");
+                        WriteLine(pong);
+                        tryLog(pong);
                     }
                     else if (b[1] == "001")
                     {
                         WriteLine($"JOIN {channelName}");
-                        Console.WriteLine($"[{instanceName}]: Connected to Twitch.");
+                        tryLog("Connected to Twitch.");
                     }
                     else if (b[1] == "366")
                     {
                         getMods();
                     }
-                    
                 }
             }
             catch (Exception e)
@@ -112,20 +96,39 @@ namespace calledudeBot.Bots
             }
         }
 
+        private void checkUserUpdate(JsonData jsonData)
+        {
+            OsuUserData newOsuData = jsonData?.osuUserData[0];
+            if (oldOsuData != null && newOsuData != null)
+            {
+                if (oldOsuData.pp_rank != newOsuData.pp_rank && Math.Abs(newOsuData.pp_raw - oldOsuData.pp_raw) >= 0.1)
+                {
+                    int rankDiff = newOsuData.pp_rank - oldOsuData.pp_rank;
+                    float ppDiff = newOsuData.pp_raw - oldOsuData.pp_raw;
+
+                    string formatted = string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.00}", Math.Abs(ppDiff));
+                    string totalPP = newOsuData.pp_raw.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+                    string rankMessage = $"{Math.Abs(rankDiff)} ranks (#{newOsuData.pp_rank}). ";
+                    string ppMessage = $"PP: {(ppDiff < 0 ? "-" : "+")}{formatted}pp ({totalPP}pp)";
+                    sendMessage(new Message($"{newOsuData.username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}"));
+                }
+            }
+            oldOsuData = newOsuData;
+        }
+
         private void modLockEvent(object sender, ElapsedEventArgs e)
         {
             modCheckLock = false;
-            modLockTimer.Stop(); 
+            modLockTimer.Stop();
         }
 
         public List<string> getMods()
         {
-            if(!modCheckLock) WriteLine($"PRIVMSG {channelName} /mods");
+            if (!modCheckLock) WriteLine($"PRIVMSG {channelName} /mods");
             modCheckLock = true;
             modLockTimer.Start();
             return mods;
         }
-
-
     }
 }

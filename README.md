@@ -15,9 +15,10 @@ Various API keys and whatnot are needed to make this work.
 * Ability to add/delete custom commands with !addcmd and !delcmd
 * Requesting osu! beatmaps in twitch chat (relayed to osu!) - **Will be revised in the future**
 * osu! rank updates displayed in twitch chat
-* Automation of initial setup - **Sort of fixed, small improvements might be done later**
+* Automation of initial setup
 
 ## Planned:
+* Verification of credentials
 * Disconnection watcher
 * Spam protection
 * Wiki - To explain how to use the bot and how to set it up.

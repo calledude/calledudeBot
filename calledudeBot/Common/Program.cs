@@ -18,12 +18,8 @@ namespace calledudeBot
         public static DiscordBot discordBot;
         public static TwitchBot twitchBot;
         private static Hooky hooky;
-        private static Thread osuThread = new Thread(Osu);
-        private static Thread discordThread = new Thread(Discord);
-        private static Thread twitchThread = new Thread(Twitch);
-        private static Thread hookyThread = new Thread(Hooky);
-        private static string discordToken, twitchAPItoken, twitchIRCtoken, osuIRCtoken;
-        public static string osuAPIToken, botNick, channelName, osuNick, announceChanID;
+        private static string discordToken, twitchAPItoken, twitchIRCtoken, osuIRCtoken, 
+                                osuAPIToken, botNick, channelName, osuNick, announceChanID;
 
         private static void Main()
         {
@@ -41,15 +37,15 @@ namespace calledudeBot
             getCredentials();
             Clean();
 
-            discordBot = new DiscordBot();
-            osuBot = new OsuBot();
-            twitchBot = new TwitchBot();
+            discordBot = new DiscordBot(discordToken, twitchAPItoken, channelName, announceChanID);
+            osuBot = new OsuBot(osuIRCtoken, osuNick);
+            twitchBot = new TwitchBot(twitchIRCtoken, osuAPIToken, osuNick, botNick, channelName);
             hooky = new Hooky(twitchBot);
 
-            discordThread.Start();
-            osuThread.Start();
-            twitchThread.Start();
-            hookyThread.Start();
+            new Thread(discordBot.Start).Start();
+            new Thread(osuBot.Start).Start();
+            new Thread(twitchBot.Start).Start();
+            new Thread(hooky.Start).Start();
         }
         
         private static void openWebsite(int delay, string url) //Opens a website in a non-blocking manner after the specified delay
@@ -185,11 +181,9 @@ namespace calledudeBot
                 { "osuIRC", "" },
                 { "osuAPI", "" },
             };
-
             
             Console.WriteLine("Hey! You've not completed all the steps to make the bot work. Let's do that shall we?");
             Thread.Sleep(3000);
-
 
             var missing = required.Keys.Except(creds.Keys).ToList();
             Type t = typeof(calledudeBot);
@@ -198,7 +192,6 @@ namespace calledudeBot
                 MethodInfo m = t.GetMethod("get" + s, BindingFlags.Static | BindingFlags.NonPublic);
                 m.Invoke(null, new object[] { creds });
             }
-
 
             File.Create(credFile).Close();
             foreach (KeyValuePair<string, string> k in creds)
@@ -209,7 +202,6 @@ namespace calledudeBot
             Console.WriteLine("Alright! We're all done. Let's go! :)");
             Thread.Sleep(3000);
             Console.Clear();
-            getCredentials(); //Lets try the newly entered credentials again.
         }
 
         private static void getCredentials()
@@ -225,6 +217,7 @@ namespace calledudeBot
             while(!tryLoadCredentials(creds))
             {
                 getMissingCredentials(creds);
+                getCredentials(); //Lets try the newly entered credentials again.
             }
         }
 
@@ -241,26 +234,6 @@ namespace calledudeBot
             List<string> cleanList = cleanUpArr.Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
 
             File.WriteAllLines(cmdFile, cleanList);
-        }
-
-        private static async void Discord()
-        {
-            await discordBot.Start(discordToken, twitchAPItoken);
-        }
-
-        private static void Osu()
-        {
-            osuBot.Start(osuIRCtoken);
-        }
-
-        private static void Twitch()
-        {
-            twitchBot.Start(twitchIRCtoken);
-        }
-
-        private static void Hooky()
-        {
-            hooky.Start();
         }
     }
 }
