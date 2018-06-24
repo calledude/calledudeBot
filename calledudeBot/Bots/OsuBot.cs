@@ -1,53 +1,48 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Net.Sockets;
 
 namespace calledudeBot.Bots
 {
     public class OsuBot : IrcClient
     {
-        public override void Start(string token)
+        public OsuBot(string token, string osuNick)
         {
             this.token = token;
-            channelName = nick = calledudeBot.osuNick;
+            channelName = nick = osuNick;
             server = "cho.ppy.sh";
             instanceName = "osu!";
+        }
 
+        public override void Start()
+        {
             sock = new TcpClient();
             sock.Connect(server, port);
             input = new StreamReader(sock.GetStream());
             output = new StreamWriter(sock.GetStream());
-            
+
             WriteLine("PASS " + token + "\r\n" +
-                      "USER " + nick + " 0 * :" + nick + "\r\n" +
-                      "NICK " + nick + "\r\n");
+                "USER " + nick + " 0 * :" + nick + "\r\n" +
+                "NICK " + nick + "\r\n");
             Listen();
         }
 
         public override void Listen()
         {
-            try
+            for (buf = input.ReadLine(); ; buf = input.ReadLine())
             {
-                for (buf = input.ReadLine(); ; buf = input.ReadLine())
+                if (buf.StartsWith("PING "))
                 {
-                    if (buf.Split(' ')[1] == "001")
-                    {
-                        Console.WriteLine($"[{instanceName}]: Connected to osu!");
-                    }
-                    else if (buf.StartsWith("PING "))
-                    {
-                        WriteLine(buf.Replace("PING", "PONG") + "\r\n");
-                        Console.WriteLine($"[{instanceName}]: {buf.Replace("PING", "PONG")}");
-                    }
+                    string pong = buf.Replace("PING", "PONG");
+                    WriteLine(pong);
+                    tryLog(pong);
+                }
+                else if (buf.Split(' ')[1] == "001")
+                {
+                    tryLog($"Connected to osu!");
                 }
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                reconnect();
-            }
-        
         }
-        
     }
 }

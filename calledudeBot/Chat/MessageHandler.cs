@@ -13,9 +13,9 @@ namespace calledudeBot.Chat
         private Queue<Message> messageQueue = new Queue<Message>();
         private DateTime lastMessage;
         private Timer relayTimer;
-        private string osuAPIToken = calledudeBot.osuAPIToken;
+        private string osuAPIToken;
 
-        public MessageHandler(Bot bot)
+        public MessageHandler(Bot bot, string osuAPIToken = null)
         {
             commandHandler = new CommandHandler(this);
             this.bot = bot;
@@ -23,6 +23,7 @@ namespace calledudeBot.Chat
             if (typeof(TwitchBot) == bot.GetType())
             {
                 osu = calledudeBot.osuBot;
+                this.osuAPIToken = osuAPIToken;
                 relayTimer = new Timer(200);
                 relayTimer.Elapsed += tryRelay;
                 relayTimer.Start();
