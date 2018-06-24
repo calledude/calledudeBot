@@ -10,7 +10,7 @@ namespace calledudeBot.Bots
     public class DiscordBot : Bot
     {
         private DiscordSocketClient bot;
-        private ulong announceChanID = calledudeBot.announceChanID;
+        private ulong announceChanID = Convert.ToUInt64(calledudeBot.announceChanID);
         private bool online;
         private string twitchUsername = calledudeBot.channelName.Substring(1);
         private MessageHandler messageHandler;
