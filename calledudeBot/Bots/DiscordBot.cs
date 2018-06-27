@@ -16,9 +16,7 @@ namespace calledudeBot.Bots
 
         private ulong announceChanID;
         private bool isOnline;
-        private string twitchUsername;
-
-        private string twitchAPItoken;
+        private string twitchUsername, twitchAPItoken;
 
         public DiscordBot(string token, string twitchAPItoken, string channelName, string announceChanID)
         {
@@ -27,24 +25,21 @@ namespace calledudeBot.Bots
             this.announceChanID = Convert.ToUInt64(announceChanID);
             twitchUsername = channelName.Substring(1);
             messageHandler = new MessageHandler(this);
+
+            string url = $"https://api.twitch.tv/helix/streams?user_login={twitchUsername}";
+            api = new APIHandler(url, RequestData.TwitchUser, twitchAPItoken);
+            api.DataReceived += determineLiveStatus;
         }
 
         public override async void Start()
         {
-            string url = $"https://api.twitch.tv/helix/streams?user_login={twitchUsername}";
-            api = new APIHandler(url, RequestData.TwitchUser, twitchAPItoken);
             bot = new DiscordSocketClient();
-
-            api.DataReceived += determineLiveStatus;
-
             bot.MessageReceived += HandleCommand;
             bot.Connected += onConnect;
             bot.Disconnected += onDisconnect;
 
             await bot.LoginAsync(TokenType.Bot, token);
             await bot.StartAsync();
-            
-            await Task.Delay(-1);
         }
 
         private Task onConnect()

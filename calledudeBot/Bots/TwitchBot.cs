@@ -6,7 +6,6 @@ using calledudeBot.Chat;
 using calledudeBot.Services;
 using System.Timers;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace calledudeBot.Bots
 {

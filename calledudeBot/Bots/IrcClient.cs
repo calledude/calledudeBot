@@ -36,17 +36,18 @@ namespace calledudeBot.Bots
                 Thread.Sleep(5000);
             }
         }
-        
+
         //Selection in console causes Console.WriteLine() to be permablocked, causing threads to get blocked permanently.
         //Therefore we run it on another thread.
-        public virtual void tryLog(string message)
+        protected virtual void tryLog(string message)
         {
             string msg = $"[{instanceName}]: {message}";
-            Task.Run(() =>
+            Task.Run(async () =>
             {
-                Console.WriteLine(msg);
+                await Console.Out.WriteLineAsync(msg);
             });
         }
+
         protected virtual void WriteLine(string message)
         {
             output.WriteLine(message);
