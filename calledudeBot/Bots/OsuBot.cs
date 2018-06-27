@@ -30,18 +30,26 @@ namespace calledudeBot.Bots
 
         public override void Listen()
         {
-            for (buf = input.ReadLine(); ; buf = input.ReadLine())
+            try
             {
-                if (buf.StartsWith("PING "))
+                for (buf = input.ReadLine();; buf = input.ReadLine())
                 {
-                    string pong = buf.Replace("PING", "PONG");
-                    WriteLine(pong);
-                    tryLog(pong);
+                    if (buf.StartsWith("PING "))
+                    {
+                        string pong = buf.Replace("PING", "PONG");
+                        WriteLine(pong);
+                        tryLog(pong);
+                    }
+                    else if (buf.Split(' ')[1] == "001")
+                    {
+                        tryLog($"Connected to osu!");
+                    }
                 }
-                else if (buf.Split(' ')[1] == "001")
-                {
-                    tryLog($"Connected to osu!");
-                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                reconnect();
             }
         }
     }

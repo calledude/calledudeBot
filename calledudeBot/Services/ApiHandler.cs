@@ -15,24 +15,22 @@ namespace calledudeBot.Services
         private string URL;
         private RequestData requestedData;
         private WebClient client = new WebClient();
+        private Timer timer;
         public event Action<JsonData> DataReceived;
 
         public APIHandler(string URL, RequestData requestedData, string token = null)
         {
             if (requestedData == RequestData.TwitchUser) client.Headers.Add("Client-ID", token);
-
             this.requestedData = requestedData;
             this.URL = URL;
+
+            timer = new Timer(30000);
+            timer.Elapsed += requestData;
         }
 
         public void Start()
         {
-            var timer = new Timer(30000);
-            timer.Elapsed += requestData;
-            timer.AutoReset = true;
-            timer.Enabled = true;
             timer.Start();
-
             requestData(null, null);
         }
 
