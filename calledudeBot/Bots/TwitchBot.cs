@@ -6,6 +6,7 @@ using calledudeBot.Chat;
 using calledudeBot.Services;
 using System.Timers;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Bots
 {
@@ -17,14 +18,13 @@ namespace calledudeBot.Bots
         private bool modCheckLock;
         private OsuUserData oldOsuData;
         private APIHandler api;
-        private string botNick;
 
         public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName)
         {
             this.token = token;
-            this.botNick = botNick;
             this.channelName = channelName;
 
+            nick = botNick;
             server = "irc.chat.twitch.tv";
             instanceName = "Twitch";
             messageHandler = new MessageHandler(this);
@@ -33,7 +33,7 @@ namespace calledudeBot.Bots
             api.DataReceived += checkUserUpdate;
         }
 
-        public override void Start()
+        public override Task Start()
         {
             sock = new TcpClient();
             sock.Connect(server, port);
@@ -41,7 +41,7 @@ namespace calledudeBot.Bots
             input = new StreamReader(sock.GetStream());
 
             WriteLine("PASS " + token + "\r\n" +
-                      "NICK " + botNick + "\r\n");
+                      "NICK " + nick + "\r\n");
             WriteLine("CAP REQ :twitch.tv/commands");
 
             modLockTimer = new Timer(60000);
@@ -49,8 +49,8 @@ namespace calledudeBot.Bots
             modLockTimer.Start();
 
             api.Start();
-
-            Listen();
+            if (!testRun) Listen();
+            return Task.CompletedTask;
         }
 
         public override void Listen()
@@ -97,6 +97,8 @@ namespace calledudeBot.Bots
 
         private void checkUserUpdate(JsonData jsonData)
         {
+            if (jsonData.osuUserData.Count == 0) throw new ArgumentException("Invalid username.", "jsonData.osuUserData");
+
             OsuUserData newOsuData = jsonData?.osuUserData[0];
             if (oldOsuData != null && newOsuData != null)
             {
@@ -128,6 +130,14 @@ namespace calledudeBot.Bots
             modCheckLock = true;
             modLockTimer.Start();
             return mods;
+        }
+
+        public override void Dispose()
+        {
+            sock.Dispose();
+            input.Dispose();
+            output.Dispose();
+            api.Dispose();
         }
     }
 }

@@ -202,6 +202,7 @@
     <Compile Include="Common\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Bots\TwitchBot.cs" />
+    <Compile Include="Common\CredentialChecker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

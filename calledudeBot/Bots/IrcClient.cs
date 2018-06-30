@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using calledudeBot.Chat;
@@ -17,10 +18,8 @@ namespace calledudeBot.Bots
         protected string server;
         protected string buf;
         protected string channelName;
-        protected string instanceName;
 
         public abstract void Listen();
-
         public override void sendMessage(Message message)
         {
             WriteLine($"PRIVMSG {channelName} :{message.Content}");
@@ -37,21 +36,49 @@ namespace calledudeBot.Bots
             }
         }
 
-        //Selection in console causes Console.WriteLine() to be permablocked, causing threads to get blocked permanently.
-        //Therefore we run it on another thread.
-        protected virtual void tryLog(string message)
+        public virtual void tryLogin()
         {
-            string msg = $"[{instanceName}]: {message}";
-            Task.Run(async () =>
+            for (buf = input.ReadLine(); ; buf = input.ReadLine())
             {
-                await Console.Out.WriteLineAsync(msg);
-            });
+                if (buf == null || buf.Split(' ')[1] == "464" || buf.StartsWith(":tmi.twitch.tv NOTICE * :Improperly formatted auth"))
+                {
+                    throw new InvalidOrWrongTokenException(buf);
+                }
+                else if (buf.Split(' ')[1] == "001")
+                {
+                    WriteLine($"JOIN {channelName}");
+                }
+                else if ((buf.Split(' ')[1] == "376" && this is OsuBot) || buf.Split(' ')[1] == "366")
+                {
+                    break;
+                }
+            }
         }
 
         protected virtual void WriteLine(string message)
         {
             output.WriteLine(message);
             output.Flush();
+        }
+    }
+
+    [Serializable]
+    internal class InvalidOrWrongTokenException : Exception
+    {
+        public InvalidOrWrongTokenException()
+        {
+        }
+
+        public InvalidOrWrongTokenException(string message) : base(message)
+        {
+        }
+
+        public InvalidOrWrongTokenException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected InvalidOrWrongTokenException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
         }
     }
 }

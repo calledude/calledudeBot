@@ -4,6 +4,8 @@ using Discord;
 using Discord.WebSocket;
 using calledudeBot.Chat;
 using calledudeBot.Services;
+using System.Net;
+using Discord.Net;
 
 namespace calledudeBot.Bots
 {
@@ -20,6 +22,7 @@ namespace calledudeBot.Bots
 
         public DiscordBot(string token, string twitchAPItoken, string channelName, string announceChanID)
         {
+            instanceName = "Discord";
             this.token = token;
             this.twitchAPItoken = twitchAPItoken;
             this.announceChanID = Convert.ToUInt64(announceChanID);
@@ -31,27 +34,34 @@ namespace calledudeBot.Bots
             api.DataReceived += determineLiveStatus;
         }
 
-        public override async void Start()
+        public override async Task Start()
         {
             bot = new DiscordSocketClient();
-            bot.MessageReceived += HandleCommand;
-            bot.Connected += onConnect;
-            bot.Disconnected += onDisconnect;
+                bot.MessageReceived += HandleCommand;
+                bot.Connected += onConnect;
+                bot.Disconnected += onDisconnect;
 
             await bot.LoginAsync(TokenType.Bot, token);
             await bot.StartAsync();
+            api.Start();
+
+            if (testRun)
+            {
+                await bot.LogoutAsync();
+                await bot.StopAsync();
+            }
+
         }
 
         private Task onConnect()
         {
-            Console.Out.WriteLineAsync($"[Discord]: Connected to Discord.");
-            api.Start();
+            tryLog("Connected to Discord.");
             return Task.CompletedTask;
         }
 
         private Task onDisconnect(Exception e)
         {
-            Console.Out.WriteLineAsync($"[Discord]: Disconnected from Discord.");
+            tryLog("Disconnected from Discord.");
             return Task.CompletedTask;
         }
 
@@ -120,6 +130,12 @@ namespace calledudeBot.Bots
                 return streamStarted;
             else
                 return new DateTime();
+        }
+
+        public override void Dispose()
+        {
+            bot.Dispose();
+            api.Dispose();
         }
     }
 }

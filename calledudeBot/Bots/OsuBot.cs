@@ -15,7 +15,7 @@ namespace calledudeBot.Bots
             instanceName = "osu!";
         }
 
-        public override void Start()
+        public override Task Start()
         {
             sock = new TcpClient();
             sock.Connect(server, port);
@@ -25,7 +25,9 @@ namespace calledudeBot.Bots
             WriteLine("PASS " + token + "\r\n" +
                 "USER " + nick + " 0 * :" + nick + "\r\n" +
                 "NICK " + nick + "\r\n");
-            Listen();
+
+            if (!testRun) Listen();
+            return Task.CompletedTask;
         }
 
         public override void Listen()
@@ -51,6 +53,13 @@ namespace calledudeBot.Bots
                 Console.WriteLine(e.Message);
                 reconnect();
             }
+        }
+
+        public override void Dispose()
+        {
+            sock.Dispose();
+            input.Dispose();
+            output.Dispose();
         }
     }
 }
