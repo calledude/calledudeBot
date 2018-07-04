@@ -4,8 +4,6 @@ using Discord;
 using Discord.WebSocket;
 using calledudeBot.Chat;
 using calledudeBot.Services;
-using System.Net;
-using Discord.Net;
 
 namespace calledudeBot.Bots
 {
@@ -14,8 +12,6 @@ namespace calledudeBot.Bots
         private DiscordSocketClient bot;
         private MessageHandler messageHandler;
         private DateTime streamStarted;
-        private APIHandler api;
-
         private ulong announceChanID;
         private bool isOnline;
         private string twitchUsername, twitchAPItoken;
@@ -37,20 +33,16 @@ namespace calledudeBot.Bots
         public override async Task Start()
         {
             bot = new DiscordSocketClient();
+            if (!testRun)
+            {
                 bot.MessageReceived += HandleCommand;
                 bot.Connected += onConnect;
                 bot.Disconnected += onDisconnect;
+            }
 
             await bot.LoginAsync(TokenType.Bot, token);
             await bot.StartAsync();
-            api.Start();
-
-            if (testRun)
-            {
-                await bot.LogoutAsync();
-                await bot.StopAsync();
-            }
-
+            while(bot.ConnectionState != ConnectionState.Connected) { }
         }
 
         private Task onConnect()
@@ -95,10 +87,10 @@ namespace calledudeBot.Bots
             return null;
         }
 
-        public override void sendMessage(Message message)
+        public override async void sendMessage(Message message)
         {
             var channel = bot.GetChannel(message.Destination) as IMessageChannel;
-            channel.SendMessageAsync(message.Content);
+            await channel.SendMessageAsync(message.Content);
         }
 
         private void determineLiveStatus(JsonData jsonData)
@@ -132,10 +124,10 @@ namespace calledudeBot.Bots
                 return new DateTime();
         }
 
-        public override void Dispose()
+        protected override async void Logout()
         {
-            bot.Dispose();
-            api.Dispose();
+            await bot.LogoutAsync();
+            await bot.StopAsync();
         }
     }
 }

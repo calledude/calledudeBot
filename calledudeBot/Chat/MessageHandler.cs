@@ -2,6 +2,7 @@
 using calledudeBot.Services;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Timers;
 
 namespace calledudeBot.Chat
@@ -12,19 +13,20 @@ namespace calledudeBot.Chat
         private Bot bot;
         private Queue<Message> messageQueue = new Queue<Message>();
         private DateTime lastMessage;
-        private Timer relayTimer;
+        private System.Timers.Timer relayTimer;
         private string osuAPIToken;
 
         public MessageHandler(Bot bot, string osuAPIToken = null)
         {
+            if (Bot.testRun) return;
             commandHandler = new CommandHandler(this);
             this.bot = bot;
 
-            if (typeof(TwitchBot) == bot.GetType())
+            if (bot is TwitchBot)
             {
                 osu = calledudeBot.osuBot;
                 this.osuAPIToken = osuAPIToken;
-                relayTimer = new Timer(200);
+                relayTimer = new System.Timers.Timer(200);
                 relayTimer.Elapsed += tryRelay;
                 relayTimer.Start();
             }
@@ -32,19 +34,22 @@ namespace calledudeBot.Chat
 
         public void determineResponse(Message message)
         {
-            var status = commandHandler.determineCommand(message);
-            if (status == CommandStatus.NotHandled)
+            new Thread(() =>
             {
-                if (message.Content.Split(' ')[0].Contains("://osu.ppy.sh/b/"))
+                var status = commandHandler.determineCommand(message);
+                if (status == CommandStatus.NotHandled)
                 {
-                    requestSong(message);
+                    if (message.Content.Split(' ')[0].Contains("://osu.ppy.sh/b/"))
+                    {
+                        requestSong(message);
+                    }
+                    if (message.Origin is TwitchBot) //We only want to relay messages from twitch
+                    {
+                        messageQueue.Enqueue(message);
+                        tryRelay(null, null);
+                    }
                 }
-                if (message.Origin.GetType() == typeof(TwitchBot)) //We only want to relay messages from twitch
-                {
-                    messageQueue.Enqueue(message);
-                    tryRelay(null, null);
-                }
-            }
+            }).Start();
         }
 
         private void tryRelay(object sender, ElapsedEventArgs e)

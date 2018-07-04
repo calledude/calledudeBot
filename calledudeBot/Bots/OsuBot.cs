@@ -25,8 +25,7 @@ namespace calledudeBot.Bots
             WriteLine("PASS " + token + "\r\n" +
                 "USER " + nick + " 0 * :" + nick + "\r\n" +
                 "NICK " + nick + "\r\n");
-
-            if (!testRun) Listen();
+            
             return Task.CompletedTask;
         }
 
@@ -53,13 +52,6 @@ namespace calledudeBot.Bots
                 Console.WriteLine(e.Message);
                 reconnect();
             }
-        }
-
-        public override void Dispose()
-        {
-            sock.Dispose();
-            input.Dispose();
-            output.Dispose();
         }
     }
 }

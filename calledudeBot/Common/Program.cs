@@ -3,10 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
-using System.Diagnostics;
 using calledudeBot.Bots;
-using System.Threading.Tasks;
-using System.Reflection;
 
 namespace calledudeBot
 {
@@ -17,7 +14,7 @@ namespace calledudeBot
         public static DiscordBot discordBot;
         public static TwitchBot twitchBot;
         private static Hooky hooky;
-
+        private static List<Bot> bots;
         private static void Main()
         {
             Console.Title = "calledudeBot";
@@ -31,19 +28,20 @@ namespace calledudeBot
             };
             Clean();
 
-            CredentialChecker c = new CredentialChecker();
-
-            discordBot = c.VerifyBot(TestSubject.Discord) as DiscordBot;
-            twitchBot = c.VerifyBot(TestSubject.Twitch) as TwitchBot;
-            osuBot = c.VerifyBot(TestSubject.Osu) as OsuBot;
-            Console.Clear();
+            CredentialChecker.ProduceBots();
+            bots = CredentialChecker.GetVerifiedBots(out discordBot, out twitchBot, out osuBot);
 
             hooky = new Hooky(twitchBot);
-
-            new Thread(async () => await discordBot.Start()).Start();
-            new Thread(async () => await osuBot.Start()).Start();
-            new Thread(async () => await twitchBot.Start()).Start();
             new Thread(hooky.Start).Start();
+
+            foreach (Bot bot in bots)
+            {
+                new Thread(async () =>
+                {
+                    await bot.Start();
+                    bot.StartServices();
+                }).Start();
+            }
         }
 
 
@@ -53,7 +51,7 @@ namespace calledudeBot
             if (!File.Exists(cmdFile))
             {
                 File.Create(cmdFile).Close();
-                return; //In this case, file is empty (newly created) -> no need for cleaning -> return 
+                return; //In this case, file is empty (newly created) -> no need for cleaning -> return
             }
 
             //Cleaning up
@@ -61,6 +59,17 @@ namespace calledudeBot
             List<string> cleanList = cleanUpArr.Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
 
             File.WriteAllLines(cmdFile, cleanList);
+        }
+
+
+        private static void SetBotInstances(List<Bot> bots)
+        {
+            foreach(Bot bot in bots)
+            {
+                if (bot is DiscordBot d) discordBot = d;
+                else if (bot is TwitchBot t) twitchBot = t;
+                else if (bot is OsuBot o) osuBot = o;
+            }
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using calledudeBot.Bots;
 using Discord.WebSocket;
+using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace calledudeBot.Chat
 {
@@ -8,6 +10,7 @@ namespace calledudeBot.Chat
     {
         private static TwitchBot twitch = calledudeBot.twitchBot;
         private static DiscordBot discord = calledudeBot.discordBot;
+        private AutoResetEvent ev = new AutoResetEvent(false);
         private SocketUser user;
         public string Name { get; }
         public bool isMod
@@ -29,6 +32,9 @@ namespace calledudeBot.Chat
         {
             if(this.user == null)
             {
+                twitch.requestMods(ev);
+                ev.WaitOne(250);
+
                 List<string> mods = twitch.getMods();
                 foreach (string m in mods)
                 {
