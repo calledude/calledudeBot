@@ -7,6 +7,8 @@ using calledudeBot.Services;
 using System.Timers;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
+using System.Diagnostics;
 
 namespace calledudeBot.Bots
 {
@@ -14,10 +16,10 @@ namespace calledudeBot.Bots
     {
         private MessageHandler messageHandler;
         private List<string> mods = new List<string>();
-        private Timer modLockTimer;
+        private System.Timers.Timer modLockTimer;
         private bool modCheckLock;
         private OsuUserData oldOsuData;
-        private APIHandler api;
+        private AutoResetEvent ev = new AutoResetEvent(false);
 
         public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName)
         {
@@ -27,7 +29,7 @@ namespace calledudeBot.Bots
             nick = botNick;
             server = "irc.chat.twitch.tv";
             instanceName = "Twitch";
-            messageHandler = new MessageHandler(this);
+            messageHandler = new MessageHandler(this, osuAPIToken);
 
             api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}", RequestData.OsuUser);
             api.DataReceived += checkUserUpdate;
@@ -44,12 +46,9 @@ namespace calledudeBot.Bots
                       "NICK " + nick + "\r\n");
             WriteLine("CAP REQ :twitch.tv/commands");
 
-            modLockTimer = new Timer(60000);
+            modLockTimer = new System.Timers.Timer(60000);
             modLockTimer.Elapsed += modLockEvent;
             modLockTimer.Start();
-
-            api.Start();
-            if (!testRun) Listen();
             return Task.CompletedTask;
         }
 
@@ -70,6 +69,7 @@ namespace calledudeBot.Bots
                         int modsIndex = buf.LastIndexOf(':') + 1;
                         var modsArr = buf.Substring(modsIndex).Split(',');
                         mods = modsArr.Select(x => x.Trim()).ToList();
+                        ev.Set();
                     }
                     else if (b[0] == "PING")
                     {
@@ -84,7 +84,7 @@ namespace calledudeBot.Bots
                     }
                     else if (b[1] == "366")
                     {
-                        getMods();
+                        requestMods(ev);
                     }
                 }
             }
@@ -124,20 +124,21 @@ namespace calledudeBot.Bots
             modLockTimer.Stop();
         }
 
-        public List<string> getMods()
+
+        public void requestMods(AutoResetEvent ev)
         {
-            if (!modCheckLock) WriteLine($"PRIVMSG {channelName} /mods");
-            modCheckLock = true;
-            modLockTimer.Start();
-            return mods;
+            this.ev = ev;
+            if (!modCheckLock)
+            {
+                WriteLine($"PRIVMSG {channelName} /mods");
+                modCheckLock = true;
+                modLockTimer.Start();
+            }
         }
 
-        public override void Dispose()
+        public List<string> getMods()
         {
-            sock.Dispose();
-            input.Dispose();
-            output.Dispose();
-            api.Dispose();
+            return mods;
         }
     }
 }

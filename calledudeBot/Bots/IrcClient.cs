@@ -3,7 +3,6 @@ using System.IO;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Threading;
-using System.Threading.Tasks;
 using calledudeBot.Chat;
 
 namespace calledudeBot.Bots
@@ -32,9 +31,16 @@ namespace calledudeBot.Bots
             while (!sock.Connected)
             {
                 Start();
+                StartServices();
                 Thread.Sleep(5000);
             }
         }
+
+        protected override void Logout()
+        {
+            sock.Close();
+        }
+
 
         public virtual void tryLogin()
         {
@@ -59,26 +65,6 @@ namespace calledudeBot.Bots
         {
             output.WriteLine(message);
             output.Flush();
-        }
-    }
-
-    [Serializable]
-    internal class InvalidOrWrongTokenException : Exception
-    {
-        public InvalidOrWrongTokenException()
-        {
-        }
-
-        public InvalidOrWrongTokenException(string message) : base(message)
-        {
-        }
-
-        public InvalidOrWrongTokenException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        protected InvalidOrWrongTokenException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
         }
     }
 }
