@@ -16,9 +16,9 @@ Various API keys and whatnot are needed to make this work.
 * Requesting osu! beatmaps in twitch chat (relayed to osu!) - **Will be revised in the future**
 * osu! rank updates displayed in twitch chat
 * Automation of initial setup
+* Verification of credentials
 
 ## Planned:
-* Verification of credentials
 * Disconnection watcher
 * Spam protection
 * Wiki - To explain how to use the bot and how to set it up.
