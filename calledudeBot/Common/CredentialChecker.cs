@@ -17,8 +17,6 @@ namespace calledudeBot
         Discord, Osu, Twitch
     }
 
-    //TODO: Refactor code in Bot to include try-startup-methods
-    //Refactor the fuck out of Credchecker
     public static class CredentialChecker
     {
         private static Dictionary<string, string> creds;
@@ -227,11 +225,9 @@ namespace calledudeBot
 
         private static bool getConfirmation()
         {
-            ConsoleKey c = ConsoleKey.A;
-            while (c != ConsoleKey.Y && c != ConsoleKey.N)
-            {
-                c = Console.ReadKey(true).Key;
-            }
+            ConsoleKey c;
+            do c = Console.ReadKey(true).Key;
+            while (c != ConsoleKey.Y && c != ConsoleKey.N);
             Console.WriteLine();
 
             return c == ConsoleKey.Y;
