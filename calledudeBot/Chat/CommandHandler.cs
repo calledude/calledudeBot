@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace calledudeBot.Chat
 {
-    public class CommandHandler : Handler
+    public class CommandHandler
     {
         internal static List<Command> commands = new List<Command>();
         internal static SpotifyLocalAPI spotify;
@@ -50,22 +50,19 @@ namespace calledudeBot.Chat
             Console.WriteLine($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
         }
 
-        public CommandStatus determineCommand(Message message) // Is it a command?
+        public bool isCommand(Message message)
         {
-            if (!message.Content.StartsWith("!")) return CommandStatus.NotHandled;
-            Message response = handleCommand(message);
-            messageHandler.respond(response);
-            return CommandStatus.Handled;
+            return message.Content[0] == '!';
         }
 
-        private Message handleCommand(Message message)
+        public Message getResponse(Message message)
         {
             string response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
             var cmd = message.Content;
 
             foreach (Command c in commands)
             {
-                if (cmd.ToLower().StartsWith(c.Name) || (c.AlternateName?.Any(x => cmd.ToLower().StartsWith(x)) ?? false))
+                if (cmd.ToLower() == c.Name || (c.AlternateName?.Any(x => cmd.ToLower() == x) ?? false))
                 {
                     response = c.getResponse(message);
                     break; //Avoids exception if we were adding a command.
@@ -74,7 +71,6 @@ namespace calledudeBot.Chat
             message.Content = response;
             return message;
         }
-
 
     }
 }

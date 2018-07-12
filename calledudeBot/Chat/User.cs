@@ -2,7 +2,7 @@
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
 
 namespace calledudeBot.Chat
 {
@@ -10,12 +10,11 @@ namespace calledudeBot.Chat
     {
         private static TwitchBot twitch = calledudeBot.twitchBot;
         private static DiscordBot discord = calledudeBot.discordBot;
-        private AutoResetEvent ev = new AutoResetEvent(false);
         private SocketUser user;
         public string Name { get; }
         public bool isMod
         {
-            get { return isAllowed(Name); }
+            get { return isAllowed(this); }
         }
 
         public User(string name)
@@ -28,28 +27,18 @@ namespace calledudeBot.Chat
             Name = user.Username;
         }
 
-        private bool isAllowed(string user)
+        private static bool isAllowed(User chatter)
         {
-            if(this.user == null)
+            if(chatter.user == null) //Determine if the user is a discord user or not
             {
-                twitch.requestMods(ev);
-                ev.WaitOne(250);
-
                 List<string> mods = twitch.getMods();
-                foreach (string m in mods)
-                {
-                    if (string.Compare(m, user, true) == 0) return true;
-                }
+                return mods.Any(u => u.Equals(chatter.Name, StringComparison.OrdinalIgnoreCase));
             }
             else
             {
                 SocketRole adminRole = discord.getAdminRole();
-                foreach (SocketGuildUser usr in adminRole.Members)
-                {
-                    if (usr.Id == this.user?.Id) return true;
-                }
+                return adminRole.Members.Any(u => u.Id == chatter.user.Id);
             }
-            return false;
         }
     }
 }

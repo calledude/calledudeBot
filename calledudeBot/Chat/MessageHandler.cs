@@ -7,7 +7,7 @@ using System.Timers;
 
 namespace calledudeBot.Chat
 {
-    public class MessageHandler : Handler
+    public class MessageHandler
     {
         private OsuBot osu;
         private Bot bot;
@@ -15,6 +15,7 @@ namespace calledudeBot.Chat
         private DateTime lastMessage;
         private System.Timers.Timer relayTimer;
         private string osuAPIToken;
+        private CommandHandler commandHandler;
 
         public MessageHandler(Bot bot, string osuAPIToken = null)
         {
@@ -34,22 +35,22 @@ namespace calledudeBot.Chat
 
         public void determineResponse(Message message)
         {
-            new Thread(() =>
+            if (commandHandler.isCommand(message))
             {
-                var status = commandHandler.determineCommand(message);
-                if (status == CommandStatus.NotHandled)
+                respond(commandHandler.getResponse(message));
+            }
+            else
+            {
+                if (message.Content.Split(' ')[0].Contains("://osu.ppy.sh/b/"))
                 {
-                    if (message.Content.Split(' ')[0].Contains("://osu.ppy.sh/b/"))
-                    {
-                        requestSong(message);
-                    }
-                    if (message.Origin is TwitchBot) //We only want to relay messages from twitch
-                    {
-                        messageQueue.Enqueue(message);
-                        tryRelay(null, null);
-                    }
+                    requestSong(message);
                 }
-            }).Start();
+                if (message.Origin is TwitchBot) //We only want to relay messages from twitch
+                {
+                    messageQueue.Enqueue(message);
+                    tryRelay(null, null);
+                }
+            }
         }
 
         private void tryRelay(object sender, ElapsedEventArgs e)
@@ -61,7 +62,7 @@ namespace calledudeBot.Chat
             }
         }
 
-        public void respond(Message message)
+        private void respond(Message message)
         {
             bot.sendMessage(message);
         }

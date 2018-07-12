@@ -55,21 +55,11 @@ namespace calledudeBot
             }
 
             //Cleaning up
-            var cleanUpArr = File.ReadAllLines(cmdFile).ToList();
-            List<string> cleanList = cleanUpArr.Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
+            List<string> cleanList = File.ReadAllLines(cmdFile)
+                                         .Where(p => !string.IsNullOrWhiteSpace(p))
+                                         .ToList();
 
             File.WriteAllLines(cmdFile, cleanList);
-        }
-
-
-        private static void SetBotInstances(List<Bot> bots)
-        {
-            foreach(Bot bot in bots)
-            {
-                if (bot is DiscordBot d) discordBot = d;
-                else if (bot is TwitchBot t) twitchBot = t;
-                else if (bot is OsuBot o) osuBot = o;
-            }
         }
     }
 }

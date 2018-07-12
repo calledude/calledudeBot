@@ -8,39 +8,30 @@ namespace calledudeBot.Chat
         public string Content { get; set; }
         public User Sender{ get; set; }
         public Bot Origin { get; }
-        public ulong Destination { get; set;}
+        public ulong Destination { get; set; }
 
         public Message(string message, Bot bot = null)
         {
             Origin = bot;
             Content = message;
-            if(typeof(TwitchBot) == bot?.GetType())
+            if(bot is TwitchBot)
             {
-                decodeMessage();
+                decodeMessage(this);
             }
         }
 
         //:calledude!calledude@calledude.tmi.twitch.tv PRIVMSG #calledude :hej
-        private void decodeMessage()
+        private static void decodeMessage(Message message)
         {
             //Get name of sender
-            var indexUpper = Content.IndexOf('!');
-            var indexLower = Content.IndexOf(':') + 1;
-            var nameLength = indexUpper - indexLower;
+            var indexUpper = message.Content.IndexOf('!');
+            var nameLength = indexUpper - 1;
 
-            var name = Content.Substring(indexLower, nameLength);
-            Sender = new User(char.ToUpper(name.First()) + name.Substring(1).ToLower()); //capitalize first letter in username
+            var name = message.Content.Substring(1, nameLength);
+            message.Sender = new User(char.ToUpper(name.First()) + name.Substring(1)); //capitalize first letter in username
 
             //Get content
-            var stringFormatted = new string[Content.Split(' ').Length - 3];
-            var counter = 0;
-
-            for (var i = 3; i < Content.Split(' ').Length; i++)
-            {
-                stringFormatted[counter] = Content.Split(' ')[i];
-                counter++;
-            }
-            Content = string.Join(" ", stringFormatted).Substring(1); //Deletes ":" from the first letter in the message
+            message.Content = string.Join(" ", message.Content.Split(' ').Skip(3)).Substring(1);
         }
     }
 }
