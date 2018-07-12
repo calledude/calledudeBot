@@ -193,7 +193,6 @@
     <Compile Include="Chat\Command.cs" />
     <Compile Include="Chat\CommandHandler.cs" />
     <Compile Include="Bots\DiscordBot.cs" />
-    <Compile Include="Chat\Handler.cs" />
     <Compile Include="Common\Hooky.cs" />
     <Compile Include="Bots\IrcClient.cs" />
     <Compile Include="Chat\Message.cs" />

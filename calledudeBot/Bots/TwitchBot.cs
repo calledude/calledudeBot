@@ -7,7 +7,6 @@ using calledudeBot.Services;
 using System.Timers;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Threading;
 
 namespace calledudeBot.Bots
 {
@@ -15,10 +14,9 @@ namespace calledudeBot.Bots
     {
         private MessageHandler messageHandler;
         private List<string> mods = new List<string>();
-        private System.Timers.Timer modLockTimer;
+        private Timer modLockTimer;
         private bool modCheckLock;
         private OsuUserData oldOsuData;
-        private AutoResetEvent ev = new AutoResetEvent(false);
 
         public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName)
         {
@@ -45,7 +43,7 @@ namespace calledudeBot.Bots
                       "NICK " + nick + "\r\n");
             WriteLine("CAP REQ :twitch.tv/commands");
 
-            modLockTimer = new System.Timers.Timer(60000);
+            modLockTimer = new Timer(60000);
             modLockTimer.Elapsed += modLockEvent;
             modLockTimer.Start();
             return Task.CompletedTask;
@@ -68,7 +66,6 @@ namespace calledudeBot.Bots
                         int modsIndex = buf.LastIndexOf(':') + 1;
                         var modsArr = buf.Substring(modsIndex).Split(',');
                         mods = modsArr.Select(x => x.Trim()).ToList();
-                        ev.Set();
                     }
                     else if (b[0] == "PING")
                     {
@@ -83,7 +80,7 @@ namespace calledudeBot.Bots
                     }
                     else if (b[1] == "366")
                     {
-                        requestMods(ev);
+                        getMods();
                     }
                 }
             }
@@ -122,21 +119,15 @@ namespace calledudeBot.Bots
             modCheckLock = false;
             modLockTimer.Stop();
         }
-
-
-        public void requestMods(AutoResetEvent ev)
+        
+        public List<string> getMods()
         {
-            this.ev = ev;
             if (!modCheckLock)
             {
                 WriteLine($"PRIVMSG {channelName} /mods");
                 modCheckLock = true;
                 modLockTimer.Start();
             }
-        }
-
-        public List<string> getMods()
-        {
             return mods;
         }
     }
