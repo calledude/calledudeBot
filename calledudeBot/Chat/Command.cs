@@ -25,15 +25,14 @@ namespace calledudeBot.Chat
                 Description = cmd.Substring(descriptionIndex).Trim('<', '>');
                 cmd = cmd.Remove(descriptionIndex);
             }
-            if (!isSpecial)
+            if (!isSpecial) //We only set a response for non-special commands since special command responses are dynamic.
             {
-                int responseIndex = writeToFile ? cmd.IndexOf(cmd.Split(' ')[2]) : cmd.IndexOf(cmd.Split(' ')[1]);
-                response = cmd.Substring(responseIndex).Trim();
+                response = string.Join(" ", writeToFile ? cmd.Split(' ').Skip(2)
+                                                        : cmd.Split(' ').Skip(1));
+                response = response.Trim(); //Because fuck whitespaces amirite? :^)
             }
-            else
-            {
-                IsSpecial = true;
-            }
+
+            IsSpecial = isSpecial;
             UserAllowed = true;
             Name = cmdToAdd;
             
