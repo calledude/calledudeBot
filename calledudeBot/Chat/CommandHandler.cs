@@ -58,11 +58,11 @@ namespace calledudeBot.Chat
         public Message getResponse(Message message)
         {
             string response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
-            var cmd = message.Content;
+            var cmd = message.Content.Split(' ')[0].ToLower();
 
             foreach (Command c in commands)
             {
-                if (cmd.ToLower() == c.Name || (c.AlternateName?.Any(x => cmd.ToLower() == x) ?? false))
+                if (cmd == c.Name || (c.AlternateName?.Any(x => cmd == x) ?? false))
                 {
                     response = c.getResponse(message);
                     break; //Avoids exception if we were adding a command.
