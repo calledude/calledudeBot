@@ -21,7 +21,7 @@ namespace calledudeBot.Chat
         {
             if (cmd.Contains('<'))
             {
-                int descriptionIndex = cmd.IndexOf('<');
+                int descriptionIndex = cmd.LastIndexOf('<');
                 Description = cmd.Substring(descriptionIndex).Trim('<', '>');
                 cmd = cmd.Remove(descriptionIndex);
             }
@@ -38,7 +38,8 @@ namespace calledudeBot.Chat
             
             if (writeToFile)
             {
-                string line = Name + " " + response + " <" + Description + ">";
+                string line = $"{Name} {response} <{Description}>";
+                if (Description == null) line = line.Trim('<', '>'); //No point in having these anymore
                 File.AppendAllText(cmdFile, line + Environment.NewLine);
             }
         }
