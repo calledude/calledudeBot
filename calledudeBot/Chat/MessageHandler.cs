@@ -2,7 +2,7 @@
 using calledudeBot.Services;
 using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
 using System.Timers;
 
 namespace calledudeBot.Chat
@@ -13,9 +13,10 @@ namespace calledudeBot.Chat
         private Bot bot;
         private Queue<Message> messageQueue = new Queue<Message>();
         private DateTime lastMessage;
-        private System.Timers.Timer relayTimer;
+        private Timer relayTimer;
         private string osuAPIToken;
         private CommandHandler commandHandler;
+        private string songRequestLink = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
 
         public MessageHandler(Bot bot, string osuAPIToken = null)
         {
@@ -27,7 +28,7 @@ namespace calledudeBot.Chat
             {
                 osu = calledudeBot.osuBot;
                 this.osuAPIToken = osuAPIToken;
-                relayTimer = new System.Timers.Timer(200);
+                relayTimer = new Timer(200);
                 relayTimer.Elapsed += tryRelay;
                 relayTimer.Start();
             }
@@ -41,7 +42,7 @@ namespace calledudeBot.Chat
             }
             else
             {
-                if (message.Content.Split(' ')[0].Contains("://osu.ppy.sh/b/"))
+                if (message.Content.Contains("://osu.ppy.sh/b/"))
                 {
                     requestSong(message);
                 }
@@ -76,14 +77,17 @@ namespace calledudeBot.Chat
         //[http://osu.ppy.sh/b/795232 fhana - Wonder Stella [Stella]]
         private void requestSong(Message message)
         {
-            string beatmapID = message.Content.Split('/')[4];
+            var idx = message.Content.IndexOf("/b/") + "/b/".Length;
+            var num = message.Content.Skip(idx).TakeWhile(c => char.IsNumber(c));
+            var beatmapID = string.Concat(num);
+            var reqLink = string.Format(songRequestLink, osuAPIToken, beatmapID);
 
-            APIHandler api = new APIHandler($"https://osu.ppy.sh/api/get_beatmaps?k={osuAPIToken}&b={beatmapID}", RequestData.OsuSong);
+            APIHandler api = new APIHandler(reqLink, RequestData.OsuSong);
             JsonData data = api.requestOnce();
             if (data?.osuSongData?.Count > 0)
             {
                 OsuSongData o = data.osuSongData[0];
-                message.Content = "[http://osu.ppy.sh/b/" + beatmapID + " " + o.artist + " - " + o.title + " [" + o.version + "]]";
+                message.Content = $"[http://osu.ppy.sh/b/{beatmapID} {o.artist} - {o.title} [{o.version}]]";
             }
         }
     }
