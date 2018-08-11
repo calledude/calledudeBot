@@ -64,11 +64,11 @@ namespace calledudeBot
             bool success = false;
             try
             {
-                Task.Run(() => bot.TryRun())
+                Task.Run(async () => await bot.TryRun())
                     .GetAwaiter().GetResult();
                 success = true; //Will only be set if bot.TryRun() does not throw an exception
             }
-            catch(HttpException)
+            catch (HttpException)
             {
                 bot.tryLog("Invalid Discord token.");
                 creds.Remove("DiscordToken");
@@ -79,16 +79,13 @@ namespace calledudeBot
                 {
                     creds.Remove("osuIRC");
                     creds.Remove("OsuNick");
+                    bot.tryLog("Invalid token and/or osu!-nickname");
                 }
                 else
                 {
                     creds.Remove("TwitchIRC");
+                    bot.tryLog("Invalid token");
                 }
-                bot.tryLog(e.Message);
-            }
-            catch(ArgumentException)
-            {
-                creds.Remove("OsuNick");
             }
             finally
             {
@@ -119,6 +116,11 @@ namespace calledudeBot
                     bot.tryLog("Invalid Twitch API token.");
                     creds.Remove("TwitchAPI");
                 }
+            }
+            catch (ArgumentException)
+            {
+                creds.Remove("OsuNick");
+                bot.tryLog("Invalid osu!-nickname.");
             }
             finally
             {

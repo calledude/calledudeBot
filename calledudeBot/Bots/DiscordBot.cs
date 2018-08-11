@@ -42,7 +42,6 @@ namespace calledudeBot.Bots
 
             await bot.LoginAsync(TokenType.Bot, token);
             await bot.StartAsync();
-            while (bot.ConnectionState != ConnectionState.Connected);
         }
 
         private Task onConnect()

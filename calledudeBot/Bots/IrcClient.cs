@@ -46,11 +46,12 @@ namespace calledudeBot.Bots
         {
             for (buf = input.ReadLine(); ; buf = input.ReadLine())
             {
-                if (buf == null || buf.Split(' ')[1] == "464" || buf.StartsWith(":tmi.twitch.tv NOTICE * :Improperly formatted auth"))
+                if (buf == null || buf.Split(' ')[1] == "464" 
+                    || buf.StartsWith(":tmi.twitch.tv NOTICE * ") && (buf.EndsWith(":Improperly formatted auth") || buf.EndsWith(":Login authentication failed")))
                 {
                     throw new InvalidOrWrongTokenException(buf);
                 }
-                else if (buf.Split(' ')[1] == "001")
+                if (buf.Split(' ')[1] == "001")
                 {
                     WriteLine($"JOIN {channelName}");
                 }

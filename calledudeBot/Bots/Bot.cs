@@ -14,7 +14,7 @@ namespace calledudeBot.Bots
         internal static bool testRun;
         protected APIHandler api;
 
-        internal virtual async void TryRun()
+        internal virtual async Task TryRun()
         {
             await Start();
             if (this is IrcClient irc)
