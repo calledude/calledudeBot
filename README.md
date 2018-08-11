@@ -9,7 +9,7 @@ Various API keys and whatnot are needed to make this work.
 * osu! -> twitch relay
 * Announcing when stream goes live on discord
 * Various commands 
-  * !np/!song/!playing - Both spotify and osu! integration.
+  * !np/!song/!playing
   * !uptime
   * !help/!cmds/!commands
 * Ability to add/delete custom commands with !addcmd and !delcmd
