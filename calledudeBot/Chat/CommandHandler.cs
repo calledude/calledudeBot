@@ -1,5 +1,4 @@
-﻿using SpotifyAPI.Local;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,7 +8,6 @@ namespace calledudeBot.Chat
     public class CommandHandler
     {
         internal static List<Command> commands = new List<Command>();
-        internal static SpotifyLocalAPI spotify;
         private string cmdFile = calledudeBot.cmdFile;
         private MessageHandler messageHandler;
         private static bool initialized;
@@ -27,12 +25,6 @@ namespace calledudeBot.Chat
         private void init()
         {
             initialized = true;
-            spotify = new SpotifyLocalAPI();
-            if(!spotify.Connect())
-            {
-                Console.WriteLine("[CommandHandler]: Couldn't connect to spotify.");
-            }
-
             var cmdArr = File.ReadAllLines(cmdFile);
             foreach (string line in cmdArr)
             {

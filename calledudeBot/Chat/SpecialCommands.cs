@@ -66,12 +66,6 @@ namespace calledudeBot.Chat
                     break;
                 }
             }
-
-            if (string.IsNullOrEmpty(nowPlaying))
-            {
-                nowPlaying = CommandHandler.spotify.GetStatus()?.Track.ArtistResource.Name + " - " + CommandHandler.spotify.GetStatus().Track.TrackResource.Name;
-            }
-
             response = nowPlaying == null ? "No song is playing right now." : $"Song playing right now: {nowPlaying}";
         }
 
