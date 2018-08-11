@@ -15,6 +15,8 @@ namespace calledudeBot
         public static TwitchBot twitchBot;
         private static Hooky hooky;
         private static List<Bot> bots;
+        private static string logFilePath = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\log.txt";
+
         private static void Main()
         {
             Console.Title = "calledudeBot";
