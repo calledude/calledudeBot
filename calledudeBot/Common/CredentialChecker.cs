@@ -206,6 +206,11 @@ namespace calledudeBot
                     .Where(p => p.Trim().Split(' ').Length == 2)
                     .ToDictionary(key => key.Split(' ')[0], val => val.Split(' ')[1]);
             }
+            else
+            {
+                File.Create(credFile).Close();
+                creds = new Dictionary<string, string>();
+            }
             while (!tryLoadCredentials())
             {
                 getMissingCredentials();
