@@ -14,11 +14,11 @@ namespace calledudeBot.Chat
         private Queue<Message> messageQueue = new Queue<Message>();
         private DateTime lastMessage;
         private Timer relayTimer;
-        private string osuAPIToken;
+        private string osuAPIToken, streamerNick;
         private CommandHandler commandHandler;
         private string songRequestLink = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
 
-        public MessageHandler(Bot bot, string osuAPIToken = null)
+        public MessageHandler(Bot bot, string streamerNick = null, string osuAPIToken = null)
         {
             if (Bot.testRun) return;
             commandHandler = new CommandHandler(this);
@@ -28,6 +28,7 @@ namespace calledudeBot.Chat
             {
                 osu = calledudeBot.osuBot;
                 this.osuAPIToken = osuAPIToken;
+                this.streamerNick = streamerNick.Substring(1).ToLower();
                 relayTimer = new Timer(200);
                 relayTimer.Elapsed += tryRelay;
                 relayTimer.Start();
@@ -46,7 +47,7 @@ namespace calledudeBot.Chat
                 {
                     requestSong(message);
                 }
-                if (message.Origin is TwitchBot) //We only want to relay messages from twitch
+                if (message.Origin is TwitchBot && message.Sender.Name.ToLower() != streamerNick) //We only want to relay messages from twitch
                 {
                     messageQueue.Enqueue(message);
                     tryRelay(null, null);

@@ -26,7 +26,7 @@ namespace calledudeBot.Bots
             nick = botNick;
             server = "irc.chat.twitch.tv";
             instanceName = "Twitch";
-            messageHandler = new MessageHandler(this, osuAPIToken);
+            messageHandler = new MessageHandler(this, channelName, osuAPIToken);
 
             api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}", RequestData.OsuUser);
             api.DataReceived += checkUserUpdate;
