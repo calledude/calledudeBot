@@ -23,7 +23,7 @@ namespace calledudeBot
         private static string credFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\credentials";
         private static string discordToken, twitchAPItoken, twitchIRCtoken, osuIRCtoken,
                                 osuAPIToken, botNick, channelName, osuNick, announceChanID;
-
+        private static bool verifiedBots;
         public static void ProduceBots()
         {
             getCredentials(); //Makes sure all credentials are at the very least present.
@@ -41,6 +41,7 @@ namespace calledudeBot
 
         public static List<Bot> GetVerifiedBots(out DiscordBot discordBot, out TwitchBot twitchBot, out OsuBot osuBot)
         {
+            if (!verifiedBots) throw new InvalidOperationException("You're not allowed to call this method before all bots have been verified.");
             discordBot = new DiscordBot(discordToken, twitchAPItoken, channelName, announceChanID);
             osuBot = new OsuBot(osuIRCtoken, osuNick);
             twitchBot = new TwitchBot(twitchIRCtoken, osuAPIToken, osuNick, botNick, channelName);
@@ -51,7 +52,7 @@ namespace calledudeBot
         //Returns a boolean after running every single bot through the verify function
         private static bool VerifyCredentials()
         {
-            bool discToken = true, discServices = true, twitchToken = true, twitchServices = true, osuToken = true;
+            bool discToken = false, discServices = false, twitchToken = false, twitchServices = false, osuToken = false;
             Parallel.Invoke(
                 () => discToken = VerifyToken(TestSubject.Discord),
                 () => discServices = VerifyServices(TestSubject.Discord),
@@ -59,12 +60,12 @@ namespace calledudeBot
                 () => twitchServices = VerifyServices(TestSubject.Twitch),
                 () => osuToken = VerifyToken(TestSubject.Osu));
 
-            return discToken && discServices && twitchToken && twitchServices && osuToken;
+            verifiedBots = discToken && discServices && twitchToken && twitchServices && osuToken;
+            return verifiedBots;
         }
 
         private static bool VerifyToken(TestSubject testSubject)
         {
-            //Console.WriteLine("Testing " + testSubject.ToString() + " on thread: " + Thread.CurrentThread.ManagedThreadId);
             Bot bot = getBotInstance(testSubject);
             bool success = false;
             try
@@ -101,7 +102,6 @@ namespace calledudeBot
 
         private static bool VerifyServices(TestSubject testSubject)
         {
-            //Console.WriteLine("Testing " + testSubject.ToString() + " on thread: " + Thread.CurrentThread.ManagedThreadId);
             Bot bot = getBotInstance(testSubject);
             bool success = false;
             try

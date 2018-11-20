@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using calledudeBot.Bots;
+using System.Threading.Tasks;
 
 namespace calledudeBot
 {
@@ -25,8 +26,7 @@ namespace calledudeBot
                 var isCtrlC = e.SpecialKey == ConsoleSpecialKey.ControlC;
                 var isCtrlBreak = e.SpecialKey == ConsoleSpecialKey.ControlBreak;
 
-                if (isCtrlC) e.Cancel = true;
-                else if (isCtrlBreak) e.Cancel = true;
+                if (isCtrlC || isCtrlBreak) e.Cancel = true;
             };
             Clean();
 
@@ -36,14 +36,16 @@ namespace calledudeBot
             hooky = new Hooky(twitchBot);
             new Thread(hooky.Start).Start();
 
-            foreach (Bot bot in bots)
+            //This is most likely completely unnecessary or at best a negligient performance boost
+            // since this basically just speeds up the actual launching of threads, but I like it so shut up >:(
+            Parallel.ForEach(bots, (bot) =>
             {
                 new Thread(async () =>
                 {
                     await bot.Start();
                     bot.StartServices();
                 }).Start();
-            }
+            });            
         }
 
 
