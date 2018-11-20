@@ -94,6 +94,7 @@ namespace calledudeBot.Bots
 
         private void determineLiveStatus(JsonData jsonData)
         {
+            if (testRun) return;
             if(jsonData?.twitchData?.Count > 0)
             {
                 if (!isOnline)
