@@ -51,15 +51,20 @@ namespace calledudeBot
         //Returns a boolean after running every single bot through the verify function
         private static bool VerifyCredentials()
         {
-            return VerifyToken(TestSubject.Discord)
-                & VerifyServices(TestSubject.Discord)
-                & VerifyToken(TestSubject.Twitch)
-                & VerifyServices(TestSubject.Twitch)
-                & VerifyToken(TestSubject.Osu);
+            bool discToken = true, discServices = true, twitchToken = true, twitchServices = true, osuToken = true;
+            Parallel.Invoke(
+                () => discToken = VerifyToken(TestSubject.Discord),
+                () => discServices = VerifyServices(TestSubject.Discord),
+                () => twitchToken = VerifyToken(TestSubject.Twitch),
+                () => twitchServices = VerifyServices(TestSubject.Twitch),
+                () => osuToken = VerifyToken(TestSubject.Osu));
+
+            return discToken && discServices && twitchToken && twitchServices && osuToken;
         }
 
         private static bool VerifyToken(TestSubject testSubject)
         {
+            //Console.WriteLine("Testing " + testSubject.ToString() + " on thread: " + Thread.CurrentThread.ManagedThreadId);
             Bot bot = getBotInstance(testSubject);
             bool success = false;
             try
@@ -96,6 +101,7 @@ namespace calledudeBot
 
         private static bool VerifyServices(TestSubject testSubject)
         {
+            //Console.WriteLine("Testing " + testSubject.ToString() + " on thread: " + Thread.CurrentThread.ManagedThreadId);
             Bot bot = getBotInstance(testSubject);
             bool success = false;
             try
