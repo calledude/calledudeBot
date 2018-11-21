@@ -27,7 +27,6 @@ namespace calledudeBot.Bots
 
             string url = $"https://api.twitch.tv/helix/streams?user_login={twitchUsername}";
             api = new APIHandler(url, RequestData.TwitchUser, twitchAPItoken);
-            api.DataReceived += determineLiveStatus;
         }
 
         public override async Task Start()
@@ -38,10 +37,13 @@ namespace calledudeBot.Bots
                 bot.MessageReceived += HandleCommand;
                 bot.Connected += onConnect;
                 bot.Disconnected += onDisconnect;
+                api.DataReceived += determineLiveStatus;
             }
 
             await bot.LoginAsync(TokenType.Bot, token);
             await bot.StartAsync();
+
+            while (bot.ConnectionState != ConnectionState.Connected) { }
         }
 
         private Task onConnect()
