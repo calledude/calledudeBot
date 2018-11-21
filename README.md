@@ -13,7 +13,7 @@ Various API keys and whatnot are needed to make this work.
   * !uptime
   * !help/!cmds/!commands
 * Ability to add/delete custom commands with !addcmd and !delcmd
-* Requesting osu! beatmaps in twitch chat (relayed to osu!) - **Will be revised in the future**
+* Requesting osu! beatmaps in twitch chat (relayed to osu!)
 * osu! rank updates displayed in twitch chat
 * Automation of initial setup
 * Verification of credentials
@@ -23,6 +23,7 @@ Various API keys and whatnot are needed to make this work.
 * Spam protection
 * Wiki - To explain how to use the bot and how to set it up.
 * Encryption of API keys
+* Hopefully get Spotify integration going again
 
 #### Disclaimer:
 
