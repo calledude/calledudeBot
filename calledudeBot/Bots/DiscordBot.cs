@@ -36,14 +36,18 @@ namespace calledudeBot.Bots
             {
                 bot.MessageReceived += HandleCommand;
                 bot.Connected += onConnect;
+                bot.Ready += Ready;
                 bot.Disconnected += onDisconnect;
-                api.DataReceived += determineLiveStatus;
             }
 
             await bot.LoginAsync(TokenType.Bot, token);
             await bot.StartAsync();
+        }
 
-            while (bot.ConnectionState != ConnectionState.Connected) { }
+        private Task Ready()
+        {
+            api.DataReceived += determineLiveStatus;
+            return Task.CompletedTask;
         }
 
         private Task onConnect()
@@ -96,6 +100,8 @@ namespace calledudeBot.Bots
 
         private void determineLiveStatus(JsonData jsonData)
         {
+            //I have no idea why I didn't think of this earlier
+            //Then again, why the fuck is that even a thing in discord.net? Sending a message without being connected? Are you dense?
             if (testRun) return;
             if(jsonData?.twitchData?.Count > 0)
             {
