@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using calledudeBot.Chat;
 using calledudeBot.Services;
+using System.Collections.Generic;
 
 namespace calledudeBot.Bots
 {
@@ -78,18 +80,10 @@ namespace calledudeBot.Bots
             return Task.CompletedTask;
         }
 
-        public SocketRole getAdminRole()
+        public IEnumerable<SocketGuildUser> getModerators()
         {
-            var s = bot.GetGuild(announceChanID).Roles;
-
-            foreach(SocketRole role in s)
-            {
-                if(role.Permissions.BanMembers || role.Permissions.KickMembers)
-                {
-                    return role;
-                }
-            }
-            return null;
+            var roles = bot.GetGuild(announceChanID).Roles;
+            return roles.Where(x => x.Permissions.BanMembers || x.Permissions.KickMembers).SelectMany(r => r.Members);
         }
 
         public override async void sendMessage(Message message)
