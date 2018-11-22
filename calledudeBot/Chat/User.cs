@@ -36,8 +36,8 @@ namespace calledudeBot.Chat
             }
             else
             {
-                SocketRole adminRole = discord.getAdminRole();
-                return adminRole.Members.Any(u => u.Id == chatter.user.Id);
+                var mods = discord.getModerators();
+                return mods.Any(u => u.Id == chatter.user.Id);
             }
         }
     }
