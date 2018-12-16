@@ -86,7 +86,7 @@ namespace calledudeBot.Bots
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Logger.log(e.Message);
                 reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
             }
         }

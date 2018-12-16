@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Open.WinKeyboardHook;
 using calledudeBot.Bots;
+using calledudeBot.Services;
 
 //TODO: Poll ApplicationIsActivated() instead?
 //                          to decrease system overhead
@@ -34,7 +35,7 @@ namespace calledudeBot
 
             key.StartCapturing();
 
-            Console.WriteLine("[Hooky] Started Hooky.");
+            Logger.log("[Hooky] Started Hooky.");
             Application.Run();
         }
 

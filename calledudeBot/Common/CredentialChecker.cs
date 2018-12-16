@@ -35,7 +35,6 @@ namespace calledudeBot
                 tryLoadCredentials();
             }
             Bot.testRun = false;
-            Console.Clear();
         }
 
 
@@ -59,9 +58,8 @@ namespace calledudeBot
                 () => twitchToken = VerifyToken(TestSubject.Twitch),
                 () => twitchServices = VerifyServices(TestSubject.Twitch),
                 () => osuToken = VerifyToken(TestSubject.Osu));
-
-            verifiedBots = discToken && discServices && twitchToken && twitchServices && osuToken;
-            return verifiedBots;
+            
+            return verifiedBots = discToken && discServices && twitchToken && twitchServices && osuToken;
         }
 
         private static bool VerifyToken(TestSubject testSubject)
@@ -79,7 +77,7 @@ namespace calledudeBot
                 bot.tryLog("Invalid Discord token.");
                 creds.Remove("DiscordToken");
             }
-            catch (InvalidOrWrongTokenException e)
+            catch (InvalidOrWrongTokenException)
             {
                 if(bot is OsuBot)
                 {
