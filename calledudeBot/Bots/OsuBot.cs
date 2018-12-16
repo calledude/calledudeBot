@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using calledudeBot.Services;
 
 namespace calledudeBot.Bots
 {
@@ -49,7 +50,7 @@ namespace calledudeBot.Bots
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Logger.log(e.Message);
                 reconnect();
             }
         }

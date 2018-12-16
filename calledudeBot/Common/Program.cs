@@ -16,7 +16,6 @@ namespace calledudeBot
         public static TwitchBot twitchBot;
         private static Hooky hooky;
         private static List<Bot> bots;
-        private static string logFilePath = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\log.txt";
 
         private static void Main()
         {
@@ -35,17 +34,15 @@ namespace calledudeBot
 
             hooky = new Hooky(twitchBot);
             new Thread(hooky.Start).Start();
-
-            //This is most likely completely unnecessary or at best a negligient performance boost
-            // since this basically just speeds up the actual launching of threads, but I like it so shut up >:(
-            Parallel.ForEach(bots, (bot) =>
+            
+            foreach(Bot bot in bots)
             {
                 new Thread(async () =>
                 {
                     await bot.Start();
                     bot.StartServices();
                 }).Start();
-            });            
+            }            
         }
 
 

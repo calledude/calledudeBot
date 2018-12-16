@@ -1,4 +1,5 @@
-﻿using System;
+﻿using calledudeBot.Services;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -39,7 +40,7 @@ namespace calledudeBot.Chat
                 new Command("<Shows which song is currently playing>", "!np", true) { AlternateName = new List<string> { "!song", "!playing" } },
                 new Command("<Shows how long the stream has been live>", "!uptime", true)
             });
-            Console.WriteLine($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
+            Logger.log($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
         }
 
         public bool isCommand(Message message)

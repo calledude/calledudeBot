@@ -32,16 +32,10 @@ namespace calledudeBot.Bots
             if (this is IrcClient irc && !testRun) irc.Listen();
         }
 
-        //Selection in console causes Console.WriteLine() to be permablocked, causing threads to get blocked permanently.
-        //Therefore we run it on another thread.
-        //TODO: Create a dedicated thread for logging instead as to not clog up other threads with unfinished tasks.
         public virtual void tryLog(string message)
         {
             string msg = $"[{instanceName}]: {message}";
-            Task.Run(async () =>
-            {
-                await Console.Out.WriteLineAsync(msg);
-            });
+            Logger.log(msg);
         }
     }
 
