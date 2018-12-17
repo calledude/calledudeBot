@@ -13,7 +13,7 @@ namespace calledudeBot.Services
         static Logger()
         {
             log("[Logger] Started logging.");
-            new Thread(() => run())
+            new Thread(run)
             {
                 IsBackground = true
             }.Start();
@@ -24,7 +24,7 @@ namespace calledudeBot.Services
             logQueue.Add(logMessage);
         }
 
-        public static void run()
+        private static void run()
         {
             while (true)
             {
