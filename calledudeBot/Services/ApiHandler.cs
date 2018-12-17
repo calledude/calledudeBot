@@ -34,29 +34,35 @@ namespace calledudeBot.Services
             requestData(null, null);
         }
 
+        //is called continuously and raises the DataReceived event when payload is ready.
         private void requestData(object sender, ElapsedEventArgs e)
         {
-            string jsonString = client.DownloadString(URL);
-            if(requestedData == RequestData.OsuUser)
-            {
-                jsonString = "{\"osuUserData\":" + jsonString + "}"; //I hate json
-            }
-            else if(requestedData == RequestData.TwitchUser)
-            {
-                jsonString = jsonString.Replace("data", "twitchData");
-            }
-            JsonData jsonData = JsonConvert.DeserializeObject<JsonData>(jsonString);
+            JsonData jsonData = requestOnce();
             DataReceived?.Invoke(jsonData);
         }
 
         public JsonData requestOnce()
         {
             string jsonString = client.DownloadString(URL);
-            if (requestedData == RequestData.OsuSong)
+            jsonString = formatJsonString(jsonString);
+            return JsonConvert.DeserializeObject<JsonData>(jsonString);
+        }
+
+        private string formatJsonString(string jsonString)
+        {
+            if (requestedData == RequestData.OsuUser)
+            {
+                jsonString = "{\"osuUserData\":" + jsonString + "}"; //I hate json
+            }
+            else if (requestedData == RequestData.TwitchUser)
+            {
+                jsonString = jsonString.Replace("data", "twitchData");
+            }
+            else if (requestedData == RequestData.OsuSong)
             {
                 jsonString = "{\"osuSongData\":" + jsonString + "}"; //I hate json
             }
-            return JsonConvert.DeserializeObject<JsonData>(jsonString);
+            return jsonString;
         }
     }
 }
