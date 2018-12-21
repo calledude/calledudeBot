@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace calledudeBot.Chat
@@ -14,34 +13,42 @@ namespace calledudeBot.Chat
         public string Name { get; }
         public string Description { get; set; }
         public bool IsSpecial { get; }
-        public bool UserAllowed { get; set; }
+        public bool RequiresMod { get; set; } = false;
         public List<string> AlternateName { get; set; }
 
-        public Command(string cmd, string cmdToAdd, bool isSpecial = false, bool writeToFile = false)
+        public Command(string cmd, bool isSpecial = false, bool writeToFile = false)
         {
+            var cmds = cmd.Split(' ').Where((x,i) => x[0] == '!' || i == 0).ToArray();
+            var altIndex = cmds.Length > 1 ? cmd.IndexOf(cmds[1]) : -1;
+            if (altIndex > cmd.IndexOf(cmds[0]))
+            {
+                AlternateName = cmds.Skip(1).ToList();
+                cmd = cmd.Remove(altIndex);
+            }
+
             if (cmd.Contains('<'))
             {
                 int descriptionIndex = cmd.LastIndexOf('<');
-                Description = cmd.Substring(descriptionIndex).Trim('<', '>');
+                int descLen = cmd.LastIndexOf('>') - descriptionIndex;
+                Description = cmd.Substring(descriptionIndex, descLen).Trim('<', '>');
                 cmd = cmd.Remove(descriptionIndex);
             }
+
             if (!isSpecial) //We only set a response for non-special commands since special command responses are dynamic.
             {
-                response = string.Join(" ", writeToFile ? cmd.Split(' ').Skip(2)
-                                                        : cmd.Split(' ').Skip(1));
+                response = string.Join(" ", cmd.Split(' ').Skip(1));
                 response = response.Trim(); //Because fuck whitespaces amirite? :^)
             }
 
+            var cmdToAdd = cmds[0];
+            Name = cmdToAdd[0] == '!' ? cmdToAdd : '!' + cmdToAdd;
             IsSpecial = isSpecial;
-            UserAllowed = true;
-            Name = cmdToAdd;
-            
+
+            if (hasSpecialChars(Name) || (AlternateName != null && AlternateName.Any(x => hasSpecialChars(x))))
+                throw new ArgumentException("Special characters in command are not allowed");
+
             if (writeToFile)
-            {
-                string line = $"{Name} {response} <{Description}>";
-                if (Description == null) line = line.Trim('<', '>'); //No point in having these anymore
-                File.AppendAllText(cmdFile, line + Environment.NewLine);
-            }
+                appendCmdToFile(this);
         }
 
         public string getResponse(Message message)
@@ -57,6 +64,12 @@ namespace calledudeBot.Chat
             return response;
         }
 
+
+        private bool hasSpecialChars(string str)
+        {
+            str = str[0] == '!' ? str.Substring(1) : str;
+            return str.Any(c => !char.IsLetterOrDigit(c));
+        }
 
     }
 }

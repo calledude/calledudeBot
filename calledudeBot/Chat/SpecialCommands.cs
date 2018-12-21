@@ -9,12 +9,6 @@ namespace calledudeBot.Chat
 {
     public partial class Command
     {
-        private bool hasSpecialChars(string str)
-        {
-            str = str[0] == '!' ? str.Substring(1) : str;
-            return str.Any(c => !Char.IsLetterOrDigit(c));
-        }
-
         private void helpCmd(Message message) //Implement different !help for discord?
         {
             var allowed = message.Sender.isMod;
@@ -24,6 +18,7 @@ namespace calledudeBot.Chat
                 response = "There are no commands available at this time.";
                 return;
             }
+            response = "You ok there bud? Try again.";
 
             if (cmd.Split(' ').Length == 2) //"!help <command>"
             {
@@ -31,11 +26,18 @@ namespace calledudeBot.Chat
                 cmd = cmd.StartsWith("!") ? cmd : ("!" + cmd);
                 foreach (Command c in commands)
                 {
-                    if (c.Name == cmd)
+                    if (c.Name == cmd || (c.AlternateName?.Any(x => cmd == x) ?? false))
                     {
-                        if (!c.UserAllowed && !allowed) return;
-                        string responseDescription = string.IsNullOrEmpty(c.Description) ? " has no description." : (" has description '" + c.Description + "'");
-                        response = $"Command '{c.Name}' {responseDescription}";
+                        if (c.AlternateName != null)
+                        {
+                            var alts = string.Join("/", c.AlternateName);
+                            cmd = $"{c.Name}/{alts}";
+                        }
+                        if (c.RequiresMod && !allowed) return;
+                        string responseDescription = string.IsNullOrEmpty(c.Description) 
+                            ? "has no description." 
+                            : $"has description '{c.Description}'";
+                        response = $"Command '{cmd}' {responseDescription}";
                     }
                 }
             }
@@ -45,7 +47,7 @@ namespace calledudeBot.Chat
 
                 foreach (Command c in commands)
                 {
-                    if (!c.UserAllowed && !allowed) continue;
+                    if (c.RequiresMod && !allowed) continue;
                     sb.Append(" " + c.Name + " »");
                 }
                 response = "These are the commands you can use:" + sb.ToString().Trim('»');
@@ -76,13 +78,11 @@ namespace calledudeBot.Chat
                 response = "You're not allowed to use that command";
                 return;
             }
-
-            string cmdToAdd = message.Content.Split(' ')[1].ToLower();
-            string cmd = message.Content;
-            if (cmd.Split(' ').Length > 2 && !hasSpecialChars(cmdToAdd)) //has user entered a command to enter? i.e. !addcmd !test someAnswer
+            
+            var cmd = message.Content.Split(' ');
+            if (cmd.Length > 2) //has user entered a command to enter? i.e. !addcmd !test someAnswer
             {
-                cmdToAdd = cmdToAdd.StartsWith("!") ? cmdToAdd : ("!" + cmdToAdd);
-                response = createCommand(cmd, cmdToAdd);
+                response = createCommand(cmd);
             }
             else
             {
@@ -111,65 +111,117 @@ namespace calledudeBot.Chat
                     response = $"Deleted command '{cmdToDel}'";
                     break;
                 }
+                else if(c.AlternateName?.Any(x => cmdToDel == x) ?? false)
+                {
+                    removeCommand(c, true, cmdToDel);
+                    response = $"Deleted alternative command '{cmdToDel}'";
+                    break;
+                }
             }
         }
 
-        private string createCommand(string cmd, string cmdToAdd)
+        //The most inefficient piece of code ever seen by man
+        private string createCommand(string[] cmd)
         {
-            string response;
-            Command f = new Command(cmd, cmdToAdd, false, true);
+            string cmdInfo = string.Join(" ", cmd.Skip(1)); //Skip '!addcmd' part
+            Command f = new Command(cmdInfo, false, true);
 
+            //Flatten all existing alternate names into a single collection
+            var allAlternates = commands.Where(x => x.AlternateName != null).SelectMany(x => x.AlternateName); 
+
+            //Checks if the alternative commands already exists
+            if ((f.AlternateName?.Any(alt => allAlternates.Contains(alt)) ?? false) || allAlternates.Any(x => x == f.Name))
+            {
+                removeCommand(f);
+                return "One or more of the alternate commands already exists.";
+            }
+            else if(commands.Select(x => x.Name).Any(x => x == f.Name))
+            {
+                return editCmd(f);
+            }
+
+            //at this point we've tried everything, it doesn't exist, let's add it.
+            commands.Add(f);
+            return $"Added command '{f.Name}'";
+        }
+
+        private string editCmd(Command f)
+        {
+            int changes = 0;
             foreach (Command c in commands)
             {
                 if (c.Name != f.Name) continue;
+                response = $"Command '{f.Name}' already exists.";
                 
-                //Command already exists, lets change it.
+                //Found existing command, lets change it.
                 if (c.IsSpecial)
                 {
                     response = "You can't change a special command.";
-                    return response;
+                    break;
                 }
-                if (f.response != c.response && f.Description != c.Description)
+                if (f.AlternateName != c.AlternateName)
                 {
-                    c.Description = f.Description ?? c.Description; //Keep description if new description is null
-                    c.response = f.response;
-                    response = $"Changed command '{c.Name}' successfully.";
+                    c.AlternateName = c.AlternateName ?? new List<string>();
+                    f.AlternateName = f.AlternateName ?? new List<string>();
+
+                    if (f.AlternateName.Count == 0)
+                        c.AlternateName = f.AlternateName;
+                    else
+                    {
+                        c.AlternateName.AddRange(f.AlternateName);
+                        c.AlternateName = c.AlternateName.Distinct().ToList();
+                    }
+                    response = $"Changed alternate command names for {c.Name}. It now has {c.AlternateName.Count} alternates.";
+                    changes++;
                 }
-                else if (f.response != c.response)
+                if (f.response != c.response)
                 {
                     c.response = f.response;
-                    response = $"Changed response of '{c.Name}' successfully";
+                    response = $"Changed response of '{c.Name}' successfully.";
+                    changes++;
                 }
                 else if (f.Description != c.Description)
                 {
                     c.Description = f.Description;
                     response = $"Changed description of '{c.Name}' successfully.";
+                    changes++;
                 }
-                else
+                else if (f.response != c.response && f.Description != c.Description)
                 {
-                    response = $"Command '{c.Name}' already exists.";
+                    c.Description = f.Description ?? c.Description; //Keep description if new description is null
+                    c.response = f.response;
+                    response = $"Changed command '{c.Name}' successfully.";
+                    changes++;
                 }
-                removeCommand(f);
-                return response; //We don't want to add the command back, now do we? :^)
             }
-            commands.Add(f);
-            return $"Added command '{f.Name}'";
+            removeCommand(f); //Remove the newly (wrongly) added new command
+            return changes > 1 ? $"Done. Several changes made to command '{f.Name}'." : response; 
+
         }
 
-        private void removeCommand(Command cmd)
+        private void removeCommand(Command cmd, bool isAlternate = false, string altName = null)
         {
-            commands.Remove(cmd);
-            List<string> cmds = new List<string>();
+            if (isAlternate) cmd.AlternateName.Remove(altName);
+            else commands.Remove(cmd);
 
+            File.Create(cmdFile).Close();
             foreach (Command c in commands)
             {
-                if (c.IsSpecial) continue;
-                string description = string.IsNullOrEmpty(c.Description) ? null : "<" + c.Description + ">";
-                string line = c.Name + " " + c.response + " " + description;
-                cmds.Add(line);
+                appendCmdToFile(c);
             }
-            File.WriteAllLines(cmdFile, cmds);
 
+        }
+
+        private void appendCmdToFile(Command cmd)
+        {
+            if (cmd.IsSpecial) return;
+            string alternates = cmd.AlternateName == null ? null : string.Join(" ", cmd.AlternateName);
+            string description = string.IsNullOrEmpty(cmd.Description) ? null : $"<{cmd.Description}>";
+            string line = $"{cmd.Name} {cmd.response}";
+            if (description != null) line += " " + description;
+            if (alternates != null) line += " " + alternates;
+            line = line.Trim();
+            File.AppendAllText(cmdFile, line + Environment.NewLine);
         }
 
         private void uptime()
