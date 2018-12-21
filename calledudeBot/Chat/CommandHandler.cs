@@ -29,16 +29,16 @@ namespace calledudeBot.Chat
             var cmdArr = File.ReadAllLines(cmdFile);
             foreach (string line in cmdArr)
             {
-                Command c = new Command(line, line.Split(' ')[0]);
+                Command c = new Command(line);
                 commands.Add(c);
             }
             commands.AddRange(new List<Command>
             {
-                new Command("<Adds a command to the command list>", "!addcmd", true) { UserAllowed = false },
-                new Command("<Deletes a command from the command list>", "!delcmd", true) { UserAllowed = false },
-                new Command("<Lists all available commands>", "!help", true) { AlternateName = new List<string> { "!commands", "!cmds" } },
-                new Command("<Shows which song is currently playing>", "!np", true) { AlternateName = new List<string> { "!song", "!playing" } },
-                new Command("<Shows how long the stream has been live>", "!uptime", true)
+                new Command("!addcmd <Adds a command to the command list>", true) { RequiresMod = true },
+                new Command("!delcmd <Deletes a command from the command list>", true) { RequiresMod = true },
+                new Command("!help <Lists all available commands>", true) { AlternateName = new List<string> { "!commands", "!cmds" } },
+                new Command("!np <Shows which song is currently playing>", true) { AlternateName = new List<string> { "!song", "!playing" } },
+                new Command("!uptime <Shows how long the stream has been live>", true)
             });
             Logger.log($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
         }
