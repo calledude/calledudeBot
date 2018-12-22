@@ -1,6 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Net.Sockets;
 using System.Collections.Generic;
 using calledudeBot.Chat;
 using calledudeBot.Services;
@@ -18,13 +16,12 @@ namespace calledudeBot.Bots
         private bool modCheckLock;
         private OsuUserData oldOsuData;
 
-        public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName)
+        public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName) : base("irc.chat.twitch.tv")
         {
             this.token = token;
             this.channelName = channelName;
 
             nick = botNick;
-            server = "irc.chat.twitch.tv";
             instanceName = "Twitch";
             messageHandler = new MessageHandler(this, channelName, osuAPIToken);
 
@@ -32,21 +29,14 @@ namespace calledudeBot.Bots
             api.DataReceived += checkUserUpdate;
         }
 
-        public override Task Start()
+        internal async override Task Start()
         {
-            sock = new TcpClient();
-            sock.Connect(server, port);
-            output = new StreamWriter(sock.GetStream());
-            input = new StreamReader(sock.GetStream());
-
-            WriteLine("PASS " + token + "\r\n" +
-                      "NICK " + nick + "\r\n");
-            WriteLine("CAP REQ :twitch.tv/commands");
-
             modLockTimer = new Timer(60000);
             modLockTimer.Elapsed += modLockEvent;
             modLockTimer.Start();
-            return Task.CompletedTask;
+
+            WriteLine("CAP REQ :twitch.tv/commands");
+            await base.Start();
         }
 
         public override void Listen()
@@ -72,15 +62,6 @@ namespace calledudeBot.Bots
                         string pong = buf.Replace("PING", "PONG");
                         WriteLine(pong);
                         tryLog(pong);
-                    }
-                    else if (b[1] == "001")
-                    {
-                        WriteLine($"JOIN {channelName}");
-                        tryLog("Connected to Twitch.");
-                    }
-                    else if (b[1] == "366")
-                    {
-                        getMods();
                     }
                 }
             }

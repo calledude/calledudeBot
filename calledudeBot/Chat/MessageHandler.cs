@@ -18,12 +18,16 @@ namespace calledudeBot.Chat
         private CommandHandler commandHandler;
         private string songRequestLink = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
 
-        public MessageHandler(Bot bot, string streamerNick = null, string osuAPIToken = null)
+        public MessageHandler(Bot bot)
         {
             if (Bot.testRun) return;
             commandHandler = new CommandHandler(this);
             this.bot = bot;
 
+        }
+
+        public MessageHandler(Bot bot, string streamerNick, string osuAPIToken) : this(bot)
+        {
             if (bot is TwitchBot)
             {
                 osu = calledudeBot.osuBot;
