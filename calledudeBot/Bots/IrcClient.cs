@@ -1,8 +1,7 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net.Sockets;
-using System.Runtime.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 using calledudeBot.Chat;
 
 namespace calledudeBot.Bots
@@ -14,11 +13,28 @@ namespace calledudeBot.Bots
         protected TextReader input;
         protected string nick;
         protected int port = 6667;
-        protected string server;
         protected string buf;
         protected string channelName;
 
         public abstract void Listen();
+
+
+        protected IrcClient(string server)
+        {
+            sock = new TcpClient();
+            sock.Connect(server, port);
+            output = new StreamWriter(sock.GetStream());
+            input = new StreamReader(sock.GetStream());
+        }
+
+        internal override Task Start()
+        {
+            Login();
+            
+            if (!testRun) Listen();
+            return Task.CompletedTask;
+        }
+
         public override void sendMessage(Message message)
         {
             WriteLine($"PRIVMSG {channelName} :{message.Content}");
@@ -36,14 +52,15 @@ namespace calledudeBot.Bots
             }
         }
 
-        protected override void Logout()
+        internal override void Logout()
         {
             sock.Close();
         }
 
 
-        public virtual void tryLogin()
+        public virtual void Login()
         {
+            WriteLine("PASS " + token + "\r\n" + "NICK " + nick + "\r\n");
             for (buf = input.ReadLine(); ; buf = input.ReadLine())
             {
                 if (buf == null || buf.Split(' ')[1] == "464" 
@@ -54,9 +71,11 @@ namespace calledudeBot.Bots
                 if (buf.Split(' ')[1] == "001")
                 {
                     WriteLine($"JOIN {channelName}");
+                    if(!testRun) tryLog($"Connected to {instanceName}-IRC.");
                 }
-                else if ((buf.Split(' ')[1] == "376" && this is OsuBot) || buf.Split(' ')[1] == "366")
+                else if ((buf.Split(' ')[1] == "376" && this is OsuBot) || buf.Split(' ')[1] == "366") //Signifies a successful login
                 {
+                    if(this is TwitchBot t) t.getMods();
                     break;
                 }
             }

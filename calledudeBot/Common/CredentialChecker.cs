@@ -68,9 +68,9 @@ namespace calledudeBot
             bool success = false;
             try
             {
-                Task.Run(async () => await bot.TryRun())
+                Task.Run(async () => await bot.Start())
                     .GetAwaiter().GetResult();
-                success = true; //Will only be set if bot.TryRun() does not throw an exception
+                success = true; //Will only be set if bot.Start() does not throw an exception
             }
             catch (HttpException)
             {
@@ -94,6 +94,7 @@ namespace calledudeBot
             finally
             {
                 bot.tryLog($"Token: {(success ? "Succeeded." : "Failed.")}");
+                bot.Logout();
             }
             return success;
         }

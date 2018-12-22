@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using calledudeBot.Bots;
-using System.Threading.Tasks;
 
 namespace calledudeBot
 {

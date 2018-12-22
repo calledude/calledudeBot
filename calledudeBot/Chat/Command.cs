@@ -45,7 +45,7 @@ namespace calledudeBot.Chat
             IsSpecial = isSpecial;
 
             if (hasSpecialChars(Name) || (AlternateName != null && AlternateName.Any(x => hasSpecialChars(x))))
-                throw new ArgumentException("Special characters in command are not allowed");
+                throw new ArgumentException("Special characters in command are not allowed.");
 
             if (writeToFile)
                 appendCmdToFile(this);

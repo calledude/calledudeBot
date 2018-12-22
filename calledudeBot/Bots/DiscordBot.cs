@@ -31,7 +31,7 @@ namespace calledudeBot.Bots
             api = new APIHandler(url, RequestData.TwitchUser, twitchAPItoken);
         }
 
-        public override async Task Start()
+        internal override async Task Start()
         {
             bot = new DiscordSocketClient();
             if (!testRun)
@@ -123,7 +123,7 @@ namespace calledudeBot.Bots
                 return new DateTime();
         }
 
-        protected override async void Logout()
+        internal override async void Logout()
         {
             await bot.LogoutAsync();
             await bot.StopAsync();

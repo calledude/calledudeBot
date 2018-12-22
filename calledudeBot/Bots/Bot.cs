@@ -9,27 +9,15 @@ namespace calledudeBot.Bots
     {
         protected string instanceName;
         protected string token;
-        public abstract Task Start();
-        public abstract void sendMessage(Message message);
         internal static bool testRun;
         protected APIHandler api;
-
-        internal virtual async Task TryRun()
-        {
-            await Start();
-            if (this is IrcClient irc)
-            {
-                irc.tryLogin();
-            }
-            Logout();
-        }
-
-        protected abstract void Logout();
-
+        internal abstract Task Start();
+        public abstract void sendMessage(Message message);
+        internal abstract void Logout();
+        
         internal virtual void StartServices()
         {
             api?.Start();
-            if (this is IrcClient irc && !testRun) irc.Listen();
         }
 
         public virtual void tryLog(string message)

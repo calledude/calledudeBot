@@ -124,77 +124,82 @@ namespace calledudeBot.Chat
         private string createCommand(string[] cmd)
         {
             string cmdInfo = string.Join(" ", cmd.Skip(1)); //Skip '!addcmd' part
-            Command f = new Command(cmdInfo, false, true);
-
-            //Flatten all existing alternate names into a single collection
-            var allAlternates = commands.Where(x => x.AlternateName != null).SelectMany(x => x.AlternateName); 
-
-            //Checks if the alternative commands already exists
-            if ((f.AlternateName?.Any(alt => allAlternates.Contains(alt)) ?? false) || allAlternates.Any(x => x == f.Name))
+            try
             {
-                removeCommand(f);
-                return "One or more of the alternate commands already exists.";
-            }
-            else if(commands.Select(x => x.Name).Any(x => x == f.Name))
-            {
-                return editCmd(f);
-            }
+                Command f = new Command(cmdInfo, false, true);
 
-            //at this point we've tried everything, it doesn't exist, let's add it.
-            commands.Add(f);
-            return $"Added command '{f.Name}'";
+                //Flatten all existing alternate names into a single collection
+                var allAlternates = commands.Where(x => x.AlternateName != null).SelectMany(x => x.AlternateName);
+
+                //Checks if the alternative commands already exists
+                if ((f.AlternateName?.Any(alt => allAlternates.Contains(alt)) ?? false) || allAlternates.Any(x => x == f.Name))
+                {
+                    removeCommand(f);
+                    return "One or more of the alternate commands already exists.";
+                }
+                else if (commands.FirstOrDefault(x => x.Name == f.Name) is Command existing)
+                {
+                    return editCmd(existing, f);
+                }
+
+                //at this point we've tried everything, it doesn't exist, let's add it.
+                commands.Add(f);
+                return $"Added command '{f.Name}'";
+            }
+            catch(ArgumentException e)
+            {
+                return e.Message;
+            }
         }
 
-        private string editCmd(Command f)
+        private string editCmd(Command c, Command f)
         {
+            if (c.IsSpecial)
+                return "You can't change a special command.";
+            
             int changes = 0;
-            foreach (Command c in commands)
-            {
-                if (c.Name != f.Name) continue;
-                response = $"Command '{f.Name}' already exists.";
-                
-                //Found existing command, lets change it.
-                if (c.IsSpecial)
-                {
-                    response = "You can't change a special command.";
-                    break;
-                }
-                if (f.AlternateName != c.AlternateName)
-                {
-                    c.AlternateName = c.AlternateName ?? new List<string>();
-                    f.AlternateName = f.AlternateName ?? new List<string>();
+            response = $"Command '{f.Name}' already exists.";
 
-                    if (f.AlternateName.Count == 0)
-                        c.AlternateName = f.AlternateName;
-                    else
-                    {
-                        c.AlternateName.AddRange(f.AlternateName);
-                        c.AlternateName = c.AlternateName.Distinct().ToList();
-                    }
-                    response = $"Changed alternate command names for {c.Name}. It now has {c.AlternateName.Count} alternates.";
-                    changes++;
-                }
-                if (f.response != c.response)
-                {
-                    c.response = f.response;
-                    response = $"Changed response of '{c.Name}' successfully.";
-                    changes++;
-                }
-                else if (f.Description != c.Description)
-                {
-                    c.Description = f.Description;
-                    response = $"Changed description of '{c.Name}' successfully.";
-                    changes++;
-                }
-                else if (f.response != c.response && f.Description != c.Description)
-                {
-                    c.Description = f.Description ?? c.Description; //Keep description if new description is null
-                    c.response = f.response;
-                    response = $"Changed command '{c.Name}' successfully.";
-                    changes++;
-                }
+            if (f.response != c.response)
+            {
+                c.response = f.response;
+                response = $"Changed response of '{c.Name}' successfully.";
+                changes++;
             }
-            removeCommand(f); //Remove the newly (wrongly) added new command
+            else if (f.Description != c.Description)
+            {
+                c.Description = f.Description;
+                response = $"Changed description of '{c.Name}' successfully.";
+                changes++;
+            }
+            else if (f.response != c.response && f.Description != c.Description)
+            {
+                c.Description = f.Description ?? c.Description; //Keep description if new description is null
+                c.response = f.response;
+                response = $"Changed command '{c.Name}' successfully.";
+                changes++;
+            }
+            if (f.AlternateName != c.AlternateName)
+            {
+                c.AlternateName = c.AlternateName ?? new List<string>();
+                f.AlternateName = f.AlternateName ?? new List<string>();
+
+                if (f.AlternateName.Count == 0)
+                {
+                    c.AlternateName = null;
+                    response = $"Removed all alternate commands for {c.Name}";
+                }
+                else
+                {
+                    c.AlternateName.AddRange(f.AlternateName);
+                    c.AlternateName = c.AlternateName.Distinct().ToList();
+                    response = $"Changed alternate command names for {c.Name}. It now has {c.AlternateName.Count} alternates.";
+                }
+                changes++;
+            }
+            //Remove the new (wrongly) added new command from commandfile
+            //and save the potentially new version.
+            removeCommand(f);
             return changes > 1 ? $"Done. Several changes made to command '{f.Name}'." : response; 
 
         }

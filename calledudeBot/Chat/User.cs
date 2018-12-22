@@ -21,10 +21,10 @@ namespace calledudeBot.Chat
         {
             Name = name;
         }
-        public User(SocketUser user)
+
+        public User(SocketUser user) : this(user.Username)
         {
             this.user = user;
-            Name = user.Username;
         }
 
         private static bool isAllowed(User chatter)
