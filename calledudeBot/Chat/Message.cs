@@ -14,14 +14,14 @@ namespace calledudeBot.Chat
         {
             Origin = bot;
             Content = message;
-            if(bot is TwitchBot)
+            if(bot is IrcClient)
             {
-                decodeMessage(this);
+                parseMessage(this);
             }
         }
 
         //:calledude!calledude@calledude.tmi.twitch.tv PRIVMSG #calledude :hej
-        private static void decodeMessage(Message message)
+        private static void parseMessage(Message message)
         {
             //Get name of sender
             var indexUpper = message.Content.IndexOf('!');
