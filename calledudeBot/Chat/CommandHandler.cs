@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using calledudeBot.Chat.Info;
 
 namespace calledudeBot.Chat
 {
@@ -27,42 +28,45 @@ namespace calledudeBot.Chat
         {
             initialized = true;
             var cmdArr = File.ReadAllLines(cmdFile);
-            foreach (string line in cmdArr)
-            {
-                Command c = new Command(line);
-                commands.Add(c);
-            }
+            commands = cmdArr.Select(x => new Command(new CommandParameter(x))).ToList();
+
             commands.AddRange(new List<Command>
             {
-                new Command("!addcmd <Adds a command to the command list>", true) { RequiresMod = true },
-                new Command("!delcmd <Deletes a command from the command list>", true) { RequiresMod = true },
-                new Command("!help <Lists all available commands>", true) { AlternateName = new List<string> { "!commands", "!cmds" } },
-                new Command("!np <Shows which song is currently playing>", true) { AlternateName = new List<string> { "!song", "!playing" } },
-                new Command("!uptime <Shows how long the stream has been live>", true)
+                new Command(new CommandParameter("!addcmd <Adds a command to the command list>"), Command.addCmd, true),
+                new Command(new CommandParameter("!delcmd <Deletes a command from the command list>"), Command.delCmd, true),
+                new Command(new CommandParameter("!help !commands !cmds <Lists all available commands>"), Command.helpCmd),
+                new Command(new CommandParameter("!np !song !playing <Shows which song is currently playing>"), Command.playingCmd),
+                new Command(new CommandParameter("!uptime !live <Shows how long the stream has been live>"), Command.uptime)
             });
             Logger.log($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
         }
 
-        public bool isCommand(Message message)
+        public bool isPrefixed(string message)
         {
-            return message.Content[0] == '!';
+            return message[0] == '!';
         }
 
-        public Message getResponse(Message message)
+        public Message getResponse(CommandParameter param)
         {
-            string response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
-            var cmd = message.Content.Split(' ')[0].ToLower();
-
-            foreach (Command c in commands)
+            string response;
+            if (Command.getExistingCommand(param.PrefixedWords.First()) is Command c) //Does the command exist?
             {
-                if (cmd == c.Name || (c.AlternateName?.Any(x => cmd == x) ?? false))
+                if (c.RequiresMod && !param.Message.Sender.isMod)
                 {
-                    response = c.getResponse(message);
-                    break; //Avoids exception if we were adding a command.
+                    response = "You're not allowed to use that command";
+                }
+                else
+                {
+                    param.PrefixedWords.RemoveAt(0); //Remove whatever command they were executing from PrefixedWords e.g. !addcmd
+                    response = c.getResponse(param);
                 }
             }
-            message.Content = response;
-            return message;
+            else
+            {
+                response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
+            }
+            param.Message.Content = response;
+            return param.Message;
         }
 
     }

@@ -1,4 +1,5 @@
 ﻿using calledudeBot.Bots;
+using calledudeBot.Chat.Info;
 using calledudeBot.Services;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,6 @@ namespace calledudeBot.Chat
             if (Bot.testRun) return;
             commandHandler = new CommandHandler(this);
             this.bot = bot;
-
         }
 
         public MessageHandler(Bot bot, string streamerNick, string osuAPIToken) : this(bot)
@@ -41,9 +41,13 @@ namespace calledudeBot.Chat
 
         public void determineResponse(Message message)
         {
-            if (commandHandler.isCommand(message))
+            var msg = message.Content.Split(' ');
+            var cmd = msg.First();
+
+            if (commandHandler.isPrefixed(cmd))
             {
-                respond(commandHandler.getResponse(message));
+                var param = new CommandParameter(msg, message);
+                respond(commandHandler.getResponse(param));
             }
             else
             {

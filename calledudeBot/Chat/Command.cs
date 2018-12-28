@@ -1,71 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using calledudeBot.Chat.Info;
 
 namespace calledudeBot.Chat
 {
     public partial class Command
     {
-        private List<Command> commands = CommandHandler.commands;
+        private static List<Command> commands = CommandHandler.commands;
         private string response;
-        private string cmdFile = calledudeBot.cmdFile;
-
+        private static string cmdFile = calledudeBot.cmdFile;
+        public Func<CommandParameter, string> specialFunc;
         public string Name { get; }
         public string Description { get; set; }
         public bool IsSpecial { get; }
-        public bool RequiresMod { get; set; } = false;
+        public bool RequiresMod { get; } = false;
         public List<string> AlternateName { get; set; }
 
-        public Command(string cmd, bool isSpecial = false, bool writeToFile = false)
+        public Command(CommandParameter cmdParam)
         {
-            var cmds = cmd.Split(' ').Where((x,i) => x[0] == '!' || i == 0).ToArray();
-            var altIndex = cmds.Length > 1 ? cmd.IndexOf(cmds[1]) : -1;
-            if (altIndex > cmd.IndexOf(cmds[0]))
-            {
-                AlternateName = cmds.Skip(1).ToList();
-                cmd = cmd.Remove(altIndex);
-            }
+            Name = cmdParam.PrefixedWords.First();
+            AlternateName = cmdParam.PrefixedWords.Skip(1).ToList();
+            Description = string.Join(" ", cmdParam.EnclosedWords).Trim('<', '>');
+            response = string.Join(" ", cmdParam.Words);
 
-            if (cmd.Contains('<'))
-            {
-                int descriptionIndex = cmd.LastIndexOf('<');
-                int descLen = cmd.LastIndexOf('>') - descriptionIndex;
-                Description = cmd.Substring(descriptionIndex, descLen).Trim('<', '>');
-                cmd = cmd.Remove(descriptionIndex);
-            }
 
-            if (!isSpecial) //We only set a response for non-special commands since special command responses are dynamic.
-            {
-                response = string.Join(" ", cmd.Split(' ').Skip(1));
-                response = response.Trim(); //Because fuck whitespaces amirite? :^)
-            }
+            if(cmdParam.PrefixedWords.Any(x => hasSpecialChars(x)))
+                throw new ArgumentException("Special characters in commands are not allowed.");
 
-            var cmdToAdd = cmds[0];
-            Name = cmdToAdd[0] == '!' ? cmdToAdd : '!' + cmdToAdd;
-            IsSpecial = isSpecial;
-
-            if (hasSpecialChars(Name) || (AlternateName != null && AlternateName.Any(x => hasSpecialChars(x))))
-                throw new ArgumentException("Special characters in command are not allowed.");
-
-            if (writeToFile)
+            //If the ctor is called with params that have a message associated with it,
+            // we know it's from one of our bots, ergo, write to file.
+            // This is because it otherwise would put hardcoded commands into the commandfile.
+            if (cmdParam.Message != null)
                 appendCmdToFile(this);
         }
-
-        public string getResponse(Message message)
+        
+        public Command(CommandParameter cmdParam, Func<CommandParameter, string> specialFunc, bool requiresMod = false) : this(cmdParam)
         {
-            if (IsSpecial)
-            {
-                if (Name == "!addcmd") addCmd(message);
-                else if (Name == "!delcmd") delCmd(message);
-                else if (Name == "!help") helpCmd(message);
-                else if (Name == "!np") playingCmd();
-                else if (Name == "!uptime") uptime();
-            }
-            return response;
+            RequiresMod = requiresMod;
+            this.specialFunc = specialFunc;
+            IsSpecial = true;
         }
-
-
-        private bool hasSpecialChars(string str)
+        public string getResponse(CommandParameter param)
+        {
+            return specialFunc?.Invoke(param) ?? response;
+        }
+        private static bool hasSpecialChars(string str)
         {
             str = str[0] == '!' ? str.Substring(1) : str;
             return str.Any(c => !char.IsLetterOrDigit(c));
