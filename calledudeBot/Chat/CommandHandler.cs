@@ -9,7 +9,7 @@ namespace calledudeBot.Chat
 {
     public class CommandHandler
     {
-        internal static List<Command> commands = new List<Command>();
+        internal static List<Command> commands;
         private string cmdFile = calledudeBot.cmdFile;
         private MessageHandler messageHandler;
         private static bool initialized;

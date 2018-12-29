@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
-using calledudeBot.Chat;
 
 namespace calledudeBot.Chat.Info
 {
@@ -25,6 +22,13 @@ namespace calledudeBot.Chat.Info
         public List<string> Words { get; private set; } = new List<string>();
         public Message Message { get; }
         public bool SenderIsMod { get; }
+        public List<Command> Commands
+        {
+            get
+            {
+                return CommandHandler.commands;
+            }
+        }
 
         public CommandParameter(IEnumerable<string> param, Message message)
         {
