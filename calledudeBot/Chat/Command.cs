@@ -7,7 +7,7 @@ namespace calledudeBot.Chat
 {
     public partial class Command
     {
-        private static List<Command> commands = CommandHandler.commands;
+        private static List<Command> commands;
         private string response;
         private static string cmdFile = calledudeBot.cmdFile;
         public Func<CommandParameter, string> specialFunc;
@@ -19,6 +19,7 @@ namespace calledudeBot.Chat
 
         public Command(CommandParameter cmdParam)
         {
+            commands = cmdParam.Commands;
             Name = cmdParam.PrefixedWords.First();
             AlternateName = cmdParam.PrefixedWords.Skip(1).ToList();
             Description = string.Join(" ", cmdParam.EnclosedWords).Trim('<', '>');
