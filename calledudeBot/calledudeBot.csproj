@@ -182,6 +182,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Chat\CommandParameter.cs">
     <Compile Include="Chat\SpecialCommands.cs" />
     <Compile Include="Chat\User.cs" />
     <Compile Include="Services\ApiHandler.cs" />
