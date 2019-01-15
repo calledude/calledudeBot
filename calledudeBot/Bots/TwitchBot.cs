@@ -41,34 +41,26 @@ namespace calledudeBot.Bots
 
         public override void Listen()
         {
-            try
+            for (buf = input.ReadLine(); ; buf = input.ReadLine())
             {
-                for (buf = input.ReadLine(); ; buf = input.ReadLine())
+                var b = buf.Split(' ');
+                if (b[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
                 {
-                    var b = buf.Split(' ');
-                    if (b[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
-                    {
-                        Message message = new Message(buf, this);
-                        messageHandler.determineResponse(message);
-                    }
-                    else if (buf.StartsWith($":tmi.twitch.tv NOTICE {channelName} :The moderators of this channel are:"))
-                    {
-                        int modsIndex = buf.LastIndexOf(':') + 1;
-                        var modsArr = buf.Substring(modsIndex).Split(',');
-                        mods = modsArr.Select(x => x.Trim()).ToList();
-                    }
-                    else if (b[0] == "PING")
-                    {
-                        string pong = buf.Replace("PING", "PONG");
-                        WriteLine(pong);
-                        tryLog(pong);
-                    }
+                    Message message = new Message(buf, this);
+                    messageHandler.determineResponse(message);
                 }
-            }
-            catch (Exception e)
-            {
-                Logger.log(e.Message);
-                reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
+                else if (buf.StartsWith($":tmi.twitch.tv NOTICE {channelName} :The moderators of this channel are:"))
+                {
+                    int modsIndex = buf.LastIndexOf(':') + 1;
+                    var modsArr = buf.Substring(modsIndex).Split(',');
+                    mods = modsArr.Select(x => x.Trim()).ToList();
+                }
+                else if (b[0] == "PING")
+                {
+                    string pong = buf.Replace("PING", "PONG");
+                    WriteLine(pong);
+                    tryLog(pong);
+                }
             }
         }
 

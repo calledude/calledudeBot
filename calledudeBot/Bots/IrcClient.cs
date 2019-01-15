@@ -1,8 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using calledudeBot.Chat;
+using calledudeBot.Services;
 
 namespace calledudeBot.Bots
 {
@@ -13,6 +15,7 @@ namespace calledudeBot.Bots
         protected TextReader input;
         protected string nick;
         protected int port = 6667;
+        protected string server;
         protected string buf;
         protected string channelName;
 
@@ -20,6 +23,12 @@ namespace calledudeBot.Bots
 
 
         protected IrcClient(string server)
+        {
+            this.server = server;
+            Setup();
+        }
+
+        protected void Setup()
         {
             sock = new TcpClient();
             sock.Connect(server, port);
@@ -30,8 +39,19 @@ namespace calledudeBot.Bots
         internal override Task Start()
         {
             Login();
-            
-            if (!testRun) Listen();
+
+            if (!testRun)
+            {
+                try
+                {
+                    Listen();
+                }
+                catch (Exception e)
+                {
+                    Logger.log(e.Message);
+                    reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
+                }
+            }
             return Task.CompletedTask;
         }
 
@@ -44,10 +64,11 @@ namespace calledudeBot.Bots
         {
             tryLog($"Disconnected. Re-establishing connection..");
             sock.Dispose();
+
             while (!sock.Connected)
             {
+                Setup();
                 Start();
-                StartServices();
                 Thread.Sleep(5000);
             }
         }
