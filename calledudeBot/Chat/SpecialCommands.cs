@@ -180,7 +180,11 @@ namespace calledudeBot.Chat
 
         private static string removeCommand(Command cmd, string altName = null)
         {
+            if (cmd.IsSpecial)
+                return "You can't change a special command.";
+
             string response;
+
             if (cmd.Name != altName)
             {
                 cmd.AlternateName.Remove(altName);
