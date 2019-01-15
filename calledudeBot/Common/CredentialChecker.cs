@@ -223,8 +223,7 @@ namespace calledudeBot
             }
         }
 
-
-        //Setup related functions below
+        #region Setup
         private static void openWebsite(int delay, string url) //Opens a website in a non-blocking manner after the specified delay
         {
             Task.Run(() =>
@@ -328,7 +327,7 @@ namespace calledudeBot
             osuAPIToken = Console.ReadLine();
             creds.Add("osuAPI", osuAPIToken);
         }
-
+        #endregion
 
     }
 }
