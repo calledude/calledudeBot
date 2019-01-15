@@ -1,7 +1,4 @@
-﻿using System;
-using calledudeBot.Services;
-
-namespace calledudeBot.Bots
+﻿namespace calledudeBot.Bots
 {
     public class OsuBot : IrcClient
     {
@@ -14,22 +11,14 @@ namespace calledudeBot.Bots
 
         public override void Listen()
         {
-            try
+            for (buf = input.ReadLine(); ; buf = input.ReadLine())
             {
-                for (buf = input.ReadLine();; buf = input.ReadLine())
+                if (buf.StartsWith("PING "))
                 {
-                    if (buf.StartsWith("PING "))
-                    {
-                        string pong = buf.Replace("PING", "PONG");
-                        WriteLine(pong);
-                        tryLog(pong);
-                    }
+                    string pong = buf.Replace("PING", "PONG");
+                    WriteLine(pong);
+                    tryLog(pong);
                 }
-            }
-            catch (Exception e)
-            {
-                Logger.log(e.Message);
-                reconnect();
             }
         }
     }
