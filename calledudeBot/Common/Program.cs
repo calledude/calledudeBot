@@ -26,7 +26,7 @@ namespace calledudeBot
 
                 if (isCtrlC || isCtrlBreak) e.Cancel = true;
             };
-            Clean();
+            CleanCmdFile();
 
             CredentialChecker.ProduceBots();
             bots = CredentialChecker.GetVerifiedBots(out discordBot, out twitchBot, out osuBot);
@@ -44,9 +44,7 @@ namespace calledudeBot
             }            
         }
 
-
-
-        private static void Clean()
+        private static void CleanCmdFile()
         {
             if (!File.Exists(cmdFile))
             {
@@ -57,6 +55,7 @@ namespace calledudeBot
             //Cleaning up
             List<string> cleanList = File.ReadAllLines(cmdFile)
                                          .Where(p => !string.IsNullOrWhiteSpace(p))
+                                         .Select(p => p.Trim())
                                          .ToList();
 
             File.WriteAllLines(cmdFile, cleanList);
