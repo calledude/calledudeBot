@@ -33,12 +33,17 @@ namespace calledudeBot.Chat.Info
         public CommandParameter(IEnumerable<string> param, Message message)
         {
             PrefixedWords = param.Where((x, i) => x[0] == '!').ToList();
-            
+
             //If message is null, it was most likely called from an offline state, 
             // ergo, it doesn't have the !addcmd-part, and as such we won't add the second word 
             // as if it were intended as a shorthand (non-prefixed) commandname
-            if(message != null && param.Skip(1).Any())
-                PrefixedWords.Add(param.Skip(1).First());
+            if (message != null && param.Skip(1).Any())
+            {
+                PrefixedWords.Add('!' + param.Skip(1).First());
+                var pa = param.ToList();
+                pa.RemoveAt(1);
+                param = pa;
+            }
 
             var paramStr = string.Join(" ", param);
             var encIdx = paramStr.LastIndexOf('<');
@@ -46,7 +51,7 @@ namespace calledudeBot.Chat.Info
 
             var encWords = encIdx > 1 && encEndIdx > 1 ? paramStr.Substring(encIdx, encEndIdx - encIdx) : null;
             EnclosedWords = encWords?.Split(' ')?.ToList() ?? EnclosedWords;
-
+            
             Words = param.Except(EnclosedWords).Except(PrefixedWords).ToList();
 
             Message = message;
