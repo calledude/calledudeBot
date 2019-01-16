@@ -22,7 +22,7 @@ namespace calledudeBot
         private static Dictionary<string, string> creds;
         private static string credFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\credentials";
         private static string discordToken, twitchAPItoken, twitchIRCtoken, osuIRCtoken,
-                                osuAPIToken, botNick, channelName, osuNick, announceChanID;
+                                osuAPIToken, botNick, channelName, osuNick, announceChanID, streamerID;
         private static bool verifiedBots;
         public static void ProduceBots()
         {
@@ -41,7 +41,7 @@ namespace calledudeBot
         public static List<Bot> GetVerifiedBots(out DiscordBot discordBot, out TwitchBot twitchBot, out OsuBot osuBot)
         {
             if (!verifiedBots) throw new InvalidOperationException("You're not allowed to call this method before all bots have been verified.");
-            discordBot = new DiscordBot(discordToken, twitchAPItoken, channelName, announceChanID);
+            discordBot = new DiscordBot(discordToken, announceChanID, streamerID);
             osuBot = new OsuBot(osuIRCtoken, osuNick);
             twitchBot = new TwitchBot(twitchIRCtoken, osuAPIToken, osuNick, botNick, channelName);
             return new List<Bot> { discordBot, twitchBot, osuBot };
@@ -51,15 +51,14 @@ namespace calledudeBot
         //Returns a boolean after running every single bot through the verify function
         private static bool VerifyCredentials()
         {
-            bool discToken = false, discServices = false, twitchToken = false, twitchServices = false, osuToken = false;
+            bool discToken = false, twitchToken = false, twitchServices = false, osuToken = false;
             Parallel.Invoke(
                 () => discToken = VerifyToken(TestSubject.Discord),
-                () => discServices = VerifyServices(TestSubject.Discord),
                 () => twitchToken = VerifyToken(TestSubject.Twitch),
                 () => twitchServices = VerifyServices(TestSubject.Twitch),
                 () => osuToken = VerifyToken(TestSubject.Osu));
             
-            return verifiedBots = discToken && discServices && twitchToken && twitchServices && osuToken;
+            return verifiedBots = discToken && twitchToken && twitchServices && osuToken;
         }
 
         private static bool VerifyToken(TestSubject testSubject)
@@ -139,7 +138,7 @@ namespace calledudeBot
             Bot bot;
             if (testSubject is TestSubject.Discord)
             {
-                bot = new DiscordBot(discordToken, twitchAPItoken, channelName, announceChanID);
+                bot = new DiscordBot(discordToken, announceChanID, streamerID);
             }
             else if (testSubject is TestSubject.Twitch)
             {
@@ -159,10 +158,10 @@ namespace calledudeBot
                 && creds.TryGetValue("OsuNick", out osuNick)
                 && creds.TryGetValue("AnnounceChannelID", out announceChanID)
                 && creds.TryGetValue("DiscordToken", out discordToken)
-                && creds.TryGetValue("TwitchAPI", out twitchAPItoken)
                 && creds.TryGetValue("TwitchIRC", out twitchIRCtoken)
                 && creds.TryGetValue("osuIRC", out osuIRCtoken)
-                && creds.TryGetValue("osuAPI", out osuAPIToken);
+                && creds.TryGetValue("osuAPI", out osuAPIToken)
+                && creds.TryGetValue("StreamerID", out streamerID);
         }
 
         private static void getMissingCredentials()
@@ -174,10 +173,10 @@ namespace calledudeBot
                 { "OsuNick", "" },
                 { "AnnounceChannelID", "" },
                 { "DiscordToken", "" },
-                { "TwitchAPI", "" },
                 { "TwitchIRC", "" },
                 { "osuIRC", "" },
                 { "osuAPI", "" },
+                { "StreamerID", "" }
             };
 
             Console.WriteLine("Hey! You've not completed all the steps to make the bot work. Let's do that shall we?");
@@ -327,6 +326,14 @@ namespace calledudeBot
             osuAPIToken = Console.ReadLine();
             creds.Add("osuAPI", osuAPIToken);
         }
+
+        private static void getStreamerID()
+        {
+            Console.Write("YOUR User-ID (On Discord): ");
+            streamerID = Console.ReadLine();
+            creds.Add("StreamerID", streamerID);
+        }
+
         #endregion
 
     }
