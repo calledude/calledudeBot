@@ -4,6 +4,8 @@ A personal bot I wrote because there weren't any other options out there that le
 
 Various API keys and whatnot are needed to make this work.
 
+This project uses a modified version of `obs-websocket-dotnet` and my fork of it can be found [here](https://github.com/calledude/obs-websocket-dotnet). The .dll is however included for your convenience.
+
 ## Functionality:
 * twitch -> osu! relaying of messages
 * osu! -> twitch relay
