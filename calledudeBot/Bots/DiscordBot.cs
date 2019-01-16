@@ -4,8 +4,10 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using calledudeBot.Chat;
-using calledudeBot.Services;
 using System.Collections.Generic;
+using OBSWebsocketDotNet;
+using System.Timers;
+using System.Diagnostics;
 
 namespace calledudeBot.Bots
 {
@@ -14,21 +16,22 @@ namespace calledudeBot.Bots
         private DiscordSocketClient bot;
         private MessageHandler messageHandler;
         private DateTime streamStarted;
-        private ulong announceChanID;
-        private bool isOnline;
-        private string twitchUsername, twitchAPItoken;
+        private ulong announceChanID, streamerID;
+        private bool isStreaming;
+        private Timer streamStatusTimer;
+        private SocketUser streamer;
+        private OBSWebsocket obs;
 
-        public DiscordBot(string token, string twitchAPItoken, string channelName, string announceChanID)
+        public DiscordBot(string token, string announceChanID, string streamerID)
         {
             instanceName = "Discord";
             this.token = token;
-            this.twitchAPItoken = twitchAPItoken;
             this.announceChanID = Convert.ToUInt64(announceChanID);
-            twitchUsername = channelName.Substring(1);
+            this.streamerID = Convert.ToUInt64(streamerID);
             messageHandler = new MessageHandler(this);
 
-            string url = $"https://api.twitch.tv/helix/streams?user_login={twitchUsername}";
-            api = new APIHandler(url, RequestData.TwitchUser, twitchAPItoken);
+            streamStatusTimer = new Timer(2000);
+            streamStatusTimer.Elapsed += CheckStreamStatus;
         }
 
         internal override async Task Start()
@@ -46,10 +49,41 @@ namespace calledudeBot.Bots
             await bot.StartAsync();
         }
 
-        private Task Ready()
+        private async Task Ready()
         {
-            api.DataReceived += determineLiveStatus;
-            return Task.CompletedTask;
+            List<Process> procs = Process.GetProcessesByName("obs32")
+                        .Concat(Process.GetProcessesByName("obs64")).ToList();
+
+            streamer = bot.GetUser(streamerID);
+
+            obs = new OBSWebsocket();
+            obs.WSTimeout = TimeSpan.FromSeconds(5);
+
+            tryLog("Waiting for OBS to start.");
+            while(!procs.Any())
+            {
+                procs = Process.GetProcessesByName("obs32")
+                        .Concat(Process.GetProcessesByName("obs64")).ToList();
+                await Task.Delay(500);
+            }
+
+            if (!obs.Connect("ws://localhost:4444"))
+            {
+                tryLog("You need to install the obs-websocket plugin for OBS and configure it to run on port 4444.");
+                await Task.Delay(3000);
+                Process.Start("https://github.com/Palakis/obs-websocket/releases");
+            }
+            else
+            {
+                tryLog("Connected to OBS. Start streaming!");
+
+                var obsProc = procs.First();
+                obsProc.EnableRaisingEvents = true;
+                obsProc.Exited += OnObsExit;
+
+                obs.StreamingStateChanged += ToggleLiveStatus;
+                obs.Disconnected += OnObsExit;
+            }
         }
 
         private Task onConnect()
@@ -82,7 +116,8 @@ namespace calledudeBot.Bots
 
         public IEnumerable<SocketGuildUser> getModerators()
         {
-            var roles = bot.GetGuild(announceChanID).Roles;
+            var channel = bot.GetChannel(announceChanID) as IGuildChannel;
+            var roles = channel.Guild.Roles as IReadOnlyCollection<SocketRole>;
             return roles.Where(x => x.Permissions.BanMembers || x.Permissions.KickMembers).SelectMany(r => r.Members);
         }
 
@@ -92,32 +127,46 @@ namespace calledudeBot.Bots
             await channel.SendMessageAsync(message.Content);
         }
 
-        private void determineLiveStatus(JsonData jsonData)
+        private async void OnObsExit(object sender, EventArgs e)
         {
-            if(jsonData?.twitchData?.Count > 0)
-            {
-                if (!isOnline)
-                {
-                    TwitchData data = jsonData.twitchData[0];
-                    Message msg = new Message($"{twitchUsername} just went live with the title: \"{data.title}\" - Watch at: https://twitch.tv/{twitchUsername}/", this)
-                    {
-                        Destination = announceChanID
-                    };
-                    sendMessage(msg);
+            isStreaming = false;
+            streamStatusTimer.Stop();
+            obs.Disconnect();
+            await Ready();
+        }
 
-                    streamStarted = data.started_at.ToLocalTime();
-                    isOnline = true;
-                }
-            }
-            else
+        private void CheckStreamStatus(object sender, ElapsedEventArgs e)
+        {
+            if (streamer?.Activity is StreamingGame sg)
             {
-                isOnline = false;
+                var twitchUsername = sg.Url.Split('/').Last();
+                Message msg = new Message($"{twitchUsername} just went live with the title: \"{sg.Name}\" - Watch at: {sg.Url}", this)
+                {
+                    Destination = announceChanID
+                };
+                sendMessage(msg);
+                isStreaming = true;
+                streamStatusTimer.Stop();
             }
         }
 
+        private void ToggleLiveStatus(OBSWebsocket sender, OutputState type)
+        {
+            if (type == OutputState.Started)
+            {
+                streamStarted = DateTime.Now;
+                streamStatusTimer.Start();
+            }
+            else if (type == OutputState.Stopped)
+            {
+                isStreaming = false;
+                streamStatusTimer.Stop();
+            }
+        }
+        
         public DateTime wentLiveAt()
         {
-            if (isOnline)
+            if (isStreaming)
                 return streamStarted;
             else
                 return new DateTime();
