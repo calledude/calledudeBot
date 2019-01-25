@@ -38,10 +38,10 @@ namespace calledudeBot
             {
                 new Thread(async () =>
                 {
-                    await bot.Start();
                     bot.StartServices();
+                    await bot.Start();
                 }).Start();
-            }            
+            }
         }
 
         private static void CleanCmdFile()

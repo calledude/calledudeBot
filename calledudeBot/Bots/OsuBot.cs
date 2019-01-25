@@ -2,11 +2,10 @@
 {
     public class OsuBot : IrcClient
     {
-        public OsuBot(string token, string osuNick) : base("cho.ppy.sh")
+        public OsuBot(string token, string osuNick) : base("cho.ppy.sh", "osu!")
         {
-            this.token = token;
+            Token = token;
             channelName = nick = osuNick;
-            instanceName = "osu!";
         }
 
         public override void Listen()
