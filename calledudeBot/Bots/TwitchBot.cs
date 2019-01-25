@@ -16,17 +16,17 @@ namespace calledudeBot.Bots
         private bool modCheckLock;
         private OsuUserData oldOsuData;
 
-        public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName) : base("irc.chat.twitch.tv")
+        public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName) 
+            : base("irc.chat.twitch.tv", "Twitch")
         {
-            this.token = token;
+            Token = token;
             this.channelName = channelName;
 
             nick = botNick;
-            instanceName = "Twitch";
             messageHandler = new MessageHandler(this, channelName, osuAPIToken);
 
-            api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}", RequestData.OsuUser);
-            api.DataReceived += checkUserUpdate;
+            Api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}", RequestData.OsuUser);
+            Api.DataReceived += checkUserUpdate;
         }
 
         internal async override Task Start()
@@ -43,6 +43,7 @@ namespace calledudeBot.Bots
         {
             for (buf = input.ReadLine(); ; buf = input.ReadLine())
             {
+                if (buf.Contains("!crash")) throw new Exception("hehe");
                 var b = buf.Split(' ');
                 if (b[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
                 {
@@ -102,6 +103,12 @@ namespace calledudeBot.Bots
                 modLockTimer.Start();
             }
             return mods;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            modLockTimer?.Dispose();
         }
     }
 }

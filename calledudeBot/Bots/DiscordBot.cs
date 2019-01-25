@@ -22,10 +22,10 @@ namespace calledudeBot.Bots
         private SocketUser streamer;
         private OBSWebsocket obs;
 
-        public DiscordBot(string token, string announceChanID, string streamerID)
+        public DiscordBot(string token, string announceChanID, string streamerID) 
+            : base("Discord")
         {
-            instanceName = "Discord";
-            this.token = token;
+            Token = token;
             this.announceChanID = Convert.ToUInt64(announceChanID);
             this.streamerID = Convert.ToUInt64(streamerID);
             messageHandler = new MessageHandler(this);
@@ -45,33 +45,41 @@ namespace calledudeBot.Bots
                 bot.Disconnected += onDisconnect;
             }
 
-            await bot.LoginAsync(TokenType.Bot, token);
+            await bot.LoginAsync(TokenType.Bot, Token);
             await bot.StartAsync();
         }
 
         private async Task Ready()
         {
-            List<Process> procs = Process.GetProcessesByName("obs32")
-                        .Concat(Process.GetProcessesByName("obs64")).ToList();
-
             streamer = bot.GetUser(streamerID);
 
             obs = new OBSWebsocket();
             obs.WSTimeout = TimeSpan.FromSeconds(5);
+            obs.StreamingStateChanged += ToggleLiveStatus;
 
+            await ConnectToOBS();
+        }
+
+        private async Task ConnectToOBS()
+        {
             tryLog("Waiting for OBS to start.");
-            while(!procs.Any())
+            List<Process> procs = null;
+            while (procs == null || !procs.Any())
             {
                 procs = Process.GetProcessesByName("obs32")
-                        .Concat(Process.GetProcessesByName("obs64")).ToList();
+                        .Concat(Process.GetProcessesByName("obs64"))
+                        .ToList();
                 await Task.Delay(500);
             }
 
-            if (!obs.Connect("ws://localhost:4444"))
+            //Trying 5 times just in case.
+            if (Enumerable.Range(1, 5).Select(x => obs.Connect("ws://localhost:4444")).All(x => !x))
             {
                 tryLog("You need to install the obs-websocket plugin for OBS and configure it to run on port 4444.");
                 await Task.Delay(3000);
                 Process.Start("https://github.com/Palakis/obs-websocket/releases");
+                await Task.Delay(10000);
+                await ConnectToOBS();
             }
             else
             {
@@ -80,9 +88,6 @@ namespace calledudeBot.Bots
                 var obsProc = procs.First();
                 obsProc.EnableRaisingEvents = true;
                 obsProc.Exited += OnObsExit;
-
-                obs.StreamingStateChanged += ToggleLiveStatus;
-                obs.Disconnected += OnObsExit;
             }
         }
 
@@ -132,7 +137,7 @@ namespace calledudeBot.Bots
             isStreaming = false;
             streamStatusTimer.Stop();
             obs.Disconnect();
-            await Ready();
+            await ConnectToOBS();
         }
 
         private void CheckStreamStatus(object sender, ElapsedEventArgs e)
@@ -176,6 +181,13 @@ namespace calledudeBot.Bots
         {
             await bot.LogoutAsync();
             await bot.StopAsync();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            bot.Dispose();
+            obs?.Disconnect();
+            streamStatusTimer.Dispose();
         }
     }
 }

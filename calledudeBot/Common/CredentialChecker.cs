@@ -63,74 +63,78 @@ namespace calledudeBot
 
         private static bool VerifyToken(TestSubject testSubject)
         {
-            Bot bot = getBotInstance(testSubject);
-            bool success = false;
-            try
+            using (Bot bot = getBotInstance(testSubject))
             {
-                Task.Run(async () => await bot.Start())
-                    .GetAwaiter().GetResult();
-                success = true; //Will only be set if bot.Start() does not throw an exception
-            }
-            catch (HttpException)
-            {
-                bot.tryLog("Invalid Discord token.");
-                creds.Remove("DiscordToken");
-            }
-            catch (InvalidOrWrongTokenException)
-            {
-                if(bot is OsuBot)
+                bool success = false;
+                try
                 {
-                    creds.Remove("osuIRC");
-                    creds.Remove("OsuNick");
-                    bot.tryLog("Invalid token and/or osu!-nickname");
+                    Task.Run(async () => await bot.Start())
+                        .GetAwaiter().GetResult();
+                    success = true; //Will only be set if bot.Start() does not throw an exception
                 }
-                else
+                catch (HttpException)
                 {
-                    creds.Remove("TwitchIRC");
-                    bot.tryLog("Invalid token");
+                    bot.tryLog("Invalid Discord token.");
+                    creds.Remove("DiscordToken");
                 }
+                catch (InvalidOrWrongTokenException)
+                {
+                    if (bot is OsuBot)
+                    {
+                        creds.Remove("osuIRC");
+                        creds.Remove("OsuNick");
+                        bot.tryLog("Invalid token and/or osu!-nickname");
+                    }
+                    else
+                    {
+                        creds.Remove("TwitchIRC");
+                        bot.tryLog("Invalid token");
+                    }
+                }
+                finally
+                {
+                    bot.tryLog($"Token: {(success ? "Succeeded." : "Failed.")}");
+                    bot.Logout();
+                }
+                return success;
             }
-            finally
-            {
-                bot.tryLog($"Token: {(success ? "Succeeded." : "Failed.")}");
-                bot.Logout();
-            }
-            return success;
         }
 
         private static bool VerifyServices(TestSubject testSubject)
         {
-            Bot bot = getBotInstance(testSubject);
-            bool success = false;
-            try
+            using (Bot bot = getBotInstance(testSubject))
             {
-                Task.Run(() => bot.StartServices())
-                    .GetAwaiter().GetResult();
-                success = true; //Will only be set if bot.StartServices() does not throw an exception
-            }
-            catch (WebException)
-            {
-                if (bot is TwitchBot)
+                bool success = false;
+                try
                 {
-                    bot.tryLog("Invalid osu! API token.");
-                    creds.Remove("osuAPI");
+                    Task.Run(() => bot.StartServices())
+                        .GetAwaiter().GetResult();
+                    success = true; //Will only be set if bot.StartServices() does not throw an exception
                 }
-                else if (bot is DiscordBot)
+                catch (WebException)
                 {
-                    bot.tryLog("Invalid Twitch API token.");
-                    creds.Remove("TwitchAPI");
+                    if (bot is TwitchBot)
+                    {
+                        bot.tryLog("Invalid osu! API token.");
+                        creds.Remove("osuAPI");
+                    }
+                    else if (bot is DiscordBot)
+                    {
+                        bot.tryLog("Invalid Twitch API token.");
+                        creds.Remove("TwitchAPI");
+                    }
                 }
+                catch (ArgumentException)
+                {
+                    creds.Remove("OsuNick");
+                    bot.tryLog("Invalid osu!-nickname.");
+                }
+                finally
+                {
+                    bot.tryLog($"Services: {(success ? "Succeeded." : "Failed.")}");
+                }
+                return success;
             }
-            catch (ArgumentException)
-            {
-                creds.Remove("OsuNick");
-                bot.tryLog("Invalid osu!-nickname.");
-            }
-            finally
-            {
-                bot.tryLog($"Services: {(success ? "Succeeded." : "Failed.")}");
-            }
-            return success;
         }
 
         private static Bot getBotInstance(TestSubject testSubject)

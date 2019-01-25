@@ -21,8 +21,7 @@ namespace calledudeBot.Bots
 
         public abstract void Listen();
 
-
-        protected IrcClient(string server)
+        protected IrcClient(string server, string name) : base(name)
         {
             this.server = server;
             Setup();
@@ -48,7 +47,8 @@ namespace calledudeBot.Bots
                 }
                 catch (Exception e)
                 {
-                    Logger.log(e.Message);
+                    tryLog(e.Message);
+                    tryLog(e.StackTrace);
                     reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
                 }
             }
@@ -63,7 +63,7 @@ namespace calledudeBot.Bots
         protected virtual void reconnect()
         {
             tryLog($"Disconnected. Re-establishing connection..");
-            sock.Dispose();
+            Dispose(true);
 
             while (!sock.Connected)
             {
@@ -78,10 +78,9 @@ namespace calledudeBot.Bots
             sock.Close();
         }
 
-
         public virtual void Login()
         {
-            WriteLine("PASS " + token + "\r\n" + "NICK " + nick + "\r\n");
+            WriteLine("PASS " + Token + "\r\n" + "NICK " + nick + "\r\n");
             for (buf = input.ReadLine(); ; buf = input.ReadLine())
             {
                 if (buf == null || buf.Split(' ')[1] == "464" 
@@ -92,7 +91,7 @@ namespace calledudeBot.Bots
                 if (buf.Split(' ')[1] == "001")
                 {
                     WriteLine($"JOIN {channelName}");
-                    if(!testRun) tryLog($"Connected to {instanceName}-IRC.");
+                    if(!testRun) tryLog($"Connected to {Name}-IRC.");
                 }
                 else if ((buf.Split(' ')[1] == "376" && this is OsuBot) || buf.Split(' ')[1] == "366") //Signifies a successful login
                 {
@@ -107,5 +106,13 @@ namespace calledudeBot.Bots
             output.WriteLine(message);
             output.Flush();
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            sock.Dispose();
+            input.Dispose();
+            output.Dispose();
+        }
+
     }
 }

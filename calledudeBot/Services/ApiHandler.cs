@@ -10,7 +10,7 @@ namespace calledudeBot.Services
         TwitchUser, OsuUser, OsuSong
     }
 
-    public class APIHandler
+    public class APIHandler : IDisposable
     {
         private string URL;
         private RequestData requestedData;
@@ -63,6 +63,12 @@ namespace calledudeBot.Services
                 jsonString = "{\"osuSongData\":" + jsonString + "}"; //I hate json
             }
             return jsonString;
+        }
+
+        public void Dispose()
+        {
+            client.Dispose();
+            timer.Dispose();
         }
     }
 }
