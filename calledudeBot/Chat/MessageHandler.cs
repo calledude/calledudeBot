@@ -91,12 +91,13 @@ namespace calledudeBot.Chat
             var beatmapID = string.Concat(num);
             var reqLink = string.Format(songRequestLink, osuAPIToken, beatmapID);
 
-            APIHandler api = new APIHandler(reqLink, RequestData.OsuSong);
-            JsonData data = api.requestOnce();
-            if (data?.osuSongData?.Count > 0)
+            using (var api = new APIHandler<OsuSong>(reqLink))
             {
-                OsuSongData o = data.osuSongData[0];
-                message.Content = $"[http://osu.ppy.sh/b/{beatmapID} {o.artist} - {o.title} [{o.version}]]";
+                OsuSong song = api.requestOnce();
+                if (song != null)
+                {
+                    message.Content = $"[http://osu.ppy.sh/b/{beatmapID} {song.Artist} - {song.Title} [{song.BeatmapVersion}]]";
+                }
             }
         }
     }
