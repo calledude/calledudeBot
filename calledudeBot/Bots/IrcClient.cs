@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using calledudeBot.Chat;
-using calledudeBot.Services;
 
 namespace calledudeBot.Bots
 {
@@ -113,6 +112,5 @@ namespace calledudeBot.Bots
             input.Dispose();
             output.Dispose();
         }
-
     }
 }
