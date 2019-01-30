@@ -5,6 +5,7 @@ using calledudeBot.Services;
 using System.Timers;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace calledudeBot.Bots
 {
@@ -14,7 +15,8 @@ namespace calledudeBot.Bots
         private List<string> mods = new List<string>();
         private Timer modLockTimer;
         private bool modCheckLock;
-        private OsuUserData oldOsuData;
+        private OsuUser oldOsuData;
+        private APIHandler<OsuUser> Api;
 
         public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName) 
             : base("irc.chat.twitch.tv", "Twitch")
@@ -25,7 +27,7 @@ namespace calledudeBot.Bots
             nick = botNick;
             messageHandler = new MessageHandler(this, channelName, osuAPIToken);
 
-            Api = new APIHandler($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}", RequestData.OsuUser);
+            Api = new APIHandler<OsuUser>($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}");
             Api.DataReceived += checkUserUpdate;
         }
 
@@ -34,7 +36,7 @@ namespace calledudeBot.Bots
             modLockTimer = new Timer(60000);
             modLockTimer.Elapsed += modLockEvent;
             modLockTimer.Start();
-
+            Api.Start();
             WriteLine("CAP REQ :twitch.tv/commands");
             await base.Start();
         }
@@ -64,27 +66,26 @@ namespace calledudeBot.Bots
             }
         }
 
-        private void checkUserUpdate(JsonData jsonData)
+        private void checkUserUpdate(OsuUser user)
         {
-            if (jsonData.osuUserData.Count == 0) throw new ArgumentException("Invalid username.", "jsonData.osuUserData");
+            if(user == null) throw new ArgumentException("Invalid username.", nameof(user));
 
-            OsuUserData newOsuData = jsonData?.osuUserData[0];
-            if (oldOsuData != null && newOsuData != null)
+            if (oldOsuData != null)
             {
-                if (oldOsuData.pp_rank != newOsuData.pp_rank && Math.Abs(newOsuData.pp_raw - oldOsuData.pp_raw) >= 0.1)
+                if (oldOsuData.Rank != user.Rank && Math.Abs(user.PP - oldOsuData.PP) >= 0.1)
                 {
-                    int rankDiff = newOsuData.pp_rank - oldOsuData.pp_rank;
-                    float ppDiff = newOsuData.pp_raw - oldOsuData.pp_raw;
+                    int rankDiff = user.Rank - oldOsuData.Rank;
+                    float ppDiff = user.PP - oldOsuData.PP;
 
-                    string formatted = string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.00}", Math.Abs(ppDiff));
-                    string totalPP = newOsuData.pp_raw.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    string formatted = string.Format(CultureInfo.InvariantCulture, "{0:0.00}", Math.Abs(ppDiff));
+                    string totalPP = user.PP.ToString(CultureInfo.InvariantCulture);
 
-                    string rankMessage = $"{Math.Abs(rankDiff)} ranks (#{newOsuData.pp_rank}). ";
+                    string rankMessage = $"{Math.Abs(rankDiff)} ranks (#{user.Rank}). ";
                     string ppMessage = $"PP: {(ppDiff < 0 ? "-" : "+")}{formatted}pp ({totalPP}pp)";
-                    sendMessage(new Message($"{newOsuData.username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}"));
+                    sendMessage(new Message($"{user.Username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}"));
                 }
             }
-            oldOsuData = newOsuData;
+            oldOsuData = user;
         }
 
         private void modLockEvent(object sender, ElapsedEventArgs e)
@@ -107,6 +108,7 @@ namespace calledudeBot.Bots
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
+            Api.Dispose();
             modLockTimer?.Dispose();
         }
     }
