@@ -12,17 +12,12 @@ using System.Threading.Tasks;
 
 namespace calledudeBot
 {
-    public enum TestSubject
-    {
-        Discord, Osu, Twitch
-    }
-
     public static class CredentialChecker
     {
         private static Dictionary<string, string> creds;
         private static string credFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\credentials";
-        private static string discordToken, twitchAPItoken, twitchIRCtoken, osuIRCtoken,
-                                osuAPIToken, botNick, channelName, osuNick, announceChanID, streamerID;
+        private static string discordToken, twitchIRCtoken, osuIRCtoken, osuAPIToken, botNick, 
+                                            channelName, osuNick, announceChanID, streamerID;
         private static bool verifiedBots;
         public static void ProduceBots()
         {
@@ -51,19 +46,18 @@ namespace calledudeBot
         //Returns a boolean after running every single bot through the verify function
         private static bool VerifyCredentials()
         {
-            bool discToken = false, twitchToken = false, twitchServices = false, osuToken = false;
+            bool discToken = false, twitchToken = false, osuToken = false;
             Parallel.Invoke(
-                () => discToken = VerifyToken(TestSubject.Discord),
-                () => twitchToken = VerifyToken(TestSubject.Twitch),
-                () => twitchServices = VerifyServices(TestSubject.Twitch),
-                () => osuToken = VerifyToken(TestSubject.Osu));
+                () => discToken = VerifyBot<DiscordBot>(),
+                () => twitchToken = VerifyBot<TwitchBot>(),
+                () => osuToken = VerifyBot<OsuBot>());
             
-            return verifiedBots = discToken && twitchToken && twitchServices && osuToken;
+            return verifiedBots = discToken && twitchToken && osuToken;
         }
 
-        private static bool VerifyToken(TestSubject testSubject)
+        private static bool VerifyBot<T>() where T : Bot
         {
-            using (Bot bot = getBotInstance(testSubject))
+            using (Bot bot = getBotInstance<T>())
             {
                 bool success = false;
                 try
@@ -91,38 +85,10 @@ namespace calledudeBot
                         bot.tryLog("Invalid token");
                     }
                 }
-                finally
-                {
-                    bot.tryLog($"Token: {(success ? "Succeeded." : "Failed.")}");
-                    bot.Logout();
-                }
-                return success;
-            }
-        }
-
-        private static bool VerifyServices(TestSubject testSubject)
-        {
-            using (Bot bot = getBotInstance(testSubject))
-            {
-                bool success = false;
-                try
-                {
-                    Task.Run(() => bot.StartServices())
-                        .GetAwaiter().GetResult();
-                    success = true; //Will only be set if bot.StartServices() does not throw an exception
-                }
                 catch (WebException)
                 {
-                    if (bot is TwitchBot)
-                    {
-                        bot.tryLog("Invalid osu! API token.");
-                        creds.Remove("osuAPI");
-                    }
-                    else if (bot is DiscordBot)
-                    {
-                        bot.tryLog("Invalid Twitch API token.");
-                        creds.Remove("TwitchAPI");
-                    }
+                    bot.tryLog("Invalid osu! API token.");
+                    creds.Remove("osuAPI");
                 }
                 catch (ArgumentException)
                 {
@@ -131,20 +97,22 @@ namespace calledudeBot
                 }
                 finally
                 {
-                    bot.tryLog($"Services: {(success ? "Succeeded." : "Failed.")}");
+                    bot.tryLog($"Verification {(success ? "SUCCESS." : "FAIL.")}");
+                    bot.Logout();
                 }
                 return success;
             }
         }
 
-        private static Bot getBotInstance(TestSubject testSubject)
+        private static Bot getBotInstance<T>() where T : Bot
         {
             Bot bot;
-            if (testSubject is TestSubject.Discord)
+
+            if(typeof(T) == typeof(DiscordBot))
             {
                 bot = new DiscordBot(discordToken, announceChanID, streamerID);
             }
-            else if (testSubject is TestSubject.Twitch)
+            else if(typeof(T) == typeof(TwitchBot))
             {
                 bot = new TwitchBot(twitchIRCtoken, osuAPIToken, osuNick, botNick, channelName);
             }
@@ -297,14 +265,6 @@ namespace calledudeBot
                 openWebsite(0, $"https://discordapp.com/oauth2/authorize?client_id={Console.ReadLine()}&scope=bot");
             }
             creds.Add("DiscordToken", discordToken);
-        }
-
-        private static void getTwitchAPI()
-        {
-            Console.Write("Twitch API token (Called 'Client ID' on twitch): ");
-            openWebsite(2000, "https://dev.twitch.tv/dashboard/apps");
-            twitchAPItoken = Console.ReadLine();
-            creds.Add("TwitchAPI", twitchAPItoken);
         }
 
         private static void getTwitchIRC()
