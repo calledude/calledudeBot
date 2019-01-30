@@ -1,8 +1,19 @@
 # calledudeBot
 
-A personal bot I wrote because there weren't any other options out there that let you interact with viewers easily if you only have one monitor. This bot will help mitigate the ever so frustating problem of having to alt-tab constantly.
+## Required:
+##### The bot will prompt you if any of these are missing.
+* **[obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases)**
+* **BotNick** - The name of the bot you created on Twitch.tv
+* **ChannelName** - Your twitch-name with a # in front of it basically
+* **OsuNick** - Your osu!-nickname
+* **AnnounceChannelID** - The channelID in which you want the bot to announce when your stream goes live.
+* **DiscordToken** - The token for the discord bot you created.
+* **TwitchIRC** - The Twitch IRC token
+* **osuIRC** - The osu!-IRC token
+* **osuAPI** - The osu!-API token
+* **StreamerID** - Your userID on discord.
 
-Various API keys and whatnot are needed to make this work.
+A personal bot I wrote because there weren't any other options out there that let you interact with viewers easily if you only have one monitor. This bot will help mitigate the ever so frustating problem of having to alt-tab constantly.
 
 This project uses a modified version of `obs-websocket-dotnet` and my fork of it can be found [here](https://github.com/calledude/obs-websocket-dotnet). The .dll is however included for your convenience.
 
