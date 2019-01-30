@@ -5,64 +5,38 @@ using System.Timers;
 
 namespace calledudeBot.Services
 {
-    public enum RequestData
-    {
-        TwitchUser, OsuUser, OsuSong
-    }
-
-    public class APIHandler : IDisposable
+    public class APIHandler<T> : IDisposable
     {
         private string URL;
-        private RequestData requestedData;
-        private WebClient client = new WebClient();
+        private WebClient client;
         private Timer timer;
-        public event Action<JsonData> DataReceived;
+        public event Action<T> DataReceived;
 
-        public APIHandler(string URL, RequestData requestedData, string token = null)
+        public APIHandler(string URL)
         {
-            if (requestedData == RequestData.TwitchUser) client.Headers.Add("Client-ID", token);
-            this.requestedData = requestedData;
             this.URL = URL;
-
+            client = new WebClient();
             timer = new Timer(30000);
             timer.Elapsed += requestData;
         }
 
         public void Start()
         {
-            timer.Start();
             requestData(null, null);
+            timer.Start();
         }
 
         //is called continuously and raises the DataReceived event when payload is ready.
         private void requestData(object sender, ElapsedEventArgs e)
         {
-            JsonData jsonData = requestOnce();
-            DataReceived?.Invoke(jsonData);
+            var payload = requestOnce();
+            DataReceived?.Invoke(payload);
         }
 
-        public JsonData requestOnce()
+        public T requestOnce()
         {
-            string jsonString = client.DownloadString(URL);
-            jsonString = formatJsonString(jsonString);
-            return JsonConvert.DeserializeObject<JsonData>(jsonString);
-        }
-
-        private string formatJsonString(string jsonString)
-        {
-            if (requestedData == RequestData.OsuUser)
-            {
-                jsonString = "{\"osuUserData\":" + jsonString + "}"; //I hate json
-            }
-            else if (requestedData == RequestData.TwitchUser)
-            {
-                jsonString = jsonString.Replace("data", "twitchData");
-            }
-            else if (requestedData == RequestData.OsuSong)
-            {
-                jsonString = "{\"osuSongData\":" + jsonString + "}"; //I hate json
-            }
-            return jsonString;
+            string jsonString = client.DownloadString(URL).Trim('[', ']');
+            return JsonConvert.DeserializeObject<T>(jsonString);
         }
 
         public void Dispose()
