@@ -1,43 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace calledudeBot.Services
 {
-    public class JsonData
+    public class OsuUser
     {
-        //osu
-        public List<OsuUserData> osuUserData { get; set; }
+        [JsonProperty("user_id")]
+        public string UserID { get; set; }
 
-        //Twitch
-        public List<TwitchData> twitchData { get; set; }
+        [JsonProperty("username")]
+        public string Username { get; set; }
 
-        //osuSongData
-        public List<OsuSongData> osuSongData { get; set; }
+        [JsonProperty("pp_rank")]
+        public int Rank { get; set; }
 
-    }
-    public class OsuUserData
-    {
-        public string user_id { get; set; }
-        public string username { get; set; }
-        public int pp_rank { get; set; }
-        public string level { get; set; }
-        public float pp_raw { get; set; }
-        public float accuracy { get; set; }
-        public int pp_country_rank { get; set; }
-        public List<object> events { get; set; }
-    }
+        [JsonProperty("level")]
+        public string Level { get; set; }
 
-    public class OsuSongData
-    {
-        public string version { get; set; }
-        public string artist { get; set; }
-        public string title { get; set; }
+        [JsonProperty("pp_raw")]
+        public float PP { get; set; }
+
+        [JsonProperty("accuracy")]
+        public float Accuracy { get; set; }
+
+        [JsonProperty("pp_country_rank")]
+        public int CountryRank { get; set; }
+
+        [JsonProperty("events")]
+        public List<object> Events { get; set; }
     }
 
-    public class TwitchData
+    public class OsuSong
     {
-        public string title { get; set; }
-        public DateTime started_at { get; set; }
+        [JsonProperty("version")]
+        public string BeatmapVersion { get; set; }
+
+        [JsonProperty("artist")]
+        public string Artist { get; set; }
+
+        [JsonProperty("title")]
+        public string Title { get; set; }
     }
     
 }
