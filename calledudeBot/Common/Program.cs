@@ -38,7 +38,6 @@ namespace calledudeBot
             {
                 new Thread(async () =>
                 {
-                    bot.StartServices();
                     await bot.Start();
                 }).Start();
             }
