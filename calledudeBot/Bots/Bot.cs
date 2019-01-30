@@ -11,7 +11,6 @@ namespace calledudeBot.Bots
 
         protected string Name { get; }
         protected string Token { get; set; }
-        protected APIHandler Api { get; set; }
 
         internal abstract Task Start();
         internal abstract void Logout();
@@ -23,12 +22,7 @@ namespace calledudeBot.Bots
             Name = name;
         }
 
-        internal virtual void StartServices()
-        {
-            Api?.Start();
-        }
-
-        public virtual void tryLog(string message)
+        public void tryLog(string message)
         {
             string msg = $"[{Name}]: {message}";
             Logger.log(msg);
@@ -36,10 +30,8 @@ namespace calledudeBot.Bots
 
         public void Dispose()
         {
-            Api?.Dispose();
             Dispose(true);
         }
-
     }
 
     [Serializable]
@@ -48,6 +40,5 @@ namespace calledudeBot.Bots
         public InvalidOrWrongTokenException(string message) : base(message)
         {
         }
-
     }
 }
