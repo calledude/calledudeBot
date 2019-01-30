@@ -1,5 +1,7 @@
 # calledudeBot
 
+A personal bot I wrote because there weren't any other options out there that let you interact with viewers easily if you only have one monitor. This bot will help mitigate the ever so frustating problem of having to alt-tab constantly.
+
 ## Required:
 ##### The bot will prompt you if any of these are missing.
 * **[obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases)**
@@ -12,10 +14,6 @@
 * **osuIRC** - The osu!-IRC token
 * **osuAPI** - The osu!-API token
 * **StreamerID** - Your userID on discord.
-
-A personal bot I wrote because there weren't any other options out there that let you interact with viewers easily if you only have one monitor. This bot will help mitigate the ever so frustating problem of having to alt-tab constantly.
-
-This project uses a modified version of `obs-websocket-dotnet` and my fork of it can be found [here](https://github.com/calledude/obs-websocket-dotnet). The .dll is however included for your convenience.
 
 ## Functionality:
 * twitch -> osu! relaying of messages
@@ -37,6 +35,9 @@ This project uses a modified version of `obs-websocket-dotnet` and my fork of it
 * Wiki - To explain how to use the bot and how to set it up.
 * Encryption of API keys
 * Hopefully get Spotify integration going again
+
+## Development information:
+This project uses a modified version of `obs-websocket-dotnet` and my fork of it can be found [here](https://github.com/calledude/obs-websocket-dotnet). The .dll is however included for your convenience.
 
 #### Disclaimer:
 
