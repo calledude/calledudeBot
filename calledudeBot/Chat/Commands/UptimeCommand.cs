@@ -4,7 +4,7 @@ using System.Text;
 
 namespace calledudeBot.Chat.Commands
 {
-    internal class UptimeCommand : SpecialCommand
+    internal sealed class UptimeCommand : SpecialCommand
     {
         public UptimeCommand()
         {

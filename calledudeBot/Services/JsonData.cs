@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace calledudeBot.Services
 {
-    public class OsuUser
+    public sealed class OsuUser
     {
         [JsonProperty("user_id")]
         public string UserID { get; set; }
@@ -30,7 +30,7 @@ namespace calledudeBot.Services
         public List<object> Events { get; set; }
     }
 
-    public class OsuSong
+    public sealed class OsuSong
     {
         [JsonProperty("version")]
         public string BeatmapVersion { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace calledudeBot.Chat
 {
-    public class DiscordMessage : Message
+    public sealed class DiscordMessage : Message
     {
         public ulong Destination { get; set; }
 

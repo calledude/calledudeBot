@@ -15,7 +15,7 @@ namespace calledudeBot.Chat
         protected static readonly object m = new object();
     }
 
-    public class CommandHandler<T> : CommandHandler where T : Message
+    public sealed class CommandHandler<T> : CommandHandler where T : Message
     {
         private readonly MessageHandler<T> messageHandler;
 

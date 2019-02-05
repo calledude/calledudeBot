@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace calledudeBot.Chat
 {
-    public class IrcUser : User
+    public sealed class IrcUser : User
     {
         private static readonly TwitchBot twitch = calledudeBot.twitchBot;
 

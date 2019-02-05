@@ -4,7 +4,7 @@ using Discord.WebSocket;
 
 namespace calledudeBot.Chat
 {
-    public class DiscordUser : User
+    public sealed class DiscordUser : User
     {
         private static readonly DiscordBot discord = calledudeBot.discordBot;
         private readonly SocketUser user;

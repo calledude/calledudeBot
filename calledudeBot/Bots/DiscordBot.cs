@@ -11,7 +11,7 @@ using System.Diagnostics;
 
 namespace calledudeBot.Bots
 {
-    public class DiscordBot : Bot<DiscordMessage>
+    public sealed class DiscordBot : Bot<DiscordMessage>
     {
         private DiscordSocketClient bot;
         private readonly MessageHandler<DiscordMessage> messageHandler;

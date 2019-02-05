@@ -9,7 +9,7 @@ using calledudeBot.Chat;
 
 namespace calledudeBot
 {
-    public class Hooky
+    public sealed class Hooky
     {
         private bool allIsSelected;
         private bool CONTROLKEY;
