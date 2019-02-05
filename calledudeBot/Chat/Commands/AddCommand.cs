@@ -13,7 +13,7 @@ namespace calledudeBot.Chat.Commands
             RequiresMod = true;
         }
 
-        internal static string createCommand(CommandParameter param)
+        private static string createCommand(CommandParameter param)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace calledudeBot.Chat.Commands
             }
         }
         
-        internal static string editCmd(Command c, Command f)
+        private static string editCmd(Command c, Command f)
         {
             string response;
             if (c is SpecialCommand || c is SpecialCommand<CommandParameter>)
