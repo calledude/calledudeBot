@@ -2,7 +2,6 @@
 *.suo
 *.user
 *.sln.docstates
-*.ruleset
 
 # Build results
 [Dd]ebug/

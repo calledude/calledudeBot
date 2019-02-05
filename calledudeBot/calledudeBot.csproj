@@ -45,6 +45,7 @@
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <LangVersion>7.1</LangVersion>
+    <CodeAnalysisRuleSet>calledudeBot.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -56,6 +57,7 @@
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>true</UseVSHostingProcess>
     <LangVersion>7.1</LangVersion>
+    <CodeAnalysisRuleSet>calledudeBot.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>F9F28DC4BED4F7541D814597B4C9D12173F1ABE1</ManifestCertificateThumbprint>
@@ -189,18 +191,29 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Chat\CommandParameter.cs" />
-    <Compile Include="Chat\SpecialCommands.cs" />
-    <Compile Include="Chat\User.cs" />
+    <Compile Include="Chat\Commands\CommandUtils.cs" />
+    <Compile Include="Chat\Info\CommandParameter.cs" />
+    <Compile Include="Chat\Commands\AddCommand.cs" />
+    <Compile Include="Chat\Commands\DeleteCommand.cs" />
+    <Compile Include="Chat\Commands\HelpCommand.cs" />
+    <Compile Include="Chat\Commands\NowPlayingCommand.cs" />
+    <Compile Include="Chat\Commands\UptimeCommand.cs" />
+    <Compile Include="Chat\Message\DiscordMessage.cs" />
+    <Compile Include="Chat\Message\IrcMessage.cs" />
+    <Compile Include="Chat\Commands\SpecialCommand.cs" />
+    <Compile Include="Chat\RelayHandler.cs" />
+    <Compile Include="Chat\User\DiscordUser.cs" />
+    <Compile Include="Chat\User\IrcUser.cs" />
+    <Compile Include="Chat\User\User.cs" />
     <Compile Include="Services\ApiHandler.cs" />
     <Compile Include="Services\JsonData.cs" />
     <Compile Include="Bots\Bot.cs" />
-    <Compile Include="Chat\Command.cs" />
+    <Compile Include="Chat\Commands\Command.cs" />
     <Compile Include="Chat\CommandHandler.cs" />
     <Compile Include="Bots\DiscordBot.cs" />
     <Compile Include="Common\Hooky.cs" />
     <Compile Include="Bots\IrcClient.cs" />
-    <Compile Include="Chat\Message.cs" />
+    <Compile Include="Chat\Message\Message.cs" />
     <Compile Include="Chat\MessageHandler.cs" />
     <Compile Include="Bots\OsuBot.cs" />
     <Compile Include="Common\Program.cs" />
@@ -213,6 +226,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="calledudeBot.ruleset" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
