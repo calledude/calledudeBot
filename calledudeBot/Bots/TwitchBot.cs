@@ -50,7 +50,7 @@ namespace calledudeBot.Bots
                 if (b[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
                 {
                     IrcMessage message = new IrcMessage(buf);
-                    messageHandler.determineResponse(message);
+                    messageHandler.DetermineResponse(message);
                 }
                 else if (buf.StartsWith($":tmi.twitch.tv NOTICE {channelName} :The moderators of this channel are:"))
                 {

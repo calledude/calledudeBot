@@ -31,7 +31,7 @@ namespace calledudeBot.Bots
             messageHandler = new MessageHandler<DiscordMessage>(this);
 
             streamStatusTimer = new Timer(2000);
-            streamStatusTimer.Elapsed += CheckStreamStatus;
+            streamStatusTimer.Elapsed += checkStreamStatus;
         }
 
         internal override async Task Start()
@@ -39,9 +39,9 @@ namespace calledudeBot.Bots
             bot = new DiscordSocketClient();
             if (!testRun)
             {
-                bot.MessageReceived += HandleCommand;
+                bot.MessageReceived += onMessageReceived;
                 bot.Connected += onConnect;
-                bot.Ready += Ready;
+                bot.Ready += onReady;
                 bot.Disconnected += onDisconnect;
             }
 
@@ -49,18 +49,18 @@ namespace calledudeBot.Bots
             await bot.StartAsync();
         }
 
-        private async Task Ready()
+        private async Task onReady()
         {
             streamer = bot.GetUser(streamerID);
 
             obs = new OBSWebsocket();
             obs.WSTimeout = TimeSpan.FromSeconds(5);
-            obs.StreamingStateChanged += ToggleLiveStatus;
+            obs.StreamingStateChanged += toggleLiveStatus;
 
-            await ConnectToOBS();
+            await connectToOBS();
         }
 
-        private async Task ConnectToOBS()
+        private async Task connectToOBS()
         {
             TryLog("Waiting for OBS to start.");
             List<Process> procs = null;
@@ -79,7 +79,7 @@ namespace calledudeBot.Bots
                 await Task.Delay(3000);
                 Process.Start("https://github.com/Palakis/obs-websocket/releases");
                 await Task.Delay(10000);
-                await ConnectToOBS();
+                await connectToOBS();
             }
             else
             {
@@ -87,7 +87,7 @@ namespace calledudeBot.Bots
 
                 var obsProc = procs[0];
                 obsProc.EnableRaisingEvents = true;
-                obsProc.Exited += OnObsExit;
+                obsProc.Exited += onObsExit;
             }
         }
 
@@ -103,7 +103,7 @@ namespace calledudeBot.Bots
             return Task.CompletedTask;
         }
 
-        private Task HandleCommand(SocketMessage messageParam)
+        private Task onMessageReceived(SocketMessage messageParam)
         {
             // Don't process the command if it was a System Message or if we sent it ourselves
             var message = messageParam as SocketUserMessage;
@@ -114,7 +114,7 @@ namespace calledudeBot.Bots
                 Sender = new DiscordUser(message.Author),
                 Destination = message.Channel.Id
             };
-            messageHandler.determineResponse(msg);
+            messageHandler.DetermineResponse(msg);
 
             return Task.CompletedTask;
         }
@@ -137,15 +137,15 @@ namespace calledudeBot.Bots
             await channel.SendMessageAsync(message.Content);
         }
 
-        private async void OnObsExit(object sender, EventArgs e)
+        private async void onObsExit(object sender, EventArgs e)
         {
             isStreaming = false;
             streamStatusTimer.Stop();
             obs.Disconnect();
-            await ConnectToOBS();
+            await connectToOBS();
         }
 
-        private void CheckStreamStatus(object sender, ElapsedEventArgs e)
+        private void checkStreamStatus(object sender, ElapsedEventArgs e)
         {
             if (streamer?.Activity is StreamingGame sg)
             {
@@ -160,7 +160,7 @@ namespace calledudeBot.Bots
             }
         }
 
-        private void ToggleLiveStatus(OBSWebsocket sender, OutputState type)
+        private void toggleLiveStatus(OBSWebsocket sender, OutputState type)
         {
             if (type == OutputState.Started)
             {

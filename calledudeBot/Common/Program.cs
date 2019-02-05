@@ -26,7 +26,7 @@ namespace calledudeBot
 
                 if (isCtrlC || isCtrlBreak) e.Cancel = true;
             };
-            CleanCmdFile();
+            cleanCmdFile();
 
             CredentialChecker.ProduceBots();
             bots = CredentialChecker.GetVerifiedBots(out discordBot, out twitchBot, out osuBot);
@@ -40,7 +40,7 @@ namespace calledudeBot
             }
         }
 
-        private static void CleanCmdFile()
+        private static void cleanCmdFile()
         {
             if (!File.Exists(cmdFile))
             {

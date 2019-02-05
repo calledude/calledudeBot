@@ -17,14 +17,14 @@ namespace calledudeBot.Chat
 
         private void respond(T message) => bot.SendMessage(message);
 
-        public bool determineResponse(T message)
+        public bool DetermineResponse(T message)
         {
             var msg = message.Content.Split(' ');
             var cmd = msg[0];
-            if (commandHandler.isPrefixed(cmd))
+            if (commandHandler.IsPrefixed(cmd))
             {
                 var param = new CommandParameter(msg, message);
-                respond(commandHandler.getResponse(param));
+                respond(commandHandler.GetResponse(param));
                 return true;
             }
             return false;

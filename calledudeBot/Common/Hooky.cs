@@ -31,20 +31,20 @@ namespace calledudeBot
 
             key.StartCapturing();
 
-            Logger.log("[Hooky] Started Hooky.");
+            Logger.Log("[Hooky] Started Hooky.");
             Application.Run();
         }
 
         private void key_KeyUp(object sender, KeyEventArgs e)
         {
             if (!e.KeyCode.ToString().Contains("Control")) return;
-            if (ApplicationIsActivated())
+            if (applicationIsActivated())
                 CONTROLKEY = false;
         }
 
         private void key_KeyDown(object sender, KeyEventArgs e)
         {
-            if (!ApplicationIsActivated()) return;
+            if (!applicationIsActivated()) return;
             if (e.KeyCode == Keys.F9)
             {
                 KEYF9 = !KEYF9;
@@ -102,7 +102,7 @@ namespace calledudeBot
 
         private void key_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!KEYF9 || !ApplicationIsActivated()) return;
+            if (!KEYF9 || !applicationIsActivated()) return;
             if (e.KeyChar == (char) Keys.Escape)
             {
                 KEYF9 = false;
@@ -120,23 +120,23 @@ namespace calledudeBot
             if (e.KeyChar == (char) Keys.Return && MessageToSend.Length > 0)
             {
                 position = 0;
-                twitchBot.sendMessage(new IrcMessage(MessageToSend));
+                twitchBot.SendMessage(new IrcMessage(MessageToSend));
                 MessageToSend = "";
             }
         }
 
-        private bool ApplicationIsActivated()
+        private bool applicationIsActivated()
         {
             var activatedHandle = GetForegroundWindow();
             if (activatedHandle == IntPtr.Zero) return false; // No window is currently activated
             const string procName = "osu!";
             var procId = 0;
 
-            foreach (var theprocess in Process.GetProcesses())
+            foreach (var proc in Process.GetProcesses())
             {
-                if (theprocess.ProcessName == procName)
+                if (proc.ProcessName == procName)
                 {
-                    procId = theprocess.Id;
+                    procId = proc.Id;
                     break;
                 }
             }

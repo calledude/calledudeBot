@@ -26,9 +26,9 @@ namespace calledudeBot.Chat
             relayTimer.Start();
         }
 
-        new public void determineResponse(T message)
+        new public void DetermineResponse(T message)
         {
-            if (!base.determineResponse(message))
+            if (!base.DetermineResponse(message))
             {
                 if (message.Content.Contains("://osu.ppy.sh/b/"))
                 {
