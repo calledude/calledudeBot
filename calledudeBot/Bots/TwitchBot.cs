@@ -9,7 +9,7 @@ using System.Globalization;
 
 namespace calledudeBot.Bots
 {
-    public class TwitchBot : IrcClient
+    public sealed class TwitchBot : IrcClient
     {
         private readonly RelayHandler<IrcMessage> messageHandler;
         private List<string> mods = new List<string>();

@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace calledudeBot.Chat.Commands
 {
-    internal class NowPlayingCommand : SpecialCommand
+    internal sealed class NowPlayingCommand : SpecialCommand
     {
         public NowPlayingCommand()
         {

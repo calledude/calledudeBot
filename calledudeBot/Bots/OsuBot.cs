@@ -1,6 +1,6 @@
 ﻿namespace calledudeBot.Bots
 {
-    public class OsuBot : IrcClient
+    public sealed class OsuBot : IrcClient
     {
         public OsuBot(string token, string osuNick) : base("cho.ppy.sh", "osu!")
         {

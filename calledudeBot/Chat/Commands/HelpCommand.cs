@@ -6,7 +6,7 @@ using calledudeBot.Chat.Info;
 
 namespace calledudeBot.Chat
 {
-    public class HelpCommand : SpecialCommand<CommandParameter>
+    public sealed class HelpCommand : SpecialCommand<CommandParameter>
     {
         public HelpCommand()
         {

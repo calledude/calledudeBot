@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace calledudeBot.Chat.Commands
 {
-    internal class AddCommand : SpecialCommand<CommandParameter>
+    internal sealed class AddCommand : SpecialCommand<CommandParameter>
     {
         public AddCommand()
         {

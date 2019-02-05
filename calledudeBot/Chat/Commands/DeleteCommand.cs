@@ -2,7 +2,7 @@
 
 namespace calledudeBot.Chat.Commands
 {
-    internal class DeleteCommand : SpecialCommand<CommandParameter>
+    internal sealed class DeleteCommand : SpecialCommand<CommandParameter>
     {
         public DeleteCommand()
         {
