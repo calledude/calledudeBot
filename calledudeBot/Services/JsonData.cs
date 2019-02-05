@@ -41,7 +41,6 @@ namespace calledudeBot.Services
         [JsonProperty("title")]
         public string Title { get; set; }
     }
-    
 }
 
 

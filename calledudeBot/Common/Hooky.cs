@@ -5,9 +5,8 @@ using System.Windows.Forms;
 using Open.WinKeyboardHook;
 using calledudeBot.Bots;
 using calledudeBot.Services;
+using calledudeBot.Chat;
 
-//TODO: Poll ApplicationIsActivated() instead?
-//                          to decrease system overhead
 namespace calledudeBot
 {
     public class Hooky
@@ -18,12 +17,9 @@ namespace calledudeBot
         private bool KEYF9;
         private string MessageToSend = "";
         private int position;
-        private TwitchBot twitchBot;
+        private readonly TwitchBot twitchBot;
 
-        public Hooky(TwitchBot twitchBot)
-        {
-            this.twitchBot = twitchBot;
-        }
+        public Hooky(TwitchBot twitchBot) => this.twitchBot = twitchBot;
 
         public void Start()
         {
@@ -113,8 +109,8 @@ namespace calledudeBot
                 return;
             }
 
-            if (char.IsLetterOrDigit(e.KeyChar) || char.IsSymbol(e.KeyChar) ||
-                char.IsWhiteSpace(e.KeyChar) || char.IsPunctuation(e.KeyChar) || char.IsSeparator(e.KeyChar))
+            if (char.IsLetterOrDigit(e.KeyChar) || char.IsSymbol(e.KeyChar)
+                || char.IsWhiteSpace(e.KeyChar) || char.IsPunctuation(e.KeyChar) || char.IsSeparator(e.KeyChar))
             {
                 MessageToSend = MessageToSend.Insert(position, e.KeyChar.ToString());
                 if (position < MessageToSend.Length) position++;
@@ -124,21 +120,19 @@ namespace calledudeBot
             if (e.KeyChar == (char) Keys.Return && MessageToSend.Length > 0)
             {
                 position = 0;
-                twitchBot.sendMessage(new Chat.Message(MessageToSend));
+                twitchBot.sendMessage(new IrcMessage(MessageToSend));
                 MessageToSend = "";
             }
         }
-
 
         private bool ApplicationIsActivated()
         {
             var activatedHandle = GetForegroundWindow();
             if (activatedHandle == IntPtr.Zero) return false; // No window is currently activated
-            var procName = "osu!";
+            const string procName = "osu!";
             var procId = 0;
-            var processlist = Process.GetProcesses();
 
-            foreach (var theprocess in processlist)
+            foreach (var theprocess in Process.GetProcesses())
             {
                 if (theprocess.ProcessName == procName)
                 {

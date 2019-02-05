@@ -15,7 +15,7 @@ namespace calledudeBot
     public static class CredentialChecker
     {
         private static Dictionary<string, string> creds;
-        private static string credFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\credentials";
+        private static readonly string credFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\credentials";
         private static string discordToken, twitchIRCtoken, osuIRCtoken, osuAPIToken, botNick, 
                                             channelName, osuNick, announceChanID, streamerID;
         private static bool verifiedBots;
@@ -32,7 +32,6 @@ namespace calledudeBot
             Bot.testRun = false;
         }
 
-
         public static List<Bot> GetVerifiedBots(out DiscordBot discordBot, out TwitchBot twitchBot, out OsuBot osuBot)
         {
             if (!verifiedBots) throw new InvalidOperationException("You're not allowed to call this method before all bots have been verified.");
@@ -41,7 +40,6 @@ namespace calledudeBot
             twitchBot = new TwitchBot(twitchIRCtoken, osuAPIToken, osuNick, botNick, channelName);
             return new List<Bot> { discordBot, twitchBot, osuBot };
         }
-
 
         //Returns a boolean after running every single bot through the verify function
         private static bool VerifyCredentials()
@@ -68,7 +66,7 @@ namespace calledudeBot
                 }
                 catch (HttpException)
                 {
-                    bot.tryLog("Invalid Discord token.");
+                    bot.TryLog("Invalid Discord token.");
                     creds.Remove("DiscordToken");
                 }
                 catch (InvalidOrWrongTokenException)
@@ -77,27 +75,27 @@ namespace calledudeBot
                     {
                         creds.Remove("osuIRC");
                         creds.Remove("OsuNick");
-                        bot.tryLog("Invalid token and/or osu!-nickname");
+                        bot.TryLog("Invalid token and/or osu!-nickname");
                     }
                     else
                     {
                         creds.Remove("TwitchIRC");
-                        bot.tryLog("Invalid token");
+                        bot.TryLog("Invalid token");
                     }
                 }
                 catch (WebException)
                 {
-                    bot.tryLog("Invalid osu! API token.");
+                    bot.TryLog("Invalid osu! API token.");
                     creds.Remove("osuAPI");
                 }
                 catch (ArgumentException)
                 {
                     creds.Remove("OsuNick");
-                    bot.tryLog("Invalid osu!-nickname.");
+                    bot.TryLog("Invalid osu!-nickname.");
                 }
                 finally
                 {
-                    bot.tryLog($"Verification {(success ? "SUCCESS." : "FAIL.")}");
+                    bot.TryLog($"Verification {(success ? "SUCCESS." : "FAIL.")}");
                     bot.Logout();
                 }
                 return success;
@@ -106,21 +104,18 @@ namespace calledudeBot
 
         private static Bot getBotInstance<T>() where T : Bot
         {
-            Bot bot;
-
-            if(typeof(T) == typeof(DiscordBot))
+            if (typeof(T) == typeof(DiscordBot))
             {
-                bot = new DiscordBot(discordToken, announceChanID, streamerID);
+                return new DiscordBot(discordToken, announceChanID, streamerID);
             }
-            else if(typeof(T) == typeof(TwitchBot))
+            else if (typeof(T) == typeof(TwitchBot))
             {
-                bot = new TwitchBot(twitchIRCtoken, osuAPIToken, osuNick, botNick, channelName);
+                return new TwitchBot(twitchIRCtoken, osuAPIToken, osuNick, botNick, channelName);
             }
             else
             {
-                bot = new OsuBot(osuIRCtoken, osuNick);
+                return new OsuBot(osuIRCtoken, osuNick);
             }
-            return bot;
         }
 
         private static bool tryLoadCredentials()
@@ -225,7 +220,10 @@ namespace calledudeBot
         private static void getChannelName()
         {
             Console.Write("Will you be using your personal twitch account as the 'bot'? Y/N: ");
-            if (getConfirmation()) channelName = "#" + botNick;
+            if (getConfirmation())
+            {
+                channelName = "#" + botNick;
+            }
             else
             {
                 Console.Write("Please enter your nickname on twitch: ");

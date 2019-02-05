@@ -5,11 +5,11 @@ using System.Timers;
 
 namespace calledudeBot.Services
 {
-    public class APIHandler<T> : IDisposable
+    public sealed class APIHandler<T> : IDisposable
     {
-        private string URL;
-        private WebClient client;
-        private Timer timer;
+        private readonly string URL;
+        private readonly WebClient client;
+        private readonly Timer timer;
         public event Action<T> DataReceived;
 
         public APIHandler(string URL)
