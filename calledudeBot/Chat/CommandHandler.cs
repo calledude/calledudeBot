@@ -41,12 +41,12 @@ namespace calledudeBot.Chat
                 new NowPlayingCommand(),
                 new UptimeCommand(),
             });
-            Logger.log($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
+            Logger.Log($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
         }
 
-        public bool isPrefixed(string message) => message[0] == '!';
+        public bool IsPrefixed(string message) => message[0] == '!';
 
-        public T getResponse(CommandParameter param)
+        public T GetResponse(CommandParameter param)
         {
             string response;
             var cmd = CommandUtils.GetExistingCommand(param.PrefixedWords[0]);

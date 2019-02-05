@@ -21,7 +21,7 @@ namespace calledudeBot.Bots
         public void TryLog(string message)
         {
             string msg = $"[{Name}]: {message}";
-            Logger.log(msg);
+            Logger.Log(msg);
         }
 
         public void Dispose() => Dispose(true);

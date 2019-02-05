@@ -19,7 +19,7 @@ namespace calledudeBot.Chat.Commands
 
         protected override string specialFunc()
         {
-            DateTime d = calledudeBot.discordBot.wentLiveAt();
+            DateTime d = calledudeBot.discordBot.WentLiveAt();
             TimeSpan t = DateTime.Now - d;
             if (default != d)
             {
