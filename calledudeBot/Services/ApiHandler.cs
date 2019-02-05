@@ -29,11 +29,11 @@ namespace calledudeBot.Services
         //is called continuously and raises the DataReceived event when payload is ready.
         private void requestData(object sender, ElapsedEventArgs e)
         {
-            var payload = requestOnce();
+            var payload = RequestOnce();
             DataReceived?.Invoke(payload);
         }
 
-        public T requestOnce()
+        public T RequestOnce()
         {
             string jsonString = client.DownloadString(URL).Trim('[', ']');
             return JsonConvert.DeserializeObject<T>(jsonString);
