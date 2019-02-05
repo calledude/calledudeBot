@@ -14,24 +14,26 @@ namespace calledudeBot.Bots
 
         internal abstract Task Start();
         internal abstract void Logout();
-        public abstract void sendMessage(Message message);
         protected abstract void Dispose(bool disposing);
 
-        protected Bot(string name)
-        {
-            Name = name;
-        }
+        protected Bot(string name) => Name = name;
 
-        public void tryLog(string message)
+        public void TryLog(string message)
         {
             string msg = $"[{Name}]: {message}";
             Logger.log(msg);
         }
 
-        public void Dispose()
+        public void Dispose() => Dispose(true);
+    }
+
+    public abstract class Bot<T> : Bot where T : Message
+    {
+        protected Bot(string name) : base(name)
         {
-            Dispose(true);
         }
+
+        public abstract void SendMessage(T message);
     }
 
     [Serializable]

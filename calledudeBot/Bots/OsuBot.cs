@@ -8,15 +8,17 @@
             channelName = nick = osuNick;
         }
 
-        public override void Listen()
+        public override async void Listen()
         {
-            for (buf = input.ReadLine(); ; buf = input.ReadLine())
+            while (true)
             {
+                buf = await input.ReadLineAsync();
+
                 if (buf.StartsWith("PING "))
                 {
                     string pong = buf.Replace("PING", "PONG");
                     WriteLine(pong);
-                    tryLog(pong);
+                    TryLog(pong);
                 }
             }
         }
