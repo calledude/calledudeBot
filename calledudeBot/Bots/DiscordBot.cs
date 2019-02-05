@@ -11,14 +11,14 @@ using System.Diagnostics;
 
 namespace calledudeBot.Bots
 {
-    public class DiscordBot : Bot
+    public class DiscordBot : Bot<DiscordMessage>
     {
         private DiscordSocketClient bot;
-        private MessageHandler messageHandler;
+        private readonly MessageHandler<DiscordMessage> messageHandler;
         private DateTime streamStarted;
-        private ulong announceChanID, streamerID;
+        private readonly ulong announceChanID, streamerID;
         private bool isStreaming;
-        private Timer streamStatusTimer;
+        private readonly Timer streamStatusTimer;
         private SocketUser streamer;
         private OBSWebsocket obs;
 
@@ -28,7 +28,7 @@ namespace calledudeBot.Bots
             Token = token;
             this.announceChanID = Convert.ToUInt64(announceChanID);
             this.streamerID = Convert.ToUInt64(streamerID);
-            messageHandler = new MessageHandler(this);
+            messageHandler = new MessageHandler<DiscordMessage>(this);
 
             streamStatusTimer = new Timer(2000);
             streamStatusTimer.Elapsed += CheckStreamStatus;
@@ -62,9 +62,9 @@ namespace calledudeBot.Bots
 
         private async Task ConnectToOBS()
         {
-            tryLog("Waiting for OBS to start.");
+            TryLog("Waiting for OBS to start.");
             List<Process> procs = null;
-            while (procs == null || !procs.Any())
+            while (procs?.Any() != true)
             {
                 procs = Process.GetProcessesByName("obs32")
                         .Concat(Process.GetProcessesByName("obs64"))
@@ -73,9 +73,9 @@ namespace calledudeBot.Bots
             }
 
             //Trying 5 times just in case.
-            if (Enumerable.Range(1, 5).Select(x => obs.Connect("ws://localhost:4444")).All(x => !x))
+            if (Enumerable.Range(1, 5).Select(_ => obs.Connect("ws://localhost:4444")).All(x => !x))
             {
-                tryLog("You need to install the obs-websocket plugin for OBS and configure it to run on port 4444.");
+                TryLog("You need to install the obs-websocket plugin for OBS and configure it to run on port 4444.");
                 await Task.Delay(3000);
                 Process.Start("https://github.com/Palakis/obs-websocket/releases");
                 await Task.Delay(10000);
@@ -83,9 +83,9 @@ namespace calledudeBot.Bots
             }
             else
             {
-                tryLog("Connected to OBS. Start streaming!");
+                TryLog("Connected to OBS. Start streaming!");
 
-                var obsProc = procs.First();
+                var obsProc = procs[0];
                 obsProc.EnableRaisingEvents = true;
                 obsProc.Exited += OnObsExit;
             }
@@ -93,13 +93,13 @@ namespace calledudeBot.Bots
 
         private Task onConnect()
         {
-            tryLog("Connected to Discord.");
+            TryLog("Connected to Discord.");
             return Task.CompletedTask;
         }
 
         private Task onDisconnect(Exception e)
         {
-            tryLog("Disconnected from Discord.");
+            TryLog("Disconnected from Discord.");
             return Task.CompletedTask;
         }
 
@@ -109,9 +109,9 @@ namespace calledudeBot.Bots
             var message = messageParam as SocketUserMessage;
             if (message == null || bot.CurrentUser.Id == message.Author.Id) return Task.CompletedTask;
 
-            Message msg = new Message(message.Content, this)
+            DiscordMessage msg = new DiscordMessage(message.Content)
             {
-                Sender = new User(message.Author),
+                Sender = new DiscordUser(message.Author),
                 Destination = message.Channel.Id
             };
             messageHandler.determineResponse(msg);
@@ -119,14 +119,19 @@ namespace calledudeBot.Bots
             return Task.CompletedTask;
         }
 
-        public IEnumerable<SocketGuildUser> getModerators()
+        public bool IsMod(SocketGuildUser user)
+        {
+            return user.GuildPermissions.BanMembers || user.GuildPermissions.KickMembers;
+        }
+
+        public IEnumerable<SocketGuildUser> GetModerators()
         {
             var channel = bot.GetChannel(announceChanID) as IGuildChannel;
             var roles = channel.Guild.Roles as IReadOnlyCollection<SocketRole>;
             return roles.Where(x => x.Permissions.BanMembers || x.Permissions.KickMembers).SelectMany(r => r.Members);
         }
 
-        public override async void sendMessage(Message message)
+        public override async void SendMessage(DiscordMessage message)
         {
             var channel = bot.GetChannel(message.Destination) as IMessageChannel;
             await channel.SendMessageAsync(message.Content);
@@ -145,11 +150,11 @@ namespace calledudeBot.Bots
             if (streamer?.Activity is StreamingGame sg)
             {
                 var twitchUsername = sg.Url.Split('/').Last();
-                Message msg = new Message($"{twitchUsername} just went live with the title: \"{sg.Name}\" - Watch at: {sg.Url}", this)
+                DiscordMessage msg = new DiscordMessage($"{twitchUsername} just went live with the title: \"{sg.Name}\" - Watch at: {sg.Url}")
                 {
                     Destination = announceChanID
                 };
-                sendMessage(msg);
+                SendMessage(msg);
                 isStreaming = true;
                 streamStatusTimer.Stop();
             }
@@ -169,7 +174,7 @@ namespace calledudeBot.Bots
             }
         }
         
-        public DateTime wentLiveAt()
+        public DateTime WentLiveAt()
         {
             if (isStreaming)
                 return streamStarted;

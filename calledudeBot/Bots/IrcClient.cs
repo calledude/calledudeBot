@@ -7,11 +7,11 @@ using calledudeBot.Chat;
 
 namespace calledudeBot.Bots
 {
-    public abstract class IrcClient : Bot
+    public abstract class IrcClient : Bot<IrcMessage>
     {
         protected TcpClient sock;
-        protected TextWriter output;
-        protected TextReader input;
+        protected StreamWriter output;
+        protected StreamReader input;
         protected string nick;
         protected int port = 6667;
         protected string server;
@@ -31,6 +31,7 @@ namespace calledudeBot.Bots
             sock = new TcpClient();
             sock.Connect(server, port);
             output = new StreamWriter(sock.GetStream());
+            output.AutoFlush = true;
             input = new StreamReader(sock.GetStream());
         }
 
@@ -46,22 +47,20 @@ namespace calledudeBot.Bots
                 }
                 catch (Exception e)
                 {
-                    tryLog(e.Message);
-                    tryLog(e.StackTrace);
+                    TryLog(e.Message);
+                    TryLog(e.StackTrace);
                     reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
                 }
             }
             return Task.CompletedTask;
         }
 
-        public override void sendMessage(Message message)
-        {
-            WriteLine($"PRIVMSG {channelName} :{message.Content}");
-        }
+        public override void SendMessage(IrcMessage message) 
+            => WriteLine($"PRIVMSG {channelName} :{message.Content}");
 
         protected virtual void reconnect()
         {
-            tryLog($"Disconnected. Re-establishing connection..");
+            TryLog($"Disconnected. Re-establishing connection..");
             Dispose(true);
 
             while (!sock.Connected)
@@ -72,39 +71,29 @@ namespace calledudeBot.Bots
             }
         }
 
-        internal override void Logout()
-        {
-            sock.Close();
-        }
+        internal override void Logout() => sock.Close();
 
         public virtual void Login()
         {
-            WriteLine("PASS " + Token + "\r\n" + "NICK " + nick + "\r\n");
-            for (buf = input.ReadLine(); ; buf = input.ReadLine())
+            WriteLine("PASS " + Token + "\r\nNICK " + nick + "\r\n");
+            for (buf = input.ReadLine(); !((buf.Split(' ')[1] == "376" && this is OsuBot) || buf.Split(' ')[1] == "366"); buf = input.ReadLine())
             {
                 if (buf == null || buf.Split(' ')[1] == "464" 
-                    || buf.StartsWith(":tmi.twitch.tv NOTICE * ") && (buf.EndsWith(":Improperly formatted auth") || buf.EndsWith(":Login authentication failed")))
+                    || (buf.StartsWith(":tmi.twitch.tv NOTICE * ") && (buf.EndsWith(":Improperly formatted auth") || buf.EndsWith(":Login authentication failed"))))
                 {
                     throw new InvalidOrWrongTokenException(buf);
                 }
                 if (buf.Split(' ')[1] == "001")
                 {
                     WriteLine($"JOIN {channelName}");
-                    if(!testRun) tryLog($"Connected to {Name}-IRC.");
-                }
-                else if ((buf.Split(' ')[1] == "376" && this is OsuBot) || buf.Split(' ')[1] == "366") //Signifies a successful login
-                {
-                    if(this is TwitchBot t) t.getMods();
-                    break;
+                    if(!testRun) TryLog($"Connected to {Name}-IRC.");
                 }
             }
+            if (this is TwitchBot t) t.GetMods();
         }
 
-        protected virtual void WriteLine(string message)
-        {
-            output.WriteLine(message);
-            output.Flush();
-        }
+        protected virtual void WriteLine(string message) 
+            => output.WriteLine(message);
 
         protected override void Dispose(bool disposing)
         {
