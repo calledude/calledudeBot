@@ -7,7 +7,7 @@ using calledudeBot.Bots;
 
 namespace calledudeBot
 {
-    public class calledudeBot
+    public static class calledudeBot
     {
         public static string cmdFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\cmds.txt";
         public static OsuBot osuBot;
@@ -36,10 +36,7 @@ namespace calledudeBot
             
             foreach(Bot bot in bots)
             {
-                new Thread(async () =>
-                {
-                    await bot.Start();
-                }).Start();
+                bot.Start().GetAwaiter().GetResult();
             }
         }
 
