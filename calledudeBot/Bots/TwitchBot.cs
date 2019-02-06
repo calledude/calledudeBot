@@ -45,7 +45,7 @@ namespace calledudeBot.Bots
             api.Start();
         }
 
-        public override async Task Listen()
+        protected override async Task Listen()
         {
             while(true)
             {
