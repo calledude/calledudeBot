@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using calledudeBot.Chat;
 
@@ -9,6 +8,7 @@ namespace calledudeBot.Bots
 {
     public abstract class IrcClient : Bot<IrcMessage>
     {
+        private readonly int successCode;
         protected TcpClient sock;
         protected StreamWriter output;
         protected StreamReader input;
@@ -17,12 +17,14 @@ namespace calledudeBot.Bots
         protected string server;
         protected string buf;
         protected string channelName;
+        protected event Action OnReady;
 
-        public abstract void Listen();
+        public abstract Task Listen();
 
-        protected IrcClient(string server, string name) : base(name)
+        protected IrcClient(string server, string name, int successCode) : base(name)
         {
             this.server = server;
+            this.successCode = successCode;
             Setup();
         }
 
@@ -35,15 +37,15 @@ namespace calledudeBot.Bots
             input = new StreamReader(sock.GetStream());
         }
 
-        internal override Task Start()
+        internal override async Task Start()
         {
-            Login();
+            await Login();
 
             if (!testRun)
             {
                 try
                 {
-                    Listen();
+                    await Listen();
                 }
                 catch (Exception e)
                 {
@@ -52,7 +54,6 @@ namespace calledudeBot.Bots
                     Reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
                 }
             }
-            return Task.CompletedTask;
         }
 
         protected void SendPong()
@@ -66,7 +67,7 @@ namespace calledudeBot.Bots
         public override void SendMessage(IrcMessage message) 
             => WriteLine($"PRIVMSG {channelName} :{message.Content}");
 
-        protected void Reconnect()
+        protected async void Reconnect()
         {
             TryLog($"Disconnected. Re-establishing connection..");
             Dispose(true);
@@ -74,30 +75,32 @@ namespace calledudeBot.Bots
             while (!sock.Connected)
             {
                 Setup();
-                Start();
-                Thread.Sleep(5000);
+                await Start();
+                await Task.Delay(5000);
             }
         }
 
         internal override void Logout() => sock.Close();
 
-        protected void Login()
+        protected async Task Login()
         {
             WriteLine("PASS " + Token + "\r\nNICK " + nick + "\r\n");
-            for (buf = input.ReadLine(); !((buf.Split(' ')[1] == "376" && this is OsuBot) || buf.Split(' ')[1] == "366"); buf = input.ReadLine())
+            int result = 0;
+            for (buf = await input.ReadLineAsync(); result != successCode; buf = await input.ReadLineAsync())
             {
-                if (buf == null || buf.Split(' ')[1] == "464" 
+                if (buf == null || result == 464
                     || (buf.StartsWith(":tmi.twitch.tv NOTICE * ") && (buf.EndsWith(":Improperly formatted auth") || buf.EndsWith(":Login authentication failed"))))
                 {
                     throw new InvalidOrWrongTokenException(buf);
                 }
-                if (buf.Split(' ')[1] == "001")
+                if (result == 001)
                 {
                     WriteLine($"JOIN {channelName}");
-                    if(!testRun) TryLog($"Connected to {Name}-IRC.");
+                    OnReady?.Invoke();
+                    if (!testRun) TryLog($"Connected to {Name}-IRC.");
                 }
+                int.TryParse(buf.Split(' ')[1], out result);
             }
-            if (this is TwitchBot t) t.GetMods();
         }
 
         protected void WriteLine(string message) 
