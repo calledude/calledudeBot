@@ -14,7 +14,7 @@ namespace calledudeBot.Chat
         private DateTime lastMessage;
         private readonly Timer relayTimer;
         private readonly string osuAPIToken, streamerNick;
-        private readonly string songRequestLink = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
+        private const string songRequestLink = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
 
         public RelayHandler(Bot<T> bot, string streamerNick, string osuAPIToken) : base(bot)
         {
@@ -58,7 +58,7 @@ namespace calledudeBot.Chat
         }
 
         //[http://osu.ppy.sh/b/795232 fhana - Wonder Stella [Stella]]
-        private void requestSong(Message message)
+        private async void requestSong(Message message)
         {
             var idx = message.Content.IndexOf("/b/") + "/b/".Length;
             var num = message.Content.Skip(idx).TakeWhile(c => char.IsNumber(c));
@@ -67,7 +67,7 @@ namespace calledudeBot.Chat
 
             using (var api = new APIHandler<OsuSong>(reqLink))
             {
-                OsuSong song = api.RequestOnce();
+                OsuSong song = await api.RequestOnce();
                 if (song != null)
                 {
                     message.Content = $"[http://osu.ppy.sh/b/{beatmapID} {song.Artist} - {song.Title} [{song.BeatmapVersion}]]";

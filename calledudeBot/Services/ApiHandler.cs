@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Net;
+using System.Threading.Tasks;
 using System.Timers;
 
 namespace calledudeBot.Services
@@ -27,15 +28,16 @@ namespace calledudeBot.Services
         }
 
         //is called continuously and raises the DataReceived event when payload is ready.
-        private void requestData(object sender, ElapsedEventArgs e)
+        private async void requestData(object sender, ElapsedEventArgs e)
         {
-            var payload = RequestOnce();
+            var payload = await RequestOnce();
             DataReceived?.Invoke(payload);
         }
 
-        public T RequestOnce()
+        public async Task<T> RequestOnce()
         {
-            string jsonString = client.DownloadString(URL).Trim('[', ']');
+            var jsonString = await client.DownloadStringTaskAsync(URL);
+            jsonString = jsonString.Trim('[', ']');
             return JsonConvert.DeserializeObject<T>(jsonString);
         }
 
