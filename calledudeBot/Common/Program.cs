@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using calledudeBot.Bots;
+using System.Threading.Tasks;
 
 namespace calledudeBot
 {
@@ -33,11 +34,11 @@ namespace calledudeBot
 
             hooky = new Hooky(twitchBot);
             new Thread(hooky.Start).Start();
-            
-            foreach(Bot bot in bots)
+
+            Parallel.ForEach(bots, (bot) =>
             {
-                bot.Start().GetAwaiter().GetResult();
-            }
+                bot.Start();
+            });
         }
 
         private static void cleanCmdFile()
