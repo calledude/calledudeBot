@@ -1,4 +1,5 @@
 ﻿using calledudeBot.Chat.Info;
+using System.Linq;
 
 namespace calledudeBot.Chat.Commands
 {
@@ -15,7 +16,7 @@ namespace calledudeBot.Chat.Commands
         {
             string response = "You ok there bud? Try again.";
 
-            var cmdToDel = param.PrefixedWords[0];
+            var cmdToDel = param.PrefixedWords.FirstOrDefault() ?? param.Words[0].AddPrefix();
             if (CommandUtils.GetExistingCommand(cmdToDel) is Command c)
             {
                 response = CommandUtils.RemoveCommand(c, cmdToDel);
