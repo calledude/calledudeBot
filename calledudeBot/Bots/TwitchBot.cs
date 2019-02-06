@@ -16,32 +16,36 @@ namespace calledudeBot.Bots
         private Timer modLockTimer;
         private bool modCheckLock;
         private OsuUser oldOsuData;
-        private readonly APIHandler<OsuUser> api;
+        private APIHandler<OsuUser> api;
+        private readonly string osuAPIToken, osuNick;
 
         public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName) 
-            : base("irc.chat.twitch.tv", "Twitch")
+            : base("irc.chat.twitch.tv", "Twitch", 366)
         {
             Token = token;
+            this.osuAPIToken = osuAPIToken;
+            this.osuNick = osuNick;
             this.channelName = channelName;
 
             nick = botNick;
             messageHandler = new RelayHandler<IrcMessage>(this, channelName, osuAPIToken);
-
-            api = new APIHandler<OsuUser>($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}");
-            api.DataReceived += checkUserUpdate;
+            OnReady += onReady;
         }
 
-        internal async override Task Start()
+        private void onReady()
         {
             modLockTimer = new Timer(60000);
             modLockTimer.Elapsed += modLockEvent;
             modLockTimer.Start();
-            api.Start();
             WriteLine("CAP REQ :twitch.tv/commands");
-            await base.Start();
+
+            GetMods();
+            api = new APIHandler<OsuUser>($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}");
+            api.DataReceived += checkUserUpdate;
+            api.Start();
         }
 
-        public override async void Listen()
+        public override async Task Listen()
         {
             while(true)
             {
@@ -102,8 +106,8 @@ namespace calledudeBot.Bots
 
         protected override void Dispose(bool disposing)
         {
-            messageHandler.Dispose();
             base.Dispose(disposing);
+            messageHandler.Dispose();
             api.Dispose();
             modLockTimer?.Dispose();
         }
