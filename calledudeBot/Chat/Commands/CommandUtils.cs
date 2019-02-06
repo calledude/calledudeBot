@@ -50,7 +50,7 @@ namespace calledudeBot.Chat.Commands
 
             string response;
 
-            if (altName != null)
+            if (altName != cmd.Name)
             {
                 cmd.AlternateName.Remove(altName);
                 response = $"Deleted alternative command '{altName}'";

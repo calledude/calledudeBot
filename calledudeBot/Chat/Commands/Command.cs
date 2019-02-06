@@ -28,13 +28,10 @@ namespace calledudeBot.Chat.Commands
 
             if(cmdParam.PrefixedWords.Any(hasSpecialChars))
                 throw new ArgumentException("Special characters in commands are not allowed.");
-
-            CommandUtils.Commands.Add(this);
         }
 
         protected Command()
         {
-            CommandUtils.Commands.Add(this);
         }
 
         private static bool hasSpecialChars(string str)
