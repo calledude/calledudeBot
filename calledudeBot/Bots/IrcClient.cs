@@ -62,7 +62,6 @@ namespace calledudeBot.Bots
             TryLog(pong);
         }
 
-
         public override void SendMessage(IrcMessage message) 
             => WriteLine($"PRIVMSG {channelName} :{message.Content}");
 

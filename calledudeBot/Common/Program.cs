@@ -35,10 +35,8 @@ namespace calledudeBot
             hooky = new Hooky(twitchBot);
             new Thread(hooky.Start).Start();
 
-            Parallel.ForEach(bots, (bot) =>
-            {
-                bot.Start();
-            });
+            Parallel.ForEach(bots, (bot) 
+                => bot.Start());
         }
 
         private static void cleanCmdFile()
