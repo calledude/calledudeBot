@@ -10,7 +10,6 @@ namespace calledudeBot.Chat
     public abstract class CommandHandler
     {
         protected readonly string cmdFile = calledudeBot.cmdFile;
-        internal static List<Command> commands = CommandUtils.Commands;
         protected static bool initialized;
         protected static readonly object m = new object();
     }
@@ -32,8 +31,8 @@ namespace calledudeBot.Chat
         {
             initialized = true;
             var cmdArr = File.ReadAllLines(cmdFile);
-            commands = cmdArr.Select(x => new Command(new CommandParameter(x))).ToList();
-            commands.AddRange(new List<Command>
+            CommandUtils.Commands = cmdArr.Select(x => new Command(new CommandParameter(x))).ToList();
+            CommandUtils.Commands.AddRange(new List<Command>
             {
                 new AddCommand(),
                 new DeleteCommand(),
@@ -41,7 +40,7 @@ namespace calledudeBot.Chat
                 new NowPlayingCommand(),
                 new UptimeCommand(),
             });
-            Logger.Log($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
+            Logger.Log($"[CommandHandler]: Done. Loaded {CommandUtils.Commands.Count} commands.");
         }
 
         public bool IsPrefixed(string message) => message[0] == '!';
@@ -51,7 +50,11 @@ namespace calledudeBot.Chat
             string response;
             var cmd = CommandUtils.GetExistingCommand(param.PrefixedWords[0]);
 
-            if (cmd.RequiresMod && !param.SenderIsMod)
+            if(cmd == null)
+            {
+                response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
+            }
+            else if (cmd.RequiresMod && !param.SenderIsMod)
             {
                 response = "You're not allowed to use that command";
             }
@@ -64,13 +67,9 @@ namespace calledudeBot.Chat
             {
                 response = s.GetResponse();
             }
-            else if (cmd is Command)
-            {
-                response = cmd.Response;
-            }
             else
             {
-                response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
+                response = cmd.Response;
             }
             param.Message.Content = response;
             return (T)param.Message;
