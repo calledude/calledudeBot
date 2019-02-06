@@ -49,16 +49,24 @@ namespace calledudeBot.Bots
                 {
                     TryLog(e.Message);
                     TryLog(e.StackTrace);
-                    reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
+                    Reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
                 }
             }
             return Task.CompletedTask;
         }
 
+        protected void SendPong()
+        {
+            string pong = buf.Replace("PING", "PONG");
+            WriteLine(pong);
+            TryLog(pong);
+        }
+
+
         public override void SendMessage(IrcMessage message) 
             => WriteLine($"PRIVMSG {channelName} :{message.Content}");
 
-        protected virtual void reconnect()
+        protected void Reconnect()
         {
             TryLog($"Disconnected. Re-establishing connection..");
             Dispose(true);
@@ -73,7 +81,7 @@ namespace calledudeBot.Bots
 
         internal override void Logout() => sock.Close();
 
-        public virtual void Login()
+        protected void Login()
         {
             WriteLine("PASS " + Token + "\r\nNICK " + nick + "\r\n");
             for (buf = input.ReadLine(); !((buf.Split(' ')[1] == "376" && this is OsuBot) || buf.Split(' ')[1] == "366"); buf = input.ReadLine())
@@ -92,7 +100,7 @@ namespace calledudeBot.Bots
             if (this is TwitchBot t) t.GetMods();
         }
 
-        protected virtual void WriteLine(string message) 
+        protected void WriteLine(string message) 
             => output.WriteLine(message);
 
         protected override void Dispose(bool disposing)
