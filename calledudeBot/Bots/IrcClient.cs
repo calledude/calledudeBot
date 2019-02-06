@@ -18,8 +18,7 @@ namespace calledudeBot.Bots
         protected string buf;
         protected string channelName;
         protected event Action OnReady;
-
-        public abstract Task Listen();
+        protected abstract Task Listen();
 
         protected IrcClient(string server, string name, int successCode) : base(name)
         {

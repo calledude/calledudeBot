@@ -10,7 +10,7 @@ namespace calledudeBot.Bots
             channelName = nick = osuNick;
         }
 
-        public override async Task Listen()
+        protected override async Task Listen()
         {
             while (true)
             {
