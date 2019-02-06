@@ -15,11 +15,7 @@
                 buf = await input.ReadLineAsync();
 
                 if (buf.StartsWith("PING "))
-                {
-                    string pong = buf.Replace("PING", "PONG");
-                    WriteLine(pong);
-                    TryLog(pong);
-                }
+                    SendPong();
             }
         }
     }

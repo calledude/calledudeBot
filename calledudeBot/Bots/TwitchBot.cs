@@ -16,7 +16,7 @@ namespace calledudeBot.Bots
         private Timer modLockTimer;
         private bool modCheckLock;
         private OsuUser oldOsuData;
-        private readonly APIHandler<OsuUser> Api;
+        private readonly APIHandler<OsuUser> api;
 
         public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName) 
             : base("irc.chat.twitch.tv", "Twitch")
@@ -27,8 +27,8 @@ namespace calledudeBot.Bots
             nick = botNick;
             messageHandler = new RelayHandler<IrcMessage>(this, channelName, osuAPIToken);
 
-            Api = new APIHandler<OsuUser>($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}");
-            Api.DataReceived += checkUserUpdate;
+            api = new APIHandler<OsuUser>($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}");
+            api.DataReceived += checkUserUpdate;
         }
 
         internal async override Task Start()
@@ -36,7 +36,7 @@ namespace calledudeBot.Bots
             modLockTimer = new Timer(60000);
             modLockTimer.Elapsed += modLockEvent;
             modLockTimer.Start();
-            Api.Start();
+            api.Start();
             WriteLine("CAP REQ :twitch.tv/commands");
             await base.Start();
         }
@@ -49,8 +49,7 @@ namespace calledudeBot.Bots
                 var b = buf.Split(' ');
                 if (b[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
                 {
-                    IrcMessage message = new IrcMessage(buf);
-                    messageHandler.DetermineResponse(message);
+                    messageHandler.DetermineResponse(new IrcMessage(buf));
                 }
                 else if (buf.StartsWith($":tmi.twitch.tv NOTICE {channelName} :The moderators of this channel are:"))
                 {
@@ -60,9 +59,7 @@ namespace calledudeBot.Bots
                 }
                 else if (b[0] == "PING")
                 {
-                    string pong = buf.Replace("PING", "PONG");
-                    WriteLine(pong);
-                    TryLog(pong);
+                    SendPong();
                 }
             }
         }
@@ -110,7 +107,7 @@ namespace calledudeBot.Bots
         {
             messageHandler.Dispose();
             base.Dispose(disposing);
-            Api.Dispose();
+            api.Dispose();
             modLockTimer?.Dispose();
         }
     }
