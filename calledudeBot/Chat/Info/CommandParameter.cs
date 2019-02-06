@@ -5,14 +5,7 @@ namespace calledudeBot.Chat.Info
 {
     public class CommandParameter
     {
-        private List<string> prefixedWords = new List<string>();
-
-        public List<string> PrefixedWords
-        {
-            get => prefixedWords = prefixedWords.Distinct().ToList();
-
-            private set => prefixedWords = value;
-        }
+        public List<string> PrefixedWords { get; } = new List<string>();
         public List<string> EnclosedWords { get; } = new List<string>();
         public List<string> Words { get; } = new List<string>();
         public Message Message { get; }
