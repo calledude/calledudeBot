@@ -68,20 +68,17 @@ namespace calledudeBot.Bots
         {
             if(user == null) throw new ArgumentException("Invalid username.", nameof(user));
 
-            if (oldOsuData != null)
+            if (oldOsuData != null && oldOsuData.Rank != user.Rank && Math.Abs(user.PP - oldOsuData.PP) >= 0.1)
             {
-                if (oldOsuData.Rank != user.Rank && Math.Abs(user.PP - oldOsuData.PP) >= 0.1)
-                {
-                    int rankDiff = user.Rank - oldOsuData.Rank;
-                    float ppDiff = user.PP - oldOsuData.PP;
+                int rankDiff = user.Rank - oldOsuData.Rank;
+                float ppDiff = user.PP - oldOsuData.PP;
 
-                    string formatted = string.Format(CultureInfo.InvariantCulture, "{0:0.00}", Math.Abs(ppDiff));
-                    string totalPP = user.PP.ToString(CultureInfo.InvariantCulture);
+                string formatted = string.Format(CultureInfo.InvariantCulture, "{0:0.00}", Math.Abs(ppDiff));
+                string totalPP = user.PP.ToString(CultureInfo.InvariantCulture);
 
-                    string rankMessage = $"{Math.Abs(rankDiff)} ranks (#{user.Rank}). ";
-                    string ppMessage = $"PP: {(ppDiff < 0 ? "-" : "+")}{formatted}pp ({totalPP}pp)";
-                    SendMessage(new IrcMessage($"{user.Username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}"));
-                }
+                string rankMessage = $"{Math.Abs(rankDiff)} ranks (#{user.Rank}). ";
+                string ppMessage = $"PP: {(ppDiff < 0 ? "-" : "+")}{formatted}pp ({totalPP}pp)";
+                SendMessage(new IrcMessage($"{user.Username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}"));
             }
             oldOsuData = user;
         }
