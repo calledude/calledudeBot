@@ -22,7 +22,7 @@ namespace calledudeBot.Chat.Commands
                 cmdParam.Words.RemoveAt(0);
             }
 
-            AlternateName = cmdParam.PrefixedWords.Skip(1).ToList();
+            AlternateName = cmdParam.PrefixedWords.Skip(1).Distinct().ToList();
             Description = string.Join(" ", cmdParam.EnclosedWords).Trim('<', '>');
             Response = string.Join(" ", cmdParam.Words);
 
