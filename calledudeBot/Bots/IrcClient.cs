@@ -17,7 +17,7 @@ namespace calledudeBot.Bots
         protected string server;
         protected string buf;
         protected string channelName;
-        protected event Action OnReady;
+        protected event Func<Task> OnReady;
         protected abstract Task Listen();
 
         protected IrcClient(string server, string name, int successCode) : base(name)
@@ -94,7 +94,9 @@ namespace calledudeBot.Bots
                 if (result == 001)
                 {
                     WriteLine($"JOIN {channelName}");
-                    OnReady?.Invoke();
+                    if(OnReady != null)
+                        await OnReady.Invoke();
+
                     if (!testRun) TryLog($"Connected to {Name}-IRC.");
                 }
                 int.TryParse(buf.Split(' ')[1], out result);

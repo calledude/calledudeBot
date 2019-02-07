@@ -60,8 +60,7 @@ namespace calledudeBot
                 bool success = false;
                 try
                 {
-                    Task.Run(async () => await bot.Start())
-                        .GetAwaiter().GetResult();
+                    bot.Start().GetAwaiter().GetResult();
                     success = true; //Will only be set if bot.Start() does not throw an exception
                 }
                 catch (HttpException)
