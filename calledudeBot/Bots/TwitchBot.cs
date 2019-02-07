@@ -32,7 +32,7 @@ namespace calledudeBot.Bots
             OnReady += onReady;
         }
 
-        private void onReady()
+        private async Task onReady()
         {
             modLockTimer = new Timer(60000);
             modLockTimer.Elapsed += modLockEvent;
@@ -42,7 +42,7 @@ namespace calledudeBot.Bots
             GetMods();
             api = new APIHandler<OsuUser>($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}");
             api.DataReceived += checkUserUpdate;
-            api.Start();
+            await api.Start();
         }
 
         protected override async Task Listen()
@@ -108,7 +108,7 @@ namespace calledudeBot.Bots
         {
             base.Dispose(disposing);
             messageHandler.Dispose();
-            api.Dispose();
+            api?.Dispose();
             modLockTimer?.Dispose();
         }
     }

@@ -18,17 +18,17 @@ namespace calledudeBot.Services
             this.URL = URL;
             client = new WebClient();
             timer = new Timer(30000);
-            timer.Elapsed += requestData;
+            timer.Elapsed += async (_,__) => await requestData();
         }
 
-        public void Start()
+        public async Task Start()
         {
-            requestData(null, null);
+            await requestData();
             timer.Start();
         }
 
         //is called continuously and raises the DataReceived event when payload is ready.
-        private async void requestData(object sender, ElapsedEventArgs e)
+        private async Task requestData()
         {
             var payload = await RequestOnce();
             DataReceived?.Invoke(payload);
