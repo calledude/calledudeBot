@@ -4,9 +4,12 @@ namespace calledudeBot.Chat
 {
     public class IrcMessage : Message
     {
-        public IrcMessage(string message) : base(message)
+        public IrcMessage(string message, bool parse = true) : base(message)
         {
-            parseMessage();
+            if (parse)
+            {
+                parseMessage();
+            }
         }
 
         //:calledude!calledude@calledude.tmi.twitch.tv PRIVMSG #calledude :hej
