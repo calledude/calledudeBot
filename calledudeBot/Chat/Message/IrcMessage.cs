@@ -2,7 +2,7 @@
 
 namespace calledudeBot.Chat
 {
-    public class IrcMessage : Message
+    public sealed class IrcMessage : Message
     {
         public IrcMessage(string message, bool parse = true) : base(message)
         {
