@@ -22,12 +22,12 @@ namespace calledudeBot.Bots
         private SocketUser streamer;
         private OBSWebsocket obs;
 
-        public DiscordBot(string token, string announceChanID, string streamerID) 
+        public DiscordBot(string token, ulong announceChanID, ulong streamerID) 
             : base("Discord")
         {
             Token = token;
-            this.announceChanID = Convert.ToUInt64(announceChanID);
-            this.streamerID = Convert.ToUInt64(streamerID);
+            this.announceChanID = announceChanID;
+            this.streamerID = streamerID;
             messageHandler = new MessageHandler<DiscordMessage>(this);
 
             streamStatusTimer = new Timer(2000);
