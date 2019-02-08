@@ -55,15 +55,15 @@ namespace calledudeBot.Bots
             }
         }
 
-        protected void SendPong()
+        protected async void SendPong()
         {
             string pong = buf.Replace("PING", "PONG");
-            WriteLine(pong);
+            await WriteLine(pong);
             TryLog(pong);
         }
 
-        public override void SendMessage(IrcMessage message) 
-            => WriteLine($"PRIVMSG {channelName} :{message.Content}");
+        public override async void SendMessage(IrcMessage message) 
+            => await WriteLine($"PRIVMSG {channelName} :{message.Content}");
 
         protected async void Reconnect()
         {
@@ -82,7 +82,7 @@ namespace calledudeBot.Bots
 
         protected async Task Login()
         {
-            WriteLine("PASS " + Token + "\r\nNICK " + nick + "\r\n");
+            await WriteLine("PASS " + Token + "\r\nNICK " + nick + "\r\n");
             int result = 0;
             for (buf = await input.ReadLineAsync(); result != successCode; buf = await input.ReadLineAsync())
             {
@@ -93,7 +93,7 @@ namespace calledudeBot.Bots
                 }
                 if (result == 001)
                 {
-                    WriteLine($"JOIN {channelName}");
+                    await WriteLine($"JOIN {channelName}");
                     if(OnReady != null)
                         await OnReady.Invoke();
 
@@ -103,8 +103,8 @@ namespace calledudeBot.Bots
             }
         }
 
-        protected void WriteLine(string message) 
-            => output.WriteLine(message);
+        protected async Task WriteLine(string message) 
+            => await output.WriteLineAsync(message);
 
         protected override void Dispose(bool disposing)
         {
