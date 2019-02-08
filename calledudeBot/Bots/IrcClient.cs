@@ -90,6 +90,7 @@ namespace calledudeBot.Bots
             int result = 0;
             for (buf = await input.ReadLineAsync(); result != successCode; buf = await input.ReadLineAsync())
             {
+                int.TryParse(buf.Split(' ')[1], out result);
                 if (buf == null || result == 464
                     || (buf.StartsWith(":tmi.twitch.tv NOTICE * ") && (buf.EndsWith(":Improperly formatted auth") || buf.EndsWith(":Login authentication failed"))))
                 {
@@ -103,7 +104,6 @@ namespace calledudeBot.Bots
 
                     if (!testRun) TryLog($"Connected to {Name}-IRC.");
                 }
-                int.TryParse(buf.Split(' ')[1], out result);
             }
         }
 
