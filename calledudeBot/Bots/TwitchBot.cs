@@ -9,47 +9,51 @@ using System.Globalization;
 
 namespace calledudeBot.Bots
 {
-    public class TwitchBot : IrcClient
+    public sealed class TwitchBot : IrcClient
     {
-        private MessageHandler messageHandler;
+        private readonly RelayHandler messageHandler;
         private List<string> mods = new List<string>();
         private Timer modLockTimer;
         private bool modCheckLock;
         private OsuUser oldOsuData;
-        private APIHandler<OsuUser> Api;
+        private APIHandler<OsuUser> api;
+        private readonly string osuAPIToken, osuNick;
 
         public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName) 
-            : base("irc.chat.twitch.tv", "Twitch")
+            : base("irc.chat.twitch.tv", "Twitch", 366)
         {
             Token = token;
+            this.osuAPIToken = osuAPIToken;
+            this.osuNick = osuNick;
             this.channelName = channelName;
 
             nick = botNick;
-            messageHandler = new MessageHandler(this, channelName, osuAPIToken);
-
-            Api = new APIHandler<OsuUser>($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}");
-            Api.DataReceived += checkUserUpdate;
+            messageHandler = new RelayHandler(this, channelName, osuAPIToken);
+            OnReady += onReady;
         }
 
-        internal async override Task Start()
+        private async Task onReady()
         {
             modLockTimer = new Timer(60000);
             modLockTimer.Elapsed += modLockEvent;
             modLockTimer.Start();
-            Api.Start();
-            WriteLine("CAP REQ :twitch.tv/commands");
-            await base.Start();
+            await WriteLine("CAP REQ :twitch.tv/commands");
+
+            GetMods();
+            api = new APIHandler<OsuUser>($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}");
+            api.DataReceived += checkUserUpdate;
+            await api.Start();
         }
 
-        public override void Listen()
+        protected override async Task Listen()
         {
-            for (buf = input.ReadLine(); ; buf = input.ReadLine())
+            while(true)
             {
+                var buf = await input.ReadLineAsync();
                 var b = buf.Split(' ');
                 if (b[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
                 {
-                    Message message = new Message(buf, this);
-                    messageHandler.determineResponse(message);
+                    messageHandler.DetermineResponse(new IrcMessage(buf));
                 }
                 else if (buf.StartsWith($":tmi.twitch.tv NOTICE {channelName} :The moderators of this channel are:"))
                 {
@@ -59,9 +63,7 @@ namespace calledudeBot.Bots
                 }
                 else if (b[0] == "PING")
                 {
-                    string pong = buf.Replace("PING", "PONG");
-                    WriteLine(pong);
-                    tryLog(pong);
+                    SendPong();
                 }
             }
         }
@@ -70,20 +72,17 @@ namespace calledudeBot.Bots
         {
             if(user == null) throw new ArgumentException("Invalid username.", nameof(user));
 
-            if (oldOsuData != null)
+            if (oldOsuData != null && oldOsuData.Rank != user.Rank && Math.Abs(user.PP - oldOsuData.PP) >= 0.1)
             {
-                if (oldOsuData.Rank != user.Rank && Math.Abs(user.PP - oldOsuData.PP) >= 0.1)
-                {
-                    int rankDiff = user.Rank - oldOsuData.Rank;
-                    float ppDiff = user.PP - oldOsuData.PP;
+                int rankDiff = user.Rank - oldOsuData.Rank;
+                float ppDiff = user.PP - oldOsuData.PP;
 
-                    string formatted = string.Format(CultureInfo.InvariantCulture, "{0:0.00}", Math.Abs(ppDiff));
-                    string totalPP = user.PP.ToString(CultureInfo.InvariantCulture);
+                string formatted = string.Format(CultureInfo.InvariantCulture, "{0:0.00}", Math.Abs(ppDiff));
+                string totalPP = user.PP.ToString(CultureInfo.InvariantCulture);
 
-                    string rankMessage = $"{Math.Abs(rankDiff)} ranks (#{user.Rank}). ";
-                    string ppMessage = $"PP: {(ppDiff < 0 ? "-" : "+")}{formatted}pp ({totalPP}pp)";
-                    sendMessage(new Message($"{user.Username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}"));
-                }
+                string rankMessage = $"{Math.Abs(rankDiff)} ranks (#{user.Rank}). ";
+                string ppMessage = $"PP: {(ppDiff < 0 ? "-" : "+")}{formatted}pp ({totalPP}pp)";
+                SendMessage(new IrcMessage($"{user.Username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}"));
             }
             oldOsuData = user;
         }
@@ -94,11 +93,11 @@ namespace calledudeBot.Bots
             modLockTimer.Stop();
         }
         
-        public List<string> getMods()
+        public List<string> GetMods()
         {
             if (!modCheckLock)
             {
-                WriteLine($"PRIVMSG {channelName} /mods");
+                WriteLine($"PRIVMSG {channelName} /mods").GetAwaiter().GetResult();
                 modCheckLock = true;
                 modLockTimer.Start();
             }
@@ -108,7 +107,8 @@ namespace calledudeBot.Bots
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            Api.Dispose();
+            messageHandler.Dispose();
+            api?.Dispose();
             modLockTimer?.Dispose();
         }
     }

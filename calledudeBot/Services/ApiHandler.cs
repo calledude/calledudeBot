@@ -1,15 +1,16 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Net;
+using System.Threading.Tasks;
 using System.Timers;
 
 namespace calledudeBot.Services
 {
-    public class APIHandler<T> : IDisposable
+    public sealed class APIHandler<T> : IDisposable
     {
-        private string URL;
-        private WebClient client;
-        private Timer timer;
+        private readonly string URL;
+        private readonly WebClient client;
+        private readonly Timer timer;
         public event Action<T> DataReceived;
 
         public APIHandler(string URL)
@@ -17,25 +18,26 @@ namespace calledudeBot.Services
             this.URL = URL;
             client = new WebClient();
             timer = new Timer(30000);
-            timer.Elapsed += requestData;
+            timer.Elapsed += async (_,__) => await requestData();
         }
 
-        public void Start()
+        public async Task Start()
         {
-            requestData(null, null);
+            await requestData();
             timer.Start();
         }
 
         //is called continuously and raises the DataReceived event when payload is ready.
-        private void requestData(object sender, ElapsedEventArgs e)
+        private async Task requestData()
         {
-            var payload = requestOnce();
+            var payload = await RequestOnce();
             DataReceived?.Invoke(payload);
         }
 
-        public T requestOnce()
+        public async Task<T> RequestOnce()
         {
-            string jsonString = client.DownloadString(URL).Trim('[', ']');
+            var jsonString = await client.DownloadStringTaskAsync(URL);
+            jsonString = jsonString.Trim('[', ']');
             return JsonConvert.DeserializeObject<T>(jsonString);
         }
 

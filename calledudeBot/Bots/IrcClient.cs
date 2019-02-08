@@ -1,28 +1,29 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using calledudeBot.Chat;
 
 namespace calledudeBot.Bots
 {
-    public abstract class IrcClient : Bot
+    public abstract class IrcClient : Bot<IrcMessage>
     {
+        private readonly int successCode;
         protected TcpClient sock;
-        protected TextWriter output;
-        protected TextReader input;
+        protected StreamWriter output;
+        protected StreamReader input;
         protected string nick;
         protected int port = 6667;
         protected string server;
         protected string buf;
         protected string channelName;
+        protected event Func<Task> OnReady;
+        protected abstract Task Listen();
 
-        public abstract void Listen();
-
-        protected IrcClient(string server, string name) : base(name)
+        protected IrcClient(string server, string name, int successCode) : base(name)
         {
             this.server = server;
+            this.successCode = successCode;
             Setup();
         }
 
@@ -31,80 +32,79 @@ namespace calledudeBot.Bots
             sock = new TcpClient();
             sock.Connect(server, port);
             output = new StreamWriter(sock.GetStream());
+            output.AutoFlush = true;
             input = new StreamReader(sock.GetStream());
         }
 
-        internal override Task Start()
+        internal override async Task Start()
         {
-            Login();
+            await Login();
 
             if (!testRun)
             {
                 try
                 {
-                    Listen();
+                    await Listen();
                 }
                 catch (Exception e)
                 {
-                    tryLog(e.Message);
-                    tryLog(e.StackTrace);
-                    reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
+                    TryLog(e.Message);
+                    TryLog(e.StackTrace);
+                    Reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
                 }
             }
-            return Task.CompletedTask;
         }
 
-        public override void sendMessage(Message message)
+        protected async void SendPong()
         {
-            WriteLine($"PRIVMSG {channelName} :{message.Content}");
+            string pong = buf.Replace("PING", "PONG");
+            await WriteLine(pong);
+            TryLog(pong);
         }
 
-        protected virtual void reconnect()
+        public override async void SendMessage(IrcMessage message) 
+            => await WriteLine($"PRIVMSG {channelName} :{message.Content}");
+
+        protected async void Reconnect()
         {
-            tryLog($"Disconnected. Re-establishing connection..");
+            TryLog($"Disconnected. Re-establishing connection..");
             Dispose(true);
 
             while (!sock.Connected)
             {
                 Setup();
-                Start();
-                Thread.Sleep(5000);
+                await Start();
+                await Task.Delay(5000);
             }
         }
 
-        internal override void Logout()
-        {
-            sock.Close();
-        }
+        internal override void Logout() => sock.Close();
 
-        public virtual void Login()
+        protected async Task Login()
         {
-            WriteLine("PASS " + Token + "\r\n" + "NICK " + nick + "\r\n");
-            for (buf = input.ReadLine(); ; buf = input.ReadLine())
+            await WriteLine("PASS " + Token + "\r\nNICK " + nick + "\r\n");
+            int result = 0;
+            for (buf = await input.ReadLineAsync(); result != successCode; buf = await input.ReadLineAsync())
             {
-                if (buf == null || buf.Split(' ')[1] == "464" 
-                    || buf.StartsWith(":tmi.twitch.tv NOTICE * ") && (buf.EndsWith(":Improperly formatted auth") || buf.EndsWith(":Login authentication failed")))
+                if (buf == null || result == 464
+                    || (buf.StartsWith(":tmi.twitch.tv NOTICE * ") && (buf.EndsWith(":Improperly formatted auth") || buf.EndsWith(":Login authentication failed"))))
                 {
                     throw new InvalidOrWrongTokenException(buf);
                 }
-                if (buf.Split(' ')[1] == "001")
+                if (result == 001)
                 {
-                    WriteLine($"JOIN {channelName}");
-                    if(!testRun) tryLog($"Connected to {Name}-IRC.");
+                    await WriteLine($"JOIN {channelName}");
+                    if(OnReady != null)
+                        await OnReady.Invoke();
+
+                    if (!testRun) TryLog($"Connected to {Name}-IRC.");
                 }
-                else if ((buf.Split(' ')[1] == "376" && this is OsuBot) || buf.Split(' ')[1] == "366") //Signifies a successful login
-                {
-                    if(this is TwitchBot t) t.getMods();
-                    break;
-                }
+                int.TryParse(buf.Split(' ')[1], out result);
             }
         }
 
-        protected virtual void WriteLine(string message)
-        {
-            output.WriteLine(message);
-            output.Flush();
-        }
+        protected async Task WriteLine(string message) 
+            => await output.WriteLineAsync(message);
 
         protected override void Dispose(bool disposing)
         {

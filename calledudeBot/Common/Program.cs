@@ -4,10 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using calledudeBot.Bots;
+using System.Threading.Tasks;
 
 namespace calledudeBot
 {
-    public class calledudeBot
+    public static class calledudeBot
     {
         public static string cmdFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\cmds.txt";
         public static OsuBot osuBot;
@@ -26,24 +27,19 @@ namespace calledudeBot
 
                 if (isCtrlC || isCtrlBreak) e.Cancel = true;
             };
-            CleanCmdFile();
+            cleanCmdFile();
 
             CredentialChecker.ProduceBots();
             bots = CredentialChecker.GetVerifiedBots(out discordBot, out twitchBot, out osuBot);
 
             hooky = new Hooky(twitchBot);
             new Thread(hooky.Start).Start();
-            
-            foreach(Bot bot in bots)
-            {
-                new Thread(async () =>
-                {
-                    await bot.Start();
-                }).Start();
-            }
+
+            Parallel.ForEach(bots, (bot) 
+                => bot.Start());
         }
 
-        private static void CleanCmdFile()
+        private static void cleanCmdFile()
         {
             if (!File.Exists(cmdFile))
             {

@@ -8,21 +8,19 @@ namespace calledudeBot.Services
     //Therefore we run it on a dedicated logger thread.
     public static class Logger
     {
-        private static BlockingCollection<string> logQueue = new BlockingCollection<string>();
+        private static readonly BlockingCollection<string> logQueue = new BlockingCollection<string>();
 
         static Logger()
         {
-            log("[Logger] Started logging.");
+            Log("[Logger] Started logging.");
             new Thread(run)
             {
                 IsBackground = true
             }.Start();
         }
 
-        public static void log(string logMessage)
-        {
-            logQueue.Add(logMessage);
-        }
+        public static void Log(string logMessage) 
+            => logQueue.Add(logMessage);
 
         private static void run()
         {

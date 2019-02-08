@@ -1,21 +1,24 @@
 ﻿using calledudeBot.Services;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using calledudeBot.Chat.Info;
+using calledudeBot.Chat.Commands;
 
 namespace calledudeBot.Chat
 {
-    public class CommandHandler
+    public abstract class CommandHandler
     {
-        internal static List<Command> commands;
-        private string cmdFile = calledudeBot.cmdFile;
-        private MessageHandler messageHandler;
-        private static bool initialized;
-        private static object m = new object();
+        protected readonly string cmdFile = calledudeBot.cmdFile;
+        protected static bool initialized;
+        protected static readonly object m = new object();
+    }
 
-        public CommandHandler(MessageHandler messageHandler)
+    public sealed class CommandHandler<T> : CommandHandler where T : Message
+    {
+        private readonly MessageHandler<T> messageHandler;
+
+        public CommandHandler(MessageHandler<T> messageHandler)
         {
             this.messageHandler = messageHandler;
             lock (m)
@@ -28,46 +31,48 @@ namespace calledudeBot.Chat
         {
             initialized = true;
             var cmdArr = File.ReadAllLines(cmdFile);
-            commands = cmdArr.Select(x => new Command(new CommandParameter(x))).ToList();
-
-            commands.AddRange(new List<Command>
+            CommandUtils.Commands = cmdArr.Select(x => new Command(new CommandParameter(x))).ToList();
+            CommandUtils.Commands.AddRange(new List<Command>
             {
-                new Command(new CommandParameter("!addcmd <Adds a command to the command list>"), Command.addCmd, true),
-                new Command(new CommandParameter("!delcmd <Deletes a command from the command list>"), Command.delCmd, true),
-                new Command(new CommandParameter("!help !commands !cmds <Lists all available commands>"), Command.helpCmd),
-                new Command(new CommandParameter("!np !song !playing <Shows which song is currently playing>"), Command.playingCmd),
-                new Command(new CommandParameter("!uptime !live <Shows how long the stream has been live>"), Command.uptime)
+                new AddCommand(),
+                new DeleteCommand(),
+                new HelpCommand(),
+                new NowPlayingCommand(),
+                new UptimeCommand(),
             });
-            Logger.log($"[CommandHandler]: Done. Loaded {commands.Count} commands.");
+            Logger.Log($"[CommandHandler]: Done. Loaded {CommandUtils.Commands.Count} commands.");
         }
 
-        public bool isPrefixed(string message)
-        {
-            return message[0] == '!';
-        }
+        public bool IsPrefixed(string message) => message[0] == '!';
 
-        public Message getResponse(CommandParameter param)
+        public T GetResponse(CommandParameter param)
         {
             string response;
-            if (Command.getExistingCommand(param.PrefixedWords.First()) is Command c) //Does the command exist?
-            {
-                if (c.RequiresMod && !param.Message.Sender.isMod)
-                {
-                    response = "You're not allowed to use that command";
-                }
-                else
-                {
-                    param.PrefixedWords.RemoveAt(0); //Remove whatever command they were executing from PrefixedWords e.g. !addcmd
-                    response = c.getResponse(param);
-                }
-            }
-            else
+            var cmd = CommandUtils.GetExistingCommand(param.PrefixedWords[0]);
+
+            if(cmd == null)
             {
                 response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
             }
+            else if (cmd.RequiresMod && !param.SenderIsMod)
+            {
+                response = "You're not allowed to use that command";
+            }
+            else if (cmd is SpecialCommand<CommandParameter> sp) //Does the command exist?
+            {
+                param.PrefixedWords.RemoveAt(0); //Remove whatever command they were executing from PrefixedWords e.g. !addcmd
+                response = sp.GetResponse(param);
+            }
+            else if(cmd is SpecialCommand s)
+            {
+                response = s.GetResponse();
+            }
+            else
+            {
+                response = cmd.Response;
+            }
             param.Message.Content = response;
-            return param.Message;
+            return (T)param.Message;
         }
-
     }
 }

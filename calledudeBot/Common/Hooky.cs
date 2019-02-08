@@ -5,12 +5,11 @@ using System.Windows.Forms;
 using Open.WinKeyboardHook;
 using calledudeBot.Bots;
 using calledudeBot.Services;
+using calledudeBot.Chat;
 
-//TODO: Poll ApplicationIsActivated() instead?
-//                          to decrease system overhead
 namespace calledudeBot
 {
-    public class Hooky
+    public sealed class Hooky
     {
         private bool allIsSelected;
         private bool CONTROLKEY;
@@ -18,12 +17,9 @@ namespace calledudeBot
         private bool KEYF9;
         private string MessageToSend = "";
         private int position;
-        private TwitchBot twitchBot;
+        private readonly TwitchBot twitchBot;
 
-        public Hooky(TwitchBot twitchBot)
-        {
-            this.twitchBot = twitchBot;
-        }
+        public Hooky(TwitchBot twitchBot) => this.twitchBot = twitchBot;
 
         public void Start()
         {
@@ -35,20 +31,20 @@ namespace calledudeBot
 
             key.StartCapturing();
 
-            Logger.log("[Hooky] Started Hooky.");
+            Logger.Log("[Hooky] Started Hooky.");
             Application.Run();
         }
 
         private void key_KeyUp(object sender, KeyEventArgs e)
         {
             if (!e.KeyCode.ToString().Contains("Control")) return;
-            if (ApplicationIsActivated())
+            if (applicationIsActivated())
                 CONTROLKEY = false;
         }
 
         private void key_KeyDown(object sender, KeyEventArgs e)
         {
-            if (!ApplicationIsActivated()) return;
+            if (!applicationIsActivated()) return;
             if (e.KeyCode == Keys.F9)
             {
                 KEYF9 = !KEYF9;
@@ -106,15 +102,15 @@ namespace calledudeBot
 
         private void key_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!KEYF9 || !ApplicationIsActivated()) return;
+            if (!KEYF9 || !applicationIsActivated()) return;
             if (e.KeyChar == (char) Keys.Escape)
             {
                 KEYF9 = false;
                 return;
             }
 
-            if (char.IsLetterOrDigit(e.KeyChar) || char.IsSymbol(e.KeyChar) ||
-                char.IsWhiteSpace(e.KeyChar) || char.IsPunctuation(e.KeyChar) || char.IsSeparator(e.KeyChar))
+            if (char.IsLetterOrDigit(e.KeyChar) || char.IsSymbol(e.KeyChar)
+                || char.IsWhiteSpace(e.KeyChar) || char.IsPunctuation(e.KeyChar) || char.IsSeparator(e.KeyChar))
             {
                 MessageToSend = MessageToSend.Insert(position, e.KeyChar.ToString());
                 if (position < MessageToSend.Length) position++;
@@ -124,25 +120,23 @@ namespace calledudeBot
             if (e.KeyChar == (char) Keys.Return && MessageToSend.Length > 0)
             {
                 position = 0;
-                twitchBot.sendMessage(new Chat.Message(MessageToSend));
+                twitchBot.SendMessage(new IrcMessage(MessageToSend, false));
                 MessageToSend = "";
             }
         }
 
-
-        private bool ApplicationIsActivated()
+        private bool applicationIsActivated()
         {
             var activatedHandle = GetForegroundWindow();
             if (activatedHandle == IntPtr.Zero) return false; // No window is currently activated
-            var procName = "osu!";
+            const string procName = "osu!";
             var procId = 0;
-            var processlist = Process.GetProcesses();
 
-            foreach (var theprocess in processlist)
+            foreach (var proc in Process.GetProcesses())
             {
-                if (theprocess.ProcessName == procName)
+                if (proc.ProcessName == procName)
                 {
-                    procId = theprocess.Id;
+                    procId = proc.Id;
                     break;
                 }
             }
