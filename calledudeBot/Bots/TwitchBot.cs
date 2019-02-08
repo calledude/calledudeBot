@@ -37,7 +37,7 @@ namespace calledudeBot.Bots
             modLockTimer = new Timer(60000);
             modLockTimer.Elapsed += modLockEvent;
             modLockTimer.Start();
-            WriteLine("CAP REQ :twitch.tv/commands");
+            await WriteLine("CAP REQ :twitch.tv/commands");
 
             GetMods();
             api = new APIHandler<OsuUser>($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}");
@@ -97,7 +97,7 @@ namespace calledudeBot.Bots
         {
             if (!modCheckLock)
             {
-                WriteLine($"PRIVMSG {channelName} /mods");
+                WriteLine($"PRIVMSG {channelName} /mods").GetAwaiter().GetResult();
                 modCheckLock = true;
                 modLockTimer.Start();
             }
