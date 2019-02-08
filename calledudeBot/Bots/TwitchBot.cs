@@ -63,7 +63,7 @@ namespace calledudeBot.Bots
                 }
                 else if (b[0] == "PING")
                 {
-                    SendPong();
+                    await SendPong();
                 }
             }
         }

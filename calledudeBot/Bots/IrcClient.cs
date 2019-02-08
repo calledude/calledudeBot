@@ -55,7 +55,7 @@ namespace calledudeBot.Bots
             }
         }
 
-        protected async void SendPong()
+        protected async Task SendPong()
         {
             string pong = buf.Replace("PING", "PONG");
             await WriteLine(pong);

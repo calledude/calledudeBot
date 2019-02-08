@@ -18,7 +18,7 @@ namespace calledudeBot.Bots
 
                 if (buf.Split(' ')[1] == "QUIT") continue;
                 if (buf.StartsWith("PING "))
-                    SendPong();
+                    await SendPong();
             }
         }
     }
