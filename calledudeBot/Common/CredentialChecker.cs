@@ -35,7 +35,7 @@ namespace calledudeBot
         public static List<Bot> GetVerifiedBots(out DiscordBot discordBot, out TwitchBot twitchBot, out OsuBot osuBot)
         {
             if (!verifiedBots) throw new InvalidOperationException("You're not allowed to call this method before all bots have been verified.");
-            discordBot = new DiscordBot(discordToken, announceChanID, streamerID);
+            discordBot = new DiscordBot(discordToken, ulong.Parse(announceChanID), ulong.Parse(streamerID));
             osuBot = new OsuBot(osuIRCtoken, osuNick);
             twitchBot = new TwitchBot(twitchIRCtoken, osuAPIToken, osuNick, botNick, channelName);
             return new List<Bot> { discordBot, twitchBot, osuBot };
@@ -57,6 +57,7 @@ namespace calledudeBot
         {
             using (Bot bot = getBotInstance<T>())
             {
+                if (bot == null) return false;
                 bool success = false;
                 try
                 {
@@ -105,7 +106,20 @@ namespace calledudeBot
         {
             if (typeof(T) == typeof(DiscordBot))
             {
-                return new DiscordBot(discordToken, announceChanID, streamerID);
+                if (!ulong.TryParse(announceChanID, out var _announceChanID) && !ulong.TryParse(streamerID, out var _streamerID))
+                {
+                    creds.Remove("AnnounceChannelID");
+                    creds.Remove("StreamerID");
+                }
+                if (!ulong.TryParse(announceChanID, out _announceChanID))
+                {
+                    creds.Remove("AnnounceChannelID");
+                }
+                if (!ulong.TryParse(streamerID, out _streamerID))
+                {
+                    creds.Remove("StreamerID");
+                }
+                return new DiscordBot(discordToken, _announceChanID, _streamerID);
             }
             else if (typeof(T) == typeof(TwitchBot))
             {
