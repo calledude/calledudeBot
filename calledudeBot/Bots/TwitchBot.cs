@@ -49,7 +49,7 @@ namespace calledudeBot.Bots
         {
             while(true)
             {
-                var buf = await input.ReadLineAsync();
+                buf = await input.ReadLineAsync();
                 var b = buf.Split(' ');
                 if (b[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
                 {
