@@ -11,7 +11,7 @@ namespace calledudeBot.Bots
 {
     public sealed class TwitchBot : IrcClient
     {
-        private readonly RelayHandler<IrcMessage> messageHandler;
+        private readonly RelayHandler messageHandler;
         private List<string> mods = new List<string>();
         private Timer modLockTimer;
         private bool modCheckLock;
@@ -28,7 +28,7 @@ namespace calledudeBot.Bots
             this.channelName = channelName;
 
             nick = botNick;
-            messageHandler = new RelayHandler<IrcMessage>(this, channelName, osuAPIToken);
+            messageHandler = new RelayHandler(this, channelName, osuAPIToken);
             OnReady += onReady;
         }
 

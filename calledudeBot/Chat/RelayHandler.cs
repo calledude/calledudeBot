@@ -7,16 +7,16 @@ using System.Timers;
 
 namespace calledudeBot.Chat
 {
-    public sealed class RelayHandler<T> : MessageHandler<T>, IDisposable where T : IrcMessage
+    public sealed class RelayHandler : MessageHandler<IrcMessage>, IDisposable
     {
         private readonly OsuBot osu;
-        private readonly Queue<T> messageQueue = new Queue<T>();
+        private readonly Queue<IrcMessage> messageQueue = new Queue<IrcMessage>();
         private DateTime lastMessage;
         private readonly Timer relayTimer;
         private readonly string osuAPIToken, streamerNick;
         private const string songRequestLink = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
 
-        public RelayHandler(Bot<T> bot, string streamerNick, string osuAPIToken) : base(bot)
+        public RelayHandler(IrcClient bot, string streamerNick, string osuAPIToken) : base(bot)
         {
             osu = calledudeBot.osuBot;
             this.osuAPIToken = osuAPIToken;
@@ -26,7 +26,7 @@ namespace calledudeBot.Chat
             relayTimer.Start();
         }
 
-        new public void DetermineResponse(T message)
+        new public void DetermineResponse(IrcMessage message)
         {
             if (!base.DetermineResponse(message))
             {
@@ -51,7 +51,7 @@ namespace calledudeBot.Chat
             }
         }
 
-        private void relay(T message)
+        private void relay(IrcMessage message)
         {
             message.Content = $"{message.Sender.Name}: {message.Content}";
             osu.SendMessage(message);
@@ -77,7 +77,7 @@ namespace calledudeBot.Chat
 
         public void Dispose()
         {
-            relayTimer?.Dispose();
+            relayTimer.Dispose();
         }
     }
 }
