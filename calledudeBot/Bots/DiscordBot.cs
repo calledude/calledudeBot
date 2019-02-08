@@ -182,7 +182,7 @@ namespace calledudeBot.Bots
                 return new DateTime();
         }
 
-        internal override async void Logout()
+        internal override async Task Logout()
         {
             await bot.LogoutAsync();
             await bot.StopAsync();

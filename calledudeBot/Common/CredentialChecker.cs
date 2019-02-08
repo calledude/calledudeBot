@@ -96,7 +96,7 @@ namespace calledudeBot
                 finally
                 {
                     bot.TryLog($"Verification {(success ? "SUCCESS." : "FAIL.")}");
-                    bot.Logout();
+                    bot.Logout().GetAwaiter().GetResult();
                 }
                 return success;
             }

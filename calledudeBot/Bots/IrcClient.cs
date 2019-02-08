@@ -78,7 +78,11 @@ namespace calledudeBot.Bots
             }
         }
 
-        internal override void Logout() => sock.Close();
+        internal override Task Logout()
+        {
+            sock.Close();
+            return Task.CompletedTask;
+        }
 
         protected async Task Login()
         {

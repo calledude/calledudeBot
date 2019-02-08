@@ -13,7 +13,7 @@ namespace calledudeBot.Bots
         protected string Token { get; set; }
 
         internal abstract Task Start();
-        internal abstract void Logout();
+        internal abstract Task Logout();
         protected abstract void Dispose(bool disposing);
 
         protected Bot(string name) => Name = name;
