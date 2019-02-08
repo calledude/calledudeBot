@@ -120,7 +120,7 @@ namespace calledudeBot
             if (e.KeyChar == (char) Keys.Return && MessageToSend.Length > 0)
             {
                 position = 0;
-                twitchBot.SendMessage(new IrcMessage(MessageToSend));
+                twitchBot.SendMessage(new IrcMessage(MessageToSend, false));
                 MessageToSend = "";
             }
         }
