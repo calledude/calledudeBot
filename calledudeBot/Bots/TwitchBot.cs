@@ -49,21 +49,21 @@ namespace calledudeBot.Bots
         {
             while(true)
             {
-                buf = await input.ReadLineAsync();
-                var b = buf.Split(' ');
+                var buffer = await input.ReadLineAsync();
+                var b = buffer.Split(' ');
                 if (b[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
                 {
-                    messageHandler.DetermineResponse(new IrcMessage(buf));
+                    messageHandler.DetermineResponse(new IrcMessage(buffer));
                 }
-                else if (buf.StartsWith($":tmi.twitch.tv NOTICE {channelName} :The moderators of this channel are:"))
+                else if (buffer.StartsWith($":tmi.twitch.tv NOTICE {channelName} :The moderators of this channel are:"))
                 {
-                    int modsIndex = buf.LastIndexOf(':') + 1;
-                    var modsArr = buf.Substring(modsIndex).Split(',');
+                    int modsIndex = buffer.LastIndexOf(':') + 1;
+                    var modsArr = buffer.Substring(modsIndex).Split(',');
                     mods = modsArr.Select(x => x.Trim()).ToList();
                 }
                 else if (b[0] == "PING")
                 {
-                    await SendPong();
+                    await SendPong(buffer);
                 }
             }
         }

@@ -15,7 +15,6 @@ namespace calledudeBot.Bots
         protected string nick;
         protected int port = 6667;
         protected string server;
-        protected string buf;
         protected string channelName;
         protected event Func<Task> OnReady;
         protected abstract Task Listen();
@@ -55,9 +54,9 @@ namespace calledudeBot.Bots
             }
         }
 
-        protected async Task SendPong()
+        protected async Task SendPong(string ping)
         {
-            string pong = buf.Replace("PING", "PONG");
+            string pong = ping.Replace("PING", "PONG");
             await WriteLine(pong);
             TryLog(pong);
         }
@@ -88,7 +87,7 @@ namespace calledudeBot.Bots
         {
             await WriteLine("PASS " + Token + "\r\nNICK " + nick + "\r\n");
             int result = 0;
-            for (buf = await input.ReadLineAsync(); result != successCode; buf = await input.ReadLineAsync())
+            for (var buf = await input.ReadLineAsync(); result != successCode; buf = await input.ReadLineAsync())
             {
                 int.TryParse(buf.Split(' ')[1], out result);
                 if (buf == null || result == 464

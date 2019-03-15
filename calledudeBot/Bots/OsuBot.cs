@@ -14,11 +14,11 @@ namespace calledudeBot.Bots
         {
             while (true)
             {
-                buf = await input.ReadLineAsync();
+                var buf = await input.ReadLineAsync();
 
                 if (buf.Split(' ')[1] == "QUIT") continue;
                 if (buf.StartsWith("PING "))
-                    await SendPong();
+                    await SendPong(buf);
             }
         }
     }
