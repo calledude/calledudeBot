@@ -31,7 +31,7 @@ namespace calledudeBot.Bots
             messageHandler = new MessageHandler<DiscordMessage>(this);
 
             streamStatusTimer = new Timer(2000);
-            streamStatusTimer.Elapsed += checkStreamStatus;
+            streamStatusTimer.Elapsed += CheckDiscordStatus;
         }
 
         internal override async Task Start()
@@ -55,7 +55,7 @@ namespace calledudeBot.Bots
 
             obs = new OBSWebsocket();
             obs.WSTimeout = TimeSpan.FromSeconds(5);
-            obs.StreamingStateChanged += toggleLiveStatus;
+            obs.StreamStatus += checkLiveStatus;
 
             await connectToOBS();
         }
@@ -145,29 +145,50 @@ namespace calledudeBot.Bots
             await connectToOBS();
         }
 
-        private void checkStreamStatus(object sender, ElapsedEventArgs e)
+        private async void CheckDiscordStatus(object sender, ElapsedEventArgs e)
         {
             if (streamer?.Activity is StreamingGame sg)
             {
+                streamStatusTimer.Stop();
+                isStreaming = true;
+
                 var twitchUsername = sg.Url.Split('/').Last();
-                DiscordMessage msg = new DiscordMessage($"{twitchUsername} just went live with the title: \"{sg.Name}\" - Watch at: {sg.Url}")
+                var msg = new DiscordMessage($"{twitchUsername} just went live with the title: \"{sg.Name}\" - Watch at: {sg.Url}")
                 {
                     Destination = announceChanID
                 };
-                SendMessage(msg);
-                isStreaming = true;
-                streamStatusTimer.Stop();
+
+                var channel = bot.GetChannel(announceChanID) as ITextChannel;
+                var messages = await channel
+                    .GetMessagesAsync()
+                    .FlattenAsync();
+
+                //streamStarted returns the _true_ time that the stream started
+                //If any announcement message exists within 3 minutes of that, don't send a new announcement
+                //In that case we assume that the bot has been restarted (for whatever reason)
+                if (messages.Count(m =>
+                    m.Author.Id == bot.CurrentUser.Id
+                    && m.Content == m.Content
+                    && streamStarted - m.Timestamp < TimeSpan.FromMinutes(3)) == 0)
+                {
+                    SendMessage(msg);
+                }
             }
         }
 
-        private void toggleLiveStatus(OBSWebsocket sender, OutputState type)
+        private void checkLiveStatus(OBSWebsocket sender, StreamStatus status)
         {
-            if (type == OutputState.Started)
+            if (status.Streaming == isStreaming)
             {
-                streamStarted = DateTime.Now;
+                return;
+            }
+
+            if (status.Streaming)
+            {
+                streamStarted = DateTime.Now - status.TotalStreamTime;
                 streamStatusTimer.Start();
             }
-            else if (type == OutputState.Stopped)
+            else
             {
                 isStreaming = false;
                 streamStatusTimer.Stop();
@@ -176,10 +197,7 @@ namespace calledudeBot.Bots
         
         public DateTime WentLiveAt()
         {
-            if (isStreaming)
-                return streamStarted;
-            else
-                return new DateTime();
+            return isStreaming ? streamStarted : default;
         }
 
         internal override async Task Logout()
