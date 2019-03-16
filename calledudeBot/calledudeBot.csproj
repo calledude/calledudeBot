@@ -240,6 +240,7 @@
     <Compile Include="Bots\TwitchBot.cs" />
     <Compile Include="Common\CredentialChecker.cs" />
     <Compile Include="Services\Logger.cs" />
+    <Compile Include="Services\StreamMonitor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

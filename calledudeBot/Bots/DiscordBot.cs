@@ -1,120 +1,78 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using calledudeBot.Chat;
+using calledudeBot.Services;
 using Discord;
 using Discord.WebSocket;
-using calledudeBot.Chat;
+using System;
 using System.Collections.Generic;
-using OBSWebsocketDotNet;
-using System.Timers;
-using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Bots
 {
     public sealed class DiscordBot : Bot<DiscordMessage>
     {
-        private DiscordSocketClient bot;
-        private readonly MessageHandler<DiscordMessage> messageHandler;
-        private DateTime streamStarted;
-        private readonly ulong announceChanID, streamerID;
-        private bool isStreaming;
-        private readonly Timer streamStatusTimer;
-        private SocketUser streamer;
-        private OBSWebsocket obs;
+        private DiscordSocketClient _bot;
+        private readonly MessageHandler<DiscordMessage> _messageHandler;
+        private readonly ulong _announceChanID, _streamerID;
+        private StreamMonitor _streamMonitor;
 
         public DiscordBot(string token, ulong announceChanID, ulong streamerID) 
             : base("Discord")
         {
             Token = token;
-            this.announceChanID = announceChanID;
-            this.streamerID = streamerID;
-            messageHandler = new MessageHandler<DiscordMessage>(this);
-
-            streamStatusTimer = new Timer(2000);
-            streamStatusTimer.Elapsed += CheckDiscordStatus;
+            _announceChanID = announceChanID;
+            _streamerID = streamerID;
+            _messageHandler = new MessageHandler<DiscordMessage>(this);
         }
 
         internal override async Task Start()
         {
-            bot = new DiscordSocketClient();
+            _bot = new DiscordSocketClient();
             if (!testRun)
             {
-                bot.MessageReceived += onMessageReceived;
-                bot.Connected += onConnect;
-                bot.Ready += onReady;
-                bot.Disconnected += onDisconnect;
+                _bot.MessageReceived += OnMessageReceived;
+                _bot.Connected += OnConnect;
+                _bot.Ready += OnReady;
+                _bot.Disconnected += OnDisconnect;
             }
 
-            await bot.LoginAsync(TokenType.Bot, Token);
-            await bot.StartAsync();
+            await _bot.LoginAsync(TokenType.Bot, Token);
+            await _bot.StartAsync();
         }
 
-        private async Task onReady()
+        private async Task OnReady()
         {
-            streamer = bot.GetUser(streamerID);
-
-            obs = new OBSWebsocket();
-            obs.WSTimeout = TimeSpan.FromSeconds(5);
-            obs.StreamStatus += checkLiveStatus;
-
-            await connectToOBS();
+            _streamMonitor = new StreamMonitor(_streamerID, _announceChanID, _bot);
+            await _streamMonitor.Connect();
         }
 
-        private async Task connectToOBS()
-        {
-            TryLog("Waiting for OBS to start.");
-            List<Process> procs = null;
-            while (procs is null || !procs.Any())
-            {
-                procs = Process.GetProcessesByName("obs32")
-                        .Concat(Process.GetProcessesByName("obs64"))
-                        .ToList();
-                await Task.Delay(500);
-            }
-
-            //Trying 5 times just in case.
-            if (Enumerable.Range(1, 5).Select(_ => obs.Connect("ws://localhost:4444")).All(x => !x))
-            {
-                TryLog("You need to install the obs-websocket plugin for OBS and configure it to run on port 4444.");
-                await Task.Delay(3000);
-                Process.Start("https://github.com/Palakis/obs-websocket/releases");
-                await Task.Delay(10000);
-                await connectToOBS();
-            }
-            else
-            {
-                TryLog("Connected to OBS. Start streaming!");
-
-                var obsProc = procs[0];
-                obsProc.EnableRaisingEvents = true;
-                obsProc.Exited += onObsExit;
-            }
-        }
-
-        private Task onConnect()
+        private Task OnConnect()
         {
             TryLog("Connected to Discord.");
             return Task.CompletedTask;
         }
 
-        private Task onDisconnect(Exception e)
+        private Task OnDisconnect(Exception e)
         {
             TryLog("Disconnected from Discord.");
             return Task.CompletedTask;
         }
 
-        private Task onMessageReceived(SocketMessage messageParam)
+        private Task OnMessageReceived(SocketMessage messageParam)
         {
             // Don't process the command if it was a System Message or if we sent it ourselves
             var message = messageParam as SocketUserMessage;
-            if (message == null || bot.CurrentUser.Id == message.Author.Id) return Task.CompletedTask;
+            if (message == null || _bot.CurrentUser.Id == message.Author.Id)
+            {
+                return Task.CompletedTask;
+            }
 
             DiscordMessage msg = new DiscordMessage(message.Content)
             {
                 Sender = new DiscordUser(message.Author),
                 Destination = message.Channel.Id
             };
-            messageHandler.DetermineResponse(msg);
+            _messageHandler.DetermineResponse(msg);
 
             return Task.CompletedTask;
         }
@@ -126,91 +84,34 @@ namespace calledudeBot.Bots
 
         public IEnumerable<SocketGuildUser> GetModerators()
         {
-            var channel = bot.GetChannel(announceChanID) as IGuildChannel;
+            var channel = _bot.GetChannel(_announceChanID) as IGuildChannel;
             var roles = channel.Guild.Roles as IReadOnlyCollection<SocketRole>;
             return roles.Where(x => x.Permissions.BanMembers || x.Permissions.KickMembers).SelectMany(r => r.Members);
         }
 
         public override async void SendMessage(DiscordMessage message)
         {
-            var channel = bot.GetChannel(message.Destination) as IMessageChannel;
+            var channel = _bot.GetChannel(message.Destination) as IMessageChannel;
             await channel.SendMessageAsync(message.Content);
-        }
-
-        private async void onObsExit(object sender, EventArgs e)
-        {
-            isStreaming = false;
-            streamStatusTimer.Stop();
-            obs.Disconnect();
-            await connectToOBS();
-        }
-
-        private async void CheckDiscordStatus(object sender, ElapsedEventArgs e)
-        {
-            if (streamer?.Activity is StreamingGame sg)
-            {
-                streamStatusTimer.Stop();
-                isStreaming = true;
-
-                var twitchUsername = sg.Url.Split('/').Last();
-                var msg = new DiscordMessage($"{twitchUsername} just went live with the title: \"{sg.Name}\" - Watch at: {sg.Url}")
-                {
-                    Destination = announceChanID
-                };
-
-                var channel = bot.GetChannel(announceChanID) as ITextChannel;
-                var messages = await channel
-                    .GetMessagesAsync()
-                    .FlattenAsync();
-
-                //streamStarted returns the _true_ time that the stream started
-                //If any announcement message exists within 3 minutes of that, don't send a new announcement
-                //In that case we assume that the bot has been restarted (for whatever reason)
-                if (messages.Count(m =>
-                    m.Author.Id == bot.CurrentUser.Id
-                    && m.Content == m.Content
-                    && streamStarted - m.Timestamp < TimeSpan.FromMinutes(3)) == 0)
-                {
-                    SendMessage(msg);
-                }
-            }
-        }
-
-        private void checkLiveStatus(OBSWebsocket sender, StreamStatus status)
-        {
-            if (status.Streaming == isStreaming)
-            {
-                return;
-            }
-
-            if (status.Streaming)
-            {
-                streamStarted = DateTime.Now - status.TotalStreamTime;
-                streamStatusTimer.Start();
-            }
-            else
-            {
-                isStreaming = false;
-                streamStatusTimer.Stop();
-            }
         }
         
         public DateTime WentLiveAt()
         {
-            return isStreaming ? streamStarted : default;
+            return _streamMonitor.IsStreaming 
+                ? _streamMonitor.StreamStarted 
+                : default;
         }
 
         internal override async Task Logout()
         {
-            await bot.LogoutAsync();
-            await bot.StopAsync();
+            await _bot.LogoutAsync();
+            await _bot.StopAsync();
         }
 
         protected override void Dispose(bool disposing)
         {
-            bot.Dispose();
-            obs?.Disconnect();
-            streamStatusTimer.Dispose();
+            _bot.Dispose();
+            _streamMonitor?.Dispose();
         }
     }
 }
