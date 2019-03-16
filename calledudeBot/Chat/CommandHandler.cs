@@ -9,7 +9,7 @@ namespace calledudeBot.Chat
 {
     public abstract class CommandHandler
     {
-        protected readonly string cmdFile = calledudeBot.cmdFile;
+        protected readonly string cmdFile = CommandUtils.CmdFile;
         protected static bool initialized;
         protected static readonly object m = new object();
     }

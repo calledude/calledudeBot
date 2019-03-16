@@ -8,7 +8,7 @@ namespace calledudeBot.Chat.Commands
 {
     public static class CommandUtils
     {
-        internal static readonly string cmdFile = calledudeBot.cmdFile;
+        internal static string CmdFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\cmds.txt";
         internal static List<Command> Commands = new List<Command>();
 
         //Returns the Command object or null depending on if it exists or not.
@@ -40,7 +40,7 @@ namespace calledudeBot.Chat.Commands
             if (alternates != null) line = $"{cmd.Name} {alternates} {cmd.Response}";
             if (description != null) line += " " + description;
             line = line.Trim();
-            File.AppendAllText(cmdFile, line + Environment.NewLine);
+            File.AppendAllText(CmdFile, line + Environment.NewLine);
         }
 
         internal static string RemoveCommand(Command cmd, string altName = null)
@@ -61,7 +61,7 @@ namespace calledudeBot.Chat.Commands
                 response = $"Deleted command '{altName}'";
             }
 
-            File.Create(cmdFile).Close();
+            File.Create(CmdFile).Close();
             foreach (Command c in Commands)
             {
                 AppendCmdToFile(c);

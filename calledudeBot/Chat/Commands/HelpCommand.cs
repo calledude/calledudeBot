@@ -23,14 +23,13 @@ namespace calledudeBot.Chat
             var cmdToHelp = param.PrefixedWords.FirstOrDefault() ?? param.Words.FirstOrDefault();
             if (cmdToHelp == null)
             {
-                StringBuilder sb = new StringBuilder(CommandUtils.Commands.Count);
+                var availableCommands = CommandUtils.Commands
+                                        .Where(x => !x.RequiresMod || allowed)
+                                        .Select(x => x.Name);
 
-                foreach (Command c in CommandUtils.Commands)
-                {
-                    if (c.RequiresMod && !allowed) continue;
-                    sb.Append(" ").Append(c.Name).Append(" »");
-                }
-                response = "These are the commands you can use:" + sb.ToString().Trim('»');
+                var commands = string.Join(" » ", availableCommands);
+
+                response = $"These are the commands you can use: {commands}";
             }
             else if (CommandUtils.GetExistingCommand(cmdToHelp) is Command c) //"!help <command>"
             {

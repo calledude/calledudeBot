@@ -5,12 +5,12 @@ using System.Threading;
 using System.Collections.Generic;
 using calledudeBot.Bots;
 using System.Threading.Tasks;
+using calledudeBot.Chat.Commands;
 
 namespace calledudeBot
 {
     public static class calledudeBot
     {
-        public static string cmdFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\cmds.txt";
         public static OsuBot osuBot;
         public static DiscordBot discordBot;
         public static TwitchBot twitchBot;
@@ -27,7 +27,7 @@ namespace calledudeBot
 
                 if (isCtrlC || isCtrlBreak) e.Cancel = true;
             };
-            cleanCmdFile();
+            CleanCmdFile();
 
             CredentialChecker.ProduceBots();
             bots = CredentialChecker.GetVerifiedBots(out discordBot, out twitchBot, out osuBot);
@@ -39,21 +39,21 @@ namespace calledudeBot
                 => bot.Start());
         }
 
-        private static void cleanCmdFile()
+        private static void CleanCmdFile()
         {
-            if (!File.Exists(cmdFile))
+            if (!File.Exists(CommandUtils.CmdFile))
             {
-                File.Create(cmdFile).Close();
+                File.Create(CommandUtils.CmdFile).Close();
                 return; //In this case, file is empty (newly created) -> no need for cleaning -> return
             }
 
             //Cleaning up
-            List<string> cleanList = File.ReadAllLines(cmdFile)
+            List<string> cleanList = File.ReadAllLines(CommandUtils.CmdFile)
                                          .Where(p => !string.IsNullOrWhiteSpace(p))
                                          .Select(p => p.Trim())
                                          .ToList();
 
-            File.WriteAllLines(cmdFile, cleanList);
+            File.WriteAllLines(CommandUtils.CmdFile, cleanList);
         }
     }
 }
