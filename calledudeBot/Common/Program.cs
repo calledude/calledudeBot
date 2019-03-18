@@ -14,7 +14,7 @@ namespace calledudeBot
         public static OsuBot osuBot;
         public static DiscordBot discordBot;
         public static TwitchBot twitchBot;
-        private static Hooky hooky;
+        //private static Hooky hooky;
         private static List<Bot> bots;
 
         private static void Main()
@@ -32,11 +32,13 @@ namespace calledudeBot
             CredentialChecker.ProduceBots();
             bots = CredentialChecker.GetVerifiedBots(out discordBot, out twitchBot, out osuBot);
 
-            hooky = new Hooky(twitchBot);
-            new Thread(hooky.Start).Start();
+            //hooky = new Hooky(twitchBot);
+            //new Thread(hooky.Start).Start();
 
             Parallel.ForEach(bots, (bot) 
                 => bot.Start());
+
+            Console.ReadKey();
         }
 
         private static void CleanCmdFile()
