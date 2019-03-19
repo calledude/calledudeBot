@@ -1,11 +1,11 @@
-﻿using System;
+﻿using calledudeBot.Bots;
+using calledudeBot.Chat.Commands;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Collections.Generic;
-using calledudeBot.Bots;
 using System.Threading.Tasks;
-using calledudeBot.Chat.Commands;
 
 namespace calledudeBot
 {
@@ -14,8 +14,8 @@ namespace calledudeBot
         public static OsuBot osuBot;
         public static DiscordBot discordBot;
         public static TwitchBot twitchBot;
-        private static Hooky hooky;
-        private static List<Bot> bots;
+        private static Hooky _hooky;
+        private static List<Bot> _bots;
 
         private static void Main()
         {
@@ -30,12 +30,12 @@ namespace calledudeBot
             CleanCmdFile();
 
             CredentialChecker.ProduceBots();
-            bots = CredentialChecker.GetVerifiedBots(out discordBot, out twitchBot, out osuBot);
+            _bots = CredentialChecker.GetVerifiedBots(out discordBot, out twitchBot, out osuBot);
 
-            hooky = new Hooky(twitchBot);
-            new Thread(hooky.Start).Start();
+            _hooky = new Hooky(twitchBot);
+            new Thread(_hooky.Start).Start();
 
-            Parallel.ForEach(bots, (bot) 
+            Parallel.ForEach(_bots, (bot)
                 => bot.Start());
         }
 

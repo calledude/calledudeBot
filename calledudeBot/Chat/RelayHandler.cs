@@ -14,7 +14,7 @@ namespace calledudeBot.Chat
         private DateTime lastMessage;
         private readonly Timer relayTimer;
         private readonly string osuAPIToken, streamerNick;
-        private const string songRequestLink = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
+        private const string _songRequestLink = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
 
         public RelayHandler(IrcClient bot, string streamerNick, string osuAPIToken) : base(bot)
         {
@@ -63,7 +63,7 @@ namespace calledudeBot.Chat
             var idx = message.Content.IndexOf("/b/") + "/b/".Length;
             var num = message.Content.Skip(idx).TakeWhile(c => char.IsNumber(c));
             var beatmapID = string.Concat(num);
-            var reqLink = string.Format(songRequestLink, osuAPIToken, beatmapID);
+            var reqLink = string.Format(_songRequestLink, osuAPIToken, beatmapID);
 
             using (var api = new APIHandler<OsuSong>(reqLink))
             {

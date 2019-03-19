@@ -7,7 +7,7 @@ namespace calledudeBot.Bots
 {
     public abstract class Bot : IDisposable
     {
-        internal static bool testRun;
+        internal static bool TestRun { get; set; }
 
         protected string Name { get; }
         protected string Token { get; set; }

@@ -1,8 +1,7 @@
 ﻿using calledudeBot.Chat.Commands;
+using calledudeBot.Chat.Info;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using calledudeBot.Chat.Info;
 
 namespace calledudeBot.Chat
 {
@@ -11,7 +10,7 @@ namespace calledudeBot.Chat
         public HelpCommand()
         {
             Name = "!help";
-            AlternateName = new List<string> {"!commands", "!cmds"};
+            AlternateName = new List<string> { "!commands", "!cmds" };
             Description = "Lists all available commands or helps you with a specific one.";
             RequiresMod = false;
         }

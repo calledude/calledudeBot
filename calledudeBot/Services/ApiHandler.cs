@@ -18,7 +18,7 @@ namespace calledudeBot.Services
             this.URL = URL;
             client = new WebClient();
             timer = new Timer(30000);
-            timer.Elapsed += async (_,__) => await requestData();
+            timer.Elapsed += async (_, __) => await requestData();
         }
 
         public async Task Start()

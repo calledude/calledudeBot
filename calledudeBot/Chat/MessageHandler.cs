@@ -10,7 +10,7 @@ namespace calledudeBot.Chat
 
         public MessageHandler(Bot<T> bot)
         {
-            if (Bot.testRun) return;
+            if (Bot.TestRun) return;
             commandHandler = new CommandHandler<T>(this);
             this.bot = bot;
         }

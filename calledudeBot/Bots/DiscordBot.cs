@@ -16,7 +16,7 @@ namespace calledudeBot.Bots
         private readonly ulong _announceChanID, _streamerID;
         private StreamMonitor _streamMonitor;
 
-        public DiscordBot(string token, ulong announceChanID, ulong streamerID) 
+        public DiscordBot(string token, ulong announceChanID, ulong streamerID)
             : base("Discord")
         {
             Token = token;
@@ -28,7 +28,7 @@ namespace calledudeBot.Bots
         internal override async Task Start()
         {
             _bot = new DiscordSocketClient();
-            if (!testRun)
+            if (!TestRun)
             {
                 _bot.MessageReceived += OnMessageReceived;
                 _bot.Connected += OnConnect;
@@ -94,11 +94,11 @@ namespace calledudeBot.Bots
             var channel = _bot.GetChannel(message.Destination) as IMessageChannel;
             await channel.SendMessageAsync(message.Content);
         }
-        
+
         public DateTime WentLiveAt()
         {
-            return _streamMonitor.IsStreaming 
-                ? _streamMonitor.StreamStarted 
+            return _streamMonitor.IsStreaming
+                ? _streamMonitor.StreamStarted
                 : default;
         }
 

@@ -52,7 +52,7 @@ namespace calledudeBot.Chat.Commands
                 return "You ok there bud? Try again.";
             }
         }
-        
+
         private static string editCmd(Command c, Command f)
         {
             string response;

@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using calledudeBot.Chat;
+﻿using calledudeBot.Chat;
 using calledudeBot.Services;
-using System.Timers;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Globalization;
+using System.Timers;
 
 namespace calledudeBot.Bots
 {
@@ -19,7 +19,7 @@ namespace calledudeBot.Bots
         private APIHandler<OsuUser> api;
         private readonly string osuAPIToken, osuNick;
 
-        public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName) 
+        public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName)
             : base("irc.chat.twitch.tv", "Twitch", 366)
         {
             Token = token;
@@ -47,7 +47,7 @@ namespace calledudeBot.Bots
 
         protected override async Task Listen()
         {
-            while(true)
+            while (true)
             {
                 var buffer = await input.ReadLineAsync();
                 var b = buffer.Split(' ');
@@ -70,7 +70,7 @@ namespace calledudeBot.Bots
 
         private void checkUserUpdate(OsuUser user)
         {
-            if(user == null) throw new ArgumentException("Invalid username.", nameof(user));
+            if (user == null) throw new ArgumentException("Invalid username.", nameof(user));
 
             if (oldOsuData != null && oldOsuData.Rank != user.Rank && Math.Abs(user.PP - oldOsuData.PP) >= 0.1)
             {
@@ -92,7 +92,7 @@ namespace calledudeBot.Bots
             modCheckLock = false;
             modLockTimer.Stop();
         }
-        
+
         public List<string> GetMods()
         {
             if (!modCheckLock)

@@ -1,11 +1,11 @@
-﻿using System;
-using Nito.AsyncEx;
+﻿using Nito.AsyncEx;
+using System;
 
 namespace calledudeBot.Services
 {
     public static class Logger
     {
-        private static readonly AsyncCollection<string> logQueue = new AsyncCollection<string>();
+        private static readonly AsyncCollection<string> _logQueue = new AsyncCollection<string>();
 
         static Logger()
         {
@@ -13,14 +13,14 @@ namespace calledudeBot.Services
             run();
         }
 
-        public static void Log(string logMessage) 
-            => logQueue.AddAsync(logMessage);
+        public static void Log(string logMessage)
+            => _logQueue.AddAsync(logMessage);
 
         private static async void run()
         {
             while (true)
             {
-                Console.WriteLine(await logQueue.TakeAsync());
+                Console.WriteLine(await _logQueue.TakeAsync());
             }
         }
     }

@@ -8,8 +8,8 @@ namespace calledudeBot.Chat.Commands
 {
     public static class CommandUtils
     {
-        internal static string CmdFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\cmds.txt";
-        internal static List<Command> Commands = new List<Command>();
+        internal static List<Command> Commands { get; set; } = new List<Command>();
+        internal static string CmdFile { get; } = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\cmds.txt";
 
         //Returns the Command object or null depending on if it exists or not.
         internal static Command GetExistingCommand(string cmd)

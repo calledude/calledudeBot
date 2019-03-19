@@ -1,7 +1,7 @@
-﻿using System;
+﻿using calledudeBot.Chat.Info;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using calledudeBot.Chat.Info;
 
 namespace calledudeBot.Chat.Commands
 {
@@ -16,7 +16,7 @@ namespace calledudeBot.Chat.Commands
         public Command(CommandParameter cmdParam)
         {
             Name = cmdParam.PrefixedWords.FirstOrDefault();
-            if(Name == null)
+            if (Name == null)
             {
                 Name = cmdParam.Words[0].AddPrefix();
                 cmdParam.Words.RemoveAt(0);
@@ -26,7 +26,7 @@ namespace calledudeBot.Chat.Commands
             Description = string.Join(" ", cmdParam.EnclosedWords).Trim('<', '>');
             Response = string.Join(" ", cmdParam.Words);
 
-            if(cmdParam.PrefixedWords.Any(hasSpecialChars))
+            if (cmdParam.PrefixedWords.Any(hasSpecialChars))
                 throw new ArgumentException("Special characters in commands are not allowed.");
         }
 

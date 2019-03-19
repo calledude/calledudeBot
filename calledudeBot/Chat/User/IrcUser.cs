@@ -6,7 +6,7 @@ namespace calledudeBot.Chat
 {
     public sealed class IrcUser : User
     {
-        private static readonly TwitchBot twitch = calledudeBot.twitchBot;
+        private static readonly TwitchBot _twitch = calledudeBot.twitchBot;
 
         public IrcUser(string name) : base(name)
         {
@@ -16,7 +16,7 @@ namespace calledudeBot.Chat
         {
             get
             {
-                var mods = twitch.GetMods();
+                var mods = _twitch.GetMods();
                 return mods.Any(u => u.Equals(Name, StringComparison.OrdinalIgnoreCase));
             }
         }

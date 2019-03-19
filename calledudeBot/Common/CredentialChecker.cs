@@ -14,30 +14,31 @@ namespace calledudeBot
 {
     public static class CredentialChecker
     {
-        private static Dictionary<string, string> creds;
-        private static readonly string credFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\credentials";
-        private static string discordToken, twitchIRCtoken, osuIRCtoken, osuAPIToken, botNick, 
-                                            channelName, osuNick, announceChanID, streamerID;
-        private static bool verifiedBots;
+        private static Dictionary<string, string> _creds;
+        private static readonly string _credFile = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\credentials";
+        private static string _discordToken, _twitchIRCtoken, _osuIRCtoken, _osuAPIToken, _botNick,
+                                            _channelName, _osuNick, _announceChanID, _streamerID;
+        private static bool _verifiedBots;
+
         public static void ProduceBots()
         {
             getCredentials(); //Makes sure all credentials are at the very least present.
 
-            Bot.testRun = true;
+            Bot.TestRun = true;
             while (!VerifyCredentials())
             {
                 getMissingCredentials();
                 tryLoadCredentials();
             }
-            Bot.testRun = false;
+            Bot.TestRun = false;
         }
 
         public static List<Bot> GetVerifiedBots(out DiscordBot discordBot, out TwitchBot twitchBot, out OsuBot osuBot)
         {
-            if (!verifiedBots) throw new InvalidOperationException("You're not allowed to call this method before all bots have been verified.");
-            discordBot = new DiscordBot(discordToken, ulong.Parse(announceChanID), ulong.Parse(streamerID));
-            osuBot = new OsuBot(osuIRCtoken, osuNick);
-            twitchBot = new TwitchBot(twitchIRCtoken, osuAPIToken, osuNick, botNick, channelName);
+            if (!_verifiedBots) throw new InvalidOperationException("You're not allowed to call this method before all bots have been verified.");
+            discordBot = new DiscordBot(_discordToken, ulong.Parse(_announceChanID), ulong.Parse(_streamerID));
+            osuBot = new OsuBot(_osuIRCtoken, _osuNick);
+            twitchBot = new TwitchBot(_twitchIRCtoken, _osuAPIToken, _osuNick, _botNick, _channelName);
             return new List<Bot> { discordBot, twitchBot, osuBot };
         }
 
@@ -49,8 +50,8 @@ namespace calledudeBot
                 () => discToken = VerifyBot<DiscordBot>(),
                 () => twitchToken = VerifyBot<TwitchBot>(),
                 () => osuToken = VerifyBot<OsuBot>());
-            
-            return verifiedBots = discToken && twitchToken && osuToken;
+
+            return _verifiedBots = discToken && twitchToken && osuToken;
         }
 
         private static bool VerifyBot<T>() where T : Bot
@@ -67,30 +68,30 @@ namespace calledudeBot
                 catch (HttpException)
                 {
                     bot.TryLog("Invalid Discord token.");
-                    creds.Remove("DiscordToken");
+                    _creds.Remove("DiscordToken");
                 }
                 catch (InvalidOrWrongTokenException)
                 {
                     if (bot is OsuBot)
                     {
-                        creds.Remove("osuIRC");
-                        creds.Remove("OsuNick");
+                        _creds.Remove("osuIRC");
+                        _creds.Remove("OsuNick");
                         bot.TryLog("Invalid token and/or osu!-nickname");
                     }
                     else
                     {
-                        creds.Remove("TwitchIRC");
+                        _creds.Remove("TwitchIRC");
                         bot.TryLog("Invalid token");
                     }
                 }
                 catch (WebException)
                 {
                     bot.TryLog("Invalid osu! API token.");
-                    creds.Remove("osuAPI");
+                    _creds.Remove("osuAPI");
                 }
                 catch (ArgumentException)
                 {
-                    creds.Remove("OsuNick");
+                    _creds.Remove("OsuNick");
                     bot.TryLog("Invalid osu!-nickname.");
                 }
                 finally
@@ -106,42 +107,42 @@ namespace calledudeBot
         {
             if (typeof(T) == typeof(DiscordBot))
             {
-                if (!ulong.TryParse(announceChanID, out var _announceChanID) && !ulong.TryParse(streamerID, out var _streamerID))
+                if (!ulong.TryParse(_announceChanID, out var announceChanID) && !ulong.TryParse(_streamerID, out var streamerID))
                 {
-                    creds.Remove("AnnounceChannelID");
-                    creds.Remove("StreamerID");
+                    _creds.Remove("AnnounceChannelID");
+                    _creds.Remove("StreamerID");
                 }
-                if (!ulong.TryParse(announceChanID, out _announceChanID))
+                if (!ulong.TryParse(_announceChanID, out announceChanID))
                 {
-                    creds.Remove("AnnounceChannelID");
+                    _creds.Remove("AnnounceChannelID");
                 }
-                if (!ulong.TryParse(streamerID, out _streamerID))
+                if (!ulong.TryParse(_streamerID, out streamerID))
                 {
-                    creds.Remove("StreamerID");
+                    _creds.Remove("StreamerID");
                 }
-                return new DiscordBot(discordToken, _announceChanID, _streamerID);
+                return new DiscordBot(_discordToken, announceChanID, streamerID);
             }
             else if (typeof(T) == typeof(TwitchBot))
             {
-                return new TwitchBot(twitchIRCtoken, osuAPIToken, osuNick, botNick, channelName);
+                return new TwitchBot(_twitchIRCtoken, _osuAPIToken, _osuNick, _botNick, _channelName);
             }
             else
             {
-                return new OsuBot(osuIRCtoken, osuNick);
+                return new OsuBot(_osuIRCtoken, _osuNick);
             }
         }
 
         private static bool tryLoadCredentials()
         {
-            return creds.TryGetValue("BotNick", out botNick)
-                && creds.TryGetValue("ChannelName", out channelName)
-                && creds.TryGetValue("OsuNick", out osuNick)
-                && creds.TryGetValue("AnnounceChannelID", out announceChanID)
-                && creds.TryGetValue("DiscordToken", out discordToken)
-                && creds.TryGetValue("TwitchIRC", out twitchIRCtoken)
-                && creds.TryGetValue("osuIRC", out osuIRCtoken)
-                && creds.TryGetValue("osuAPI", out osuAPIToken)
-                && creds.TryGetValue("StreamerID", out streamerID);
+            return _creds.TryGetValue("BotNick", out _botNick)
+                && _creds.TryGetValue("ChannelName", out _channelName)
+                && _creds.TryGetValue("OsuNick", out _osuNick)
+                && _creds.TryGetValue("AnnounceChannelID", out _announceChanID)
+                && _creds.TryGetValue("DiscordToken", out _discordToken)
+                && _creds.TryGetValue("TwitchIRC", out _twitchIRCtoken)
+                && _creds.TryGetValue("osuIRC", out _osuIRCtoken)
+                && _creds.TryGetValue("osuAPI", out _osuAPIToken)
+                && _creds.TryGetValue("StreamerID", out _streamerID);
         }
 
         private static void getMissingCredentials()
@@ -162,7 +163,7 @@ namespace calledudeBot
             Console.WriteLine("Hey! You've not completed all the steps to make the bot work. Let's do that shall we?");
             Thread.Sleep(3000);
 
-            var missing = required.Keys.Except(creds.Keys).ToList();
+            var missing = required.Keys.Except(_creds.Keys).ToList();
             Type t = typeof(CredentialChecker);
             foreach (string s in missing)
             {
@@ -170,10 +171,10 @@ namespace calledudeBot
                 m.Invoke(null, null);
             }
 
-            File.Create(credFile).Close();
-            foreach (KeyValuePair<string, string> k in creds)
+            File.Create(_credFile).Close();
+            foreach (KeyValuePair<string, string> k in _creds)
             {
-                File.AppendAllText(credFile, k.Key + " " + k.Value + Environment.NewLine);
+                File.AppendAllText(_credFile, k.Key + " " + k.Value + Environment.NewLine);
             }
 
             Console.WriteLine("Alright! We're all done. Let's go! :)");
@@ -183,17 +184,17 @@ namespace calledudeBot
 
         private static void getCredentials()
         {
-            if (File.Exists(credFile))
+            if (File.Exists(_credFile))
             {
-                creds = File.ReadAllLines(credFile)
+                _creds = File.ReadAllLines(_credFile)
                     .Distinct()
                     .Where(p => p.Trim().Split(' ').Length == 2)
                     .ToDictionary(key => key.Split(' ')[0], val => val.Split(' ')[1]);
             }
             else
             {
-                File.Create(credFile).Close();
-                creds = new Dictionary<string, string>();
+                File.Create(_credFile).Close();
+                _creds = new Dictionary<string, string>();
             }
             while (!tryLoadCredentials())
             {
@@ -226,8 +227,8 @@ namespace calledudeBot
         private static void getBotNick()
         {
             Console.Write("What will the username be of your bot be?: ");
-            botNick = Console.ReadLine();
-            creds.Add("BotNick", botNick);
+            _botNick = Console.ReadLine();
+            _creds.Add("BotNick", _botNick);
         }
 
         private static void getChannelName()
@@ -235,21 +236,21 @@ namespace calledudeBot
             Console.Write("Will you be using your personal twitch account as the 'bot'? Y/N: ");
             if (getConfirmation())
             {
-                channelName = "#" + botNick;
+                _channelName = "#" + _botNick;
             }
             else
             {
                 Console.Write("Please enter your nickname on twitch: ");
-                channelName = "#" + Console.ReadLine();
+                _channelName = "#" + Console.ReadLine();
             }
-            creds.Add("ChannelName", channelName);
+            _creds.Add("ChannelName", _channelName);
         }
 
         private static void getOsuNick()
         {
             Console.Write("What's your osu! username?: ");
-            osuNick = Console.ReadLine();
-            creds.Add("OsuNick", osuNick);
+            _osuNick = Console.ReadLine();
+            _creds.Add("OsuNick", _osuNick);
         }
 
         private static void getAnnounceChannelID()
@@ -257,8 +258,8 @@ namespace calledudeBot
             Console.Write("What channel on your discord server do you want the announcements to be made on? (Long number): ");
             openWebsite(4000, "https://support.discordapp.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID");
 
-            announceChanID = Console.ReadLine();
-            creds.Add("AnnounceChannelID", announceChanID);
+            _announceChanID = Console.ReadLine();
+            _creds.Add("AnnounceChannelID", _announceChanID);
         }
 
         private static void getDiscordToken()
@@ -267,7 +268,7 @@ namespace calledudeBot
             Console.Write("Discord token: ");
             openWebsite(3000, "https://discordapp.com/developers/applications/me");
 
-            discordToken = Console.ReadLine();
+            _discordToken = Console.ReadLine();
             Console.Write("Have you figured out how to get the bot to join your own channel? Y/N: ");
 
             if (!getConfirmation())
@@ -275,38 +276,38 @@ namespace calledudeBot
                 Console.Write("Alright, enter the bots Client-ID here: ");
                 openWebsite(0, $"https://discordapp.com/oauth2/authorize?client_id={Console.ReadLine()}&scope=bot");
             }
-            creds.Add("DiscordToken", discordToken);
+            _creds.Add("DiscordToken", _discordToken);
         }
 
         private static void getTwitchIRC()
         {
             Console.Write("Twitch IRC token: ");
             openWebsite(2000, "http://www.twitchapps.com/tmi/");
-            twitchIRCtoken = Console.ReadLine();
-            creds.Add("TwitchIRC", twitchIRCtoken);
+            _twitchIRCtoken = Console.ReadLine();
+            _creds.Add("TwitchIRC", _twitchIRCtoken);
         }
 
         private static void getosuIRC()
         {
             Console.Write("osu! IRC password: ");
             openWebsite(2000, "https://osu.ppy.sh/p/irc");
-            osuIRCtoken = Console.ReadLine();
-            creds.Add("osuIRC", osuIRCtoken);
+            _osuIRCtoken = Console.ReadLine();
+            _creds.Add("osuIRC", _osuIRCtoken);
         }
 
         private static void getosuAPI()
         {
             Console.Write("osu! API key: ");
             openWebsite(2000, "https://osu.ppy.sh/p/api");
-            osuAPIToken = Console.ReadLine();
-            creds.Add("osuAPI", osuAPIToken);
+            _osuAPIToken = Console.ReadLine();
+            _creds.Add("osuAPI", _osuAPIToken);
         }
 
         private static void getStreamerID()
         {
             Console.Write("YOUR User-ID (On Discord): ");
-            streamerID = Console.ReadLine();
-            creds.Add("StreamerID", streamerID);
+            _streamerID = Console.ReadLine();
+            _creds.Add("StreamerID", _streamerID);
         }
 
         #endregion

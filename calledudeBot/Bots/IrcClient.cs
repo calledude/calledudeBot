@@ -1,8 +1,8 @@
-﻿using System;
+﻿using calledudeBot.Chat;
+using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using calledudeBot.Chat;
 
 namespace calledudeBot.Bots
 {
@@ -39,7 +39,7 @@ namespace calledudeBot.Bots
         {
             await Login();
 
-            if (!testRun)
+            if (!TestRun)
             {
                 try
                 {
@@ -61,7 +61,7 @@ namespace calledudeBot.Bots
             TryLog(pong);
         }
 
-        public override async void SendMessage(IrcMessage message) 
+        public override async void SendMessage(IrcMessage message)
             => await WriteLine($"PRIVMSG {channelName} :{message.Content}");
 
         protected async void Reconnect()
@@ -98,15 +98,15 @@ namespace calledudeBot.Bots
                 if (result == 001)
                 {
                     await WriteLine($"JOIN {channelName}");
-                    if(OnReady != null)
+                    if (OnReady != null)
                         await OnReady.Invoke();
 
-                    if (!testRun) TryLog($"Connected to {Name}-IRC.");
+                    if (!TestRun) TryLog($"Connected to {Name}-IRC.");
                 }
             }
         }
 
-        protected async Task WriteLine(string message) 
+        protected async Task WriteLine(string message)
             => await output.WriteLineAsync(message);
 
         protected override void Dispose(bool disposing)

@@ -1,12 +1,12 @@
 ﻿using calledudeBot.Bots;
-using System.Linq;
 using Discord.WebSocket;
+using System.Linq;
 
 namespace calledudeBot.Chat
 {
     public sealed class DiscordUser : User
     {
-        private static readonly DiscordBot discord = calledudeBot.discordBot;
+        private static readonly DiscordBot _discord = calledudeBot.discordBot;
         private readonly SocketUser user;
 
         public DiscordUser(SocketUser user) : base(user.Username)
@@ -18,8 +18,8 @@ namespace calledudeBot.Chat
         {
             get
             {
-                var mods = discord.GetModerators();
-                return mods.Any(u => u.Id == user.Id) || discord.IsMod(user as SocketGuildUser);
+                var mods = _discord.GetModerators();
+                return mods.Any(u => u.Id == user.Id) || _discord.IsMod(user as SocketGuildUser);
             }
         }
     }

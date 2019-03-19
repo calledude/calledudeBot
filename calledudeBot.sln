@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2002
+VisualStudioVersion = 15.0.28307.489
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "calledudeBot", "calledudeBot\calledudeBot.csproj", "{8FB52F7C-632D-462E-90A9-FA9C676AB579}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "calledudeBot", "calledudeBot\calledudeBot.csproj", "{AED7152D-8E1D-4776-980E-FBED8C303AE9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8FB52F7C-632D-462E-90A9-FA9C676AB579}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8FB52F7C-632D-462E-90A9-FA9C676AB579}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8FB52F7C-632D-462E-90A9-FA9C676AB579}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8FB52F7C-632D-462E-90A9-FA9C676AB579}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AED7152D-8E1D-4776-980E-FBED8C303AE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AED7152D-8E1D-4776-980E-FBED8C303AE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AED7152D-8E1D-4776-980E-FBED8C303AE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AED7152D-8E1D-4776-980E-FBED8C303AE9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {25E4A2DA-B28A-4AA5-9CBB-8FB35AB1D53E}
+		SolutionGuid = {747B2D25-8E91-42F2-9DF7-49234C595242}
 	EndGlobalSection
 EndGlobal

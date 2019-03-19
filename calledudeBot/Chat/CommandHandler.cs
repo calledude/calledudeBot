@@ -1,9 +1,9 @@
-﻿using calledudeBot.Services;
+﻿using calledudeBot.Chat.Commands;
+using calledudeBot.Chat.Info;
+using calledudeBot.Services;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using calledudeBot.Chat.Info;
-using calledudeBot.Chat.Commands;
 
 namespace calledudeBot.Chat
 {
@@ -50,7 +50,7 @@ namespace calledudeBot.Chat
             string response;
             var cmd = CommandUtils.GetExistingCommand(param.PrefixedWords[0]);
 
-            if(cmd == null)
+            if (cmd == null)
             {
                 response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
             }
@@ -63,7 +63,7 @@ namespace calledudeBot.Chat
                 param.PrefixedWords.RemoveAt(0); //Remove whatever command they were executing from PrefixedWords e.g. !addcmd
                 response = sp.GetResponse(param);
             }
-            else if(cmd is SpecialCommand s)
+            else if (cmd is SpecialCommand s)
             {
                 response = s.GetResponse();
             }

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace calledudeBot.Chat.Info
@@ -17,14 +17,14 @@ namespace calledudeBot.Chat.Info
         public CommandParameter(IEnumerable<string> param, Message message)
         {
             PrefixedWords = param.Where(x => x[0] == '!').ToList();
-            
+
             var paramStr = string.Join(" ", param);
             var encIdx = paramStr.LastIndexOf('<');
             var encEndIdx = paramStr.LastIndexOf('>') + 1;
 
             var encWords = encIdx > 1 && encEndIdx > 1 ? paramStr.Substring(encIdx, encEndIdx - encIdx) : null;
             EnclosedWords = encWords?.Split(' ')?.ToList() ?? EnclosedWords;
-            
+
             Words = param.Except(EnclosedWords).Except(PrefixedWords).ToList();
 
             Message = message;

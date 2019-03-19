@@ -1,11 +1,11 @@
-﻿using System;
+﻿using calledudeBot.Bots;
+using calledudeBot.Chat;
+using calledudeBot.Services;
+using Open.WinKeyboardHook;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Open.WinKeyboardHook;
-using calledudeBot.Bots;
-using calledudeBot.Services;
-using calledudeBot.Chat;
 
 namespace calledudeBot
 {
@@ -103,7 +103,7 @@ namespace calledudeBot
         private void key_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!KEYF9 || !applicationIsActivated()) return;
-            if (e.KeyChar == (char) Keys.Escape)
+            if (e.KeyChar == (char)Keys.Escape)
             {
                 KEYF9 = false;
                 return;
@@ -117,7 +117,7 @@ namespace calledudeBot
                 if (MessageToSend.Length == 0) position++;
             }
 
-            if (e.KeyChar == (char) Keys.Return && MessageToSend.Length > 0)
+            if (e.KeyChar == (char)Keys.Return && MessageToSend.Length > 0)
             {
                 position = 0;
                 twitchBot.SendMessage(new IrcMessage(MessageToSend, false));

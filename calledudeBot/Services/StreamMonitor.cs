@@ -82,7 +82,7 @@ namespace calledudeBot.Services
                 var messages = await _announceChannel
                     .GetMessagesAsync()
                     .FlattenAsync();
-                
+
                 var twitchUsername = sg.Url.Split('/').Last();
                 var msg = $"🔴 **{twitchUsername}** is now **LIVE**\n- Title: **{sg.Name}**\n- Watch at: {sg.Url}";
 
