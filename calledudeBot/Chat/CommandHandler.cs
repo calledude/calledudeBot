@@ -45,7 +45,7 @@ namespace calledudeBot.Chat
 
         public bool IsPrefixed(string message) => message[0] == '!';
 
-        public async Task<T> GetResponse(CommandParameter param)
+        public T GetResponse(CommandParameter param)
         {
             string response;
             var cmd = CommandUtils.GetExistingCommand(param.PrefixedWords[0]);
@@ -64,7 +64,7 @@ namespace calledudeBot.Chat
                 {
                     case SpecialCommand<CommandParameter> sp:
                         param.PrefixedWords.RemoveAt(0); //Remove whatever command they were executing from PrefixedWords e.g. !addcmd
-                        response = await sp.GetResponse(param);
+                        response = sp.GetResponse(param);
                         break;
                     case SpecialCommand s:
                         response = s.GetResponse();

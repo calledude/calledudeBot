@@ -1,12 +1,11 @@
 ﻿using calledudeBot.Chat.Info;
-using System.Threading.Tasks;
 
 namespace calledudeBot.Chat.Commands
 {
     public abstract class SpecialCommand<T> : Command where T : CommandParameter
     {
-        protected abstract Task<string> specialFunc(T param);
-        public async Task<string> GetResponse(T param) => await specialFunc(param);
+        protected abstract string specialFunc(T param);
+        public string GetResponse(T param) => specialFunc(param);
     }
 
     public abstract class SpecialCommand : Command

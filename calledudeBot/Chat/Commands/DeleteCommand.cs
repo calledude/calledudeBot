@@ -1,6 +1,5 @@
 ﻿using calledudeBot.Chat.Info;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace calledudeBot.Chat.Commands
 {
@@ -13,7 +12,7 @@ namespace calledudeBot.Chat.Commands
             RequiresMod = true;
         }
 
-        protected override Task<string> specialFunc(CommandParameter param)
+        protected override string specialFunc(CommandParameter param)
         {
             string response = "You ok there bud? Try again.";
 
@@ -22,7 +21,7 @@ namespace calledudeBot.Chat.Commands
             {
                 response = CommandUtils.RemoveCommand(c, cmdToDel);
             }
-            return Task.FromResult(response);
+            return response;
         }
     }
 }

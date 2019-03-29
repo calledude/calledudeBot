@@ -26,7 +26,7 @@ namespace calledudeBot.Chat
             {
                 _bot.TryLog($"Handling message: {message.Content} from {message.Sender.Name}");
                 var param = new CommandParameter(msg, message);
-                await respond(await commandHandler.GetResponse(param));
+                await respond(commandHandler.GetResponse(param));
                 return true;
             }
             return false;

@@ -1,7 +1,6 @@
 ﻿using calledudeBot.Chat.Info;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace calledudeBot.Chat.Commands
 {
@@ -42,7 +41,7 @@ namespace calledudeBot.Chat.Commands
             }
         }
 
-        protected override Task<string> specialFunc(CommandParameter param)
+        protected override string specialFunc(CommandParameter param)
         {
             string response;
             if (param.PrefixedWords.Count >= 1 || param.Words.Count >= 1) //has user entered a command to enter? i.e. !addcmd !test someAnswer
@@ -53,7 +52,7 @@ namespace calledudeBot.Chat.Commands
             {
                 response = "You ok there bud? Try again.";
             }
-            return Task.FromResult(response);
+            return response;
         }
 
         private static string editCmd(Command c, Command f)

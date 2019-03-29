@@ -27,7 +27,7 @@ namespace calledudeBot.Bots
             Setup();
         }
 
-        protected void Setup()
+        private void Setup()
         {
             sock = new TcpClient();
             sock.Connect(server, port);
@@ -111,7 +111,7 @@ namespace calledudeBot.Bots
             }
         }
 
-        protected virtual async Task Listen()
+        protected async Task Listen()
         {
             while (true)
             {
