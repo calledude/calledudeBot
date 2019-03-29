@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace calledudeBot.Services
 {
-    public class OsuUserService : IDisposable
+    public sealed class OsuUserService : IDisposable
     {
         private OsuUser oldOsuData;
         private readonly APIHandler<OsuUser> api;

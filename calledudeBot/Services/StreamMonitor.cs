@@ -10,7 +10,7 @@ using System.Timers;
 
 namespace calledudeBot.Services
 {
-    public class StreamMonitor : IDisposable
+    public sealed class StreamMonitor : IDisposable
     {
         private IGuildUser _streamer;
         private readonly OBSWebsocket _obs;

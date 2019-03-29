@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace calledudeBot.Services
 {
-    public class SongRequester
+    public sealed class SongRequester
     {
         private const string _songRequestLink = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
         private readonly string _osuAPIToken;
@@ -35,6 +35,5 @@ namespace calledudeBot.Services
                 }
             }
         }
-
     }
 }
