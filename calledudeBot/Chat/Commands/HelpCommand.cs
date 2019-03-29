@@ -19,7 +19,7 @@ namespace calledudeBot.Chat
         protected override Task<string> specialFunc(CommandParameter param)
         {
             string response = "You ok there bud? Try again.";
-            var allowed = param.Message.Sender.IsMod;
+            var allowed = param.SenderIsMod;
             var cmdToHelp = param.PrefixedWords.FirstOrDefault() ?? param.Words.FirstOrDefault();
             if (cmdToHelp == null)
             {

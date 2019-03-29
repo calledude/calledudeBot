@@ -2,11 +2,12 @@
 {
     public sealed class DiscordMessage : Message
     {
-        public ulong Destination { get; set; }
+        public ulong Destination { get; }
 
-        public DiscordMessage(string message, User sender) : base(message)
+        public DiscordMessage(string message, User sender, ulong destination) 
+            : base(message, sender)
         {
-            Sender = sender;
+            Destination = destination;
         }
     }
 }

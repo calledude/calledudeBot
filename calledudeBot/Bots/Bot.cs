@@ -36,7 +36,7 @@ namespace calledudeBot.Bots
         {
         }
 
-        public virtual async Task SendMessageAsync(T message)
+        public async Task SendMessageAsync(T message)
         {
             TryLog($"Sending message: {message.Content}");
             await SendMessage(message);

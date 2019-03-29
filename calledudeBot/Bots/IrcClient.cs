@@ -49,7 +49,6 @@ namespace calledudeBot.Bots
                 catch (Exception e)
                 {
                     TryLog(e.Message);
-                    TryLog(e.StackTrace);
                     Reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
                 }
             }

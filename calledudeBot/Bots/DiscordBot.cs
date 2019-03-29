@@ -56,30 +56,31 @@ namespace calledudeBot.Bots
         private async Task OnMessageReceived(SocketMessage messageParam)
         {
             // Don't process the command if it was a System Message or if we sent it ourselves
-            var message = messageParam as SocketUserMessage;
-            if (message == null || _bot.CurrentUser.Id == message.Author.Id || !(message.Author is SocketGuildUser user))
+            if (!(messageParam is SocketUserMessage message)
+                || _bot.CurrentUser.Id == message.Author.Id
+                || !(message.Author is SocketGuildUser user))
             {
                 return;
             }
 
-            var mods = GetModerators();
-            var isMod = mods.Any(u => u.Id == user.Id
+            var isMod = GetModerators()
+                .Any(u => u.Id == user.Id
                 || user.GuildPermissions.BanMembers
                 || user.GuildPermissions.KickMembers);
 
-            var sender = new User($"{user.Username}#{user.Discriminator}", isMod);
-            DiscordMessage msg = new DiscordMessage(message.Content, sender)
-            {
-                Destination = message.Channel.Id
-            };
+            DiscordMessage msg = new DiscordMessage(
+                message.Content,
+                new User($"{user.Username}#{user.Discriminator}", isMod),
+                message.Channel.Id);
+
             await _messageHandler.DetermineResponse(msg);
         }
 
-        private IEnumerable<SocketGuildUser> GetModerators()
+        private IReadOnlyCollection<SocketGuildUser> GetModerators()
         {
             var channel = _bot.GetChannel(_announceChanID) as IGuildChannel;
             var roles = channel.Guild.Roles.Cast<SocketRole>();
-            return roles.Where(x => x.Permissions.BanMembers || x.Permissions.KickMembers).SelectMany(r => r.Members);
+            return roles.Where(x => x.Permissions.BanMembers || x.Permissions.KickMembers).SelectMany(r => r.Members).ToArray();
         }
 
         protected override async Task SendMessage(DiscordMessage message)
@@ -90,7 +91,7 @@ namespace calledudeBot.Bots
 
         public DateTime WentLiveAt()
         {
-            return _streamMonitor.IsStreaming
+            return _streamMonitor?.IsStreaming ?? false
                 ? _streamMonitor.StreamStarted
                 : default;
         }

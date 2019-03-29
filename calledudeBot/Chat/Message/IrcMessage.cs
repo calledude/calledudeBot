@@ -1,19 +1,16 @@
-﻿using calledudeBot.Bots;
-using System.Linq;
+﻿using System.Linq;
 
 namespace calledudeBot.Chat
 {
     public sealed class IrcMessage : Message
     {
-        public static TwitchBot TwitchBot { get; set; }
-
         public IrcMessage(string message) : base(message)
         {
         }
 
-        public IrcMessage(string message, User sender) : base(message)
+        public IrcMessage(string message, User sender) 
+            : base(message, sender)
         {
-            Sender = sender;
         }
 
         public static string ParseMessage(string buffer)
