@@ -80,7 +80,10 @@ namespace calledudeBot.Bots
         {
             var channel = _bot.GetChannel(_announceChanID) as IGuildChannel;
             var roles = channel.Guild.Roles.Cast<SocketRole>();
-            return roles.Where(x => x.Permissions.BanMembers || x.Permissions.KickMembers).SelectMany(r => r.Members).ToArray();
+            return roles
+                .Where(x => x.Permissions.BanMembers || x.Permissions.KickMembers)
+                .SelectMany(r => r.Members)
+                .ToArray();
         }
 
         protected override async Task SendMessage(DiscordMessage message)
