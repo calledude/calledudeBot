@@ -43,16 +43,14 @@ namespace calledudeBot.Chat.Commands
 
         protected override string specialFunc(CommandParameter param)
         {
-            string response;
             if (param.PrefixedWords.Count >= 1 || param.Words.Count >= 1) //has user entered a command to enter? i.e. !addcmd !test someAnswer
             {
-                response = createCommand(param);
+                return createCommand(param);
             }
             else
             {
-                response = "You ok there bud? Try again.";
+                return "You ok there bud? Try again.";
             }
-            return response;
         }
 
         private static string editCmd(Command c, Command f)
