@@ -1,29 +1,35 @@
-﻿using System.Linq;
+﻿using calledudeBot.Bots;
+using System.Linq;
 
 namespace calledudeBot.Chat
 {
     public sealed class IrcMessage : Message
     {
-        public IrcMessage(string message, bool parse = true) : base(message)
+        public static TwitchBot TwitchBot { get; set; }
+
+        public IrcMessage(string message) : base(message)
         {
-            if (parse)
-            {
-                parseMessage();
-            }
         }
 
-        //:calledude!calledude@calledude.tmi.twitch.tv PRIVMSG #calledude :hej
-        private void parseMessage()
+        public IrcMessage(string message, User sender) : base(message)
+        {
+            Sender = sender;
+        }
+
+        public static string ParseMessage(string buffer)
+        {
+            return string.Join(" ", buffer.Split(' ').Skip(3)).Substring(1);
+        }
+
+        public static string ParseUser(string buffer)
         {
             //Get name of sender
-            var indexUpper = Content.IndexOf('!');
+            var indexUpper = buffer.IndexOf('!');
             var nameLength = indexUpper - 1;
 
-            var name = Content.Substring(1, nameLength);
-            Sender = new IrcUser(char.ToUpper(name[0]) + name.Substring(1)); //capitalize first letter in username
+            var name = buffer.Substring(1, nameLength);
 
-            //Get content
-            Content = string.Join(" ", Content.Split(' ').Skip(3)).Substring(1);
+            return char.ToUpper(name[0]) + name.Substring(1); //capitalize first letter in username
         }
     }
 }

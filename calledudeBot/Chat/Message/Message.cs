@@ -2,8 +2,8 @@
 {
     public abstract class Message
     {
+        public User Sender { get; protected set; }
         public string Content { get; set; }
-        public User Sender { get; set; }
 
         protected Message(string message)
         {

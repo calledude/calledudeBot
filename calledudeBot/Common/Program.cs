@@ -11,11 +11,7 @@ namespace calledudeBot
 {
     public static class calledudeBot
     {
-        public static OsuBot osuBot;
-        public static DiscordBot discordBot;
-        public static TwitchBot twitchBot;
         private static Hooky _hooky;
-        private static List<Bot> _bots;
 
         private static void Main()
         {
@@ -29,14 +25,14 @@ namespace calledudeBot
             };
             CleanCmdFile();
 
-            CredentialChecker.ProduceBots();
-            _bots = CredentialChecker.GetVerifiedBots(out discordBot, out twitchBot, out osuBot);
+            CredentialChecker.ProduceBots().Wait();
+            var _bots = CredentialChecker.GetVerifiedBots(out var discordBot, out var twitchBot, out var osuBot);
 
-            _hooky = new Hooky(twitchBot);
+            foreach (var bot in _bots)
+                bot.Start();
+
+            _hooky = new Hooky(ref twitchBot);
             new Thread(_hooky.Start).Start();
-
-            Parallel.ForEach(_bots, (bot)
-                => bot.Start());
         }
 
         private static void CleanCmdFile()

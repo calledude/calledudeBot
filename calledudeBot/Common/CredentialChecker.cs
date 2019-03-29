@@ -20,49 +20,46 @@ namespace calledudeBot
                                             _channelName, _osuNick, _announceChanID, _streamerID;
         private static bool _verifiedBots;
 
-        public static void ProduceBots()
+        public static async Task ProduceBots()
         {
-            getCredentials(); //Makes sure all credentials are at the very least present.
+            GetCredentials(); //Makes sure all credentials are at the very least present.
 
             Bot.TestRun = true;
-            while (!VerifyCredentials())
+            while (!await VerifyCredentials())
             {
                 getMissingCredentials();
-                tryLoadCredentials();
+                TryLoadCredentials();
             }
             Bot.TestRun = false;
         }
 
-        public static List<Bot> GetVerifiedBots(out DiscordBot discordBot, out TwitchBot twitchBot, out OsuBot osuBot)
+        public static Bot[] GetVerifiedBots(out DiscordBot discordBot, out TwitchBot twitchBot, out OsuBot osuBot)
         {
             if (!_verifiedBots) throw new InvalidOperationException("You're not allowed to call this method before all bots have been verified.");
             discordBot = new DiscordBot(_discordToken, ulong.Parse(_announceChanID), ulong.Parse(_streamerID));
             osuBot = new OsuBot(_osuIRCtoken, _osuNick);
-            twitchBot = new TwitchBot(_twitchIRCtoken, _osuAPIToken, _osuNick, _botNick, _channelName);
-            return new List<Bot> { discordBot, twitchBot, osuBot };
+            twitchBot = new TwitchBot(_twitchIRCtoken, _osuAPIToken, _osuNick, _botNick, _channelName, osuBot);
+            return new Bot[] { discordBot, twitchBot, osuBot };
         }
 
         //Returns a boolean after running every single bot through the verify function
-        private static bool VerifyCredentials()
+        private static async Task<bool> VerifyCredentials()
         {
-            bool discToken = false, twitchToken = false, osuToken = false;
-            Parallel.Invoke(
-                () => discToken = VerifyBot<DiscordBot>(),
-                () => twitchToken = VerifyBot<TwitchBot>(),
-                () => osuToken = VerifyBot<OsuBot>());
+            var discToken = VerifyBot<DiscordBot>();
+            var twitchToken = VerifyBot<TwitchBot>();
+            var osuToken = VerifyBot<OsuBot>();
 
-            return _verifiedBots = discToken && twitchToken && osuToken;
+            return _verifiedBots = await osuToken && await twitchToken && await discToken;
         }
 
-        private static bool VerifyBot<T>() where T : Bot
+        public static async Task<bool> VerifyBot<T>() where T : Bot
         {
             using (Bot bot = getBotInstance<T>())
             {
-                if (bot == null) return false;
                 bool success = false;
                 try
                 {
-                    bot.Start().GetAwaiter().GetResult();
+                    await bot.Start();
                     success = true; //Will only be set if bot.Start() does not throw an exception
                 }
                 catch (HttpException)
@@ -97,7 +94,7 @@ namespace calledudeBot
                 finally
                 {
                     bot.TryLog($"Verification {(success ? "SUCCESS." : "FAIL.")}");
-                    bot.Logout().GetAwaiter().GetResult();
+                    await bot.Logout();
                 }
                 return success;
             }
@@ -124,7 +121,7 @@ namespace calledudeBot
             }
             else if (typeof(T) == typeof(TwitchBot))
             {
-                return new TwitchBot(_twitchIRCtoken, _osuAPIToken, _osuNick, _botNick, _channelName);
+                return new TwitchBot(_twitchIRCtoken, _osuAPIToken, _osuNick, _botNick.ToLower(), _channelName.ToLower(), null);
             }
             else
             {
@@ -132,7 +129,7 @@ namespace calledudeBot
             }
         }
 
-        private static bool tryLoadCredentials()
+        public static bool TryLoadCredentials()
         {
             return _creds.TryGetValue("BotNick", out _botNick)
                 && _creds.TryGetValue("ChannelName", out _channelName)
@@ -182,24 +179,25 @@ namespace calledudeBot
             Console.Clear();
         }
 
-        private static void getCredentials()
+        public static void GetCredentials()
         {
             if (File.Exists(_credFile))
             {
                 _creds = File.ReadAllLines(_credFile)
                     .Distinct()
-                    .Where(p => p.Trim().Split(' ').Length == 2)
-                    .ToDictionary(key => key.Split(' ')[0], val => val.Split(' ')[1]);
+                    .Select(x => x.Trim().Split(' '))
+                    .Where(p => p.Length == 2)
+                    .ToDictionary(key => key[0], val => val[1]);
             }
             else
             {
                 File.Create(_credFile).Close();
                 _creds = new Dictionary<string, string>();
             }
-            while (!tryLoadCredentials())
+            while (!TryLoadCredentials())
             {
                 getMissingCredentials();
-                getCredentials(); //Lets try the newly entered credentials again.
+                GetCredentials(); //Lets try the newly entered credentials again.
             }
         }
 

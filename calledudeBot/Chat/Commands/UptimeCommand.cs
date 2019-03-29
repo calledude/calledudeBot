@@ -1,4 +1,5 @@
-﻿using System;
+﻿using calledudeBot.Bots;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,17 +7,20 @@ namespace calledudeBot.Chat.Commands
 {
     internal sealed class UptimeCommand : SpecialCommand
     {
-        public UptimeCommand()
+        private readonly DiscordBot _discordbot;
+
+        public UptimeCommand(DiscordBot discordbot)
         {
             Name = "!uptime";
             Description = "Shows how long the stream has been live";
             AlternateName = new List<string> { "!live" };
             RequiresMod = false;
+            _discordbot = discordbot;
         }
 
         protected override string specialFunc()
         {
-            DateTime d = calledudeBot.discordBot.WentLiveAt();
+            DateTime d = _discordbot.WentLiveAt();
             TimeSpan t = DateTime.Now - d;
             if (default != d)
             {

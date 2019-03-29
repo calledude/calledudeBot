@@ -12,7 +12,7 @@ namespace calledudeBot.Services
 {
     public class StreamMonitor : IDisposable
     {
-        private readonly IGuildUser _streamer;
+        private IGuildUser _streamer;
         private readonly OBSWebsocket _obs;
         private readonly Timer _streamStatusTimer;
         private readonly DiscordSocketClient _client;
@@ -21,7 +21,7 @@ namespace calledudeBot.Services
         public bool IsStreaming { get; private set; }
         public DateTime StreamStarted { get; private set; }
 
-        public StreamMonitor(ulong streamerID, ulong announceChanID, DiscordSocketClient client)
+        private StreamMonitor(ulong announceChanID, DiscordSocketClient client)
         {
             _client = client;
             _obs = new OBSWebsocket();
@@ -32,8 +32,32 @@ namespace calledudeBot.Services
             _streamStatusTimer.Elapsed += CheckDiscordStatus;
 
             _announceChannel = _client.GetChannel(announceChanID) as ITextChannel;
-            _streamer = _announceChannel.Guild.GetUserAsync(streamerID)
-                                            .GetAwaiter().GetResult();
+        }
+
+        public static async Task<StreamMonitor> Create(ulong announceChanID, ulong streamerID, DiscordSocketClient client)
+        {
+            var monitor = new StreamMonitor(announceChanID, client);
+            return await monitor.TryInitialize(streamerID) 
+                ? monitor
+                : throw new ArgumentException("One or more of the arguments were invalid.");
+        }
+
+        private async Task<bool> TryInitialize(ulong streamerID)
+        {
+            if (_announceChannel == null)
+            {
+                Log("Invalid channel. Will not announce when stream goes live.");
+                return false;
+            }
+
+            _streamer = await _announceChannel.Guild.GetUserAsync(streamerID);
+            if (_streamer == null)
+            {
+                Log("Invalid StreamerID. Could not find user.");
+                return false;
+            }
+
+            return true;
         }
 
         private void Log(string message)

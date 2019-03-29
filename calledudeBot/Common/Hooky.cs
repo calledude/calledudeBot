@@ -19,7 +19,7 @@ namespace calledudeBot
         private int position;
         private readonly TwitchBot twitchBot;
 
-        public Hooky(TwitchBot twitchBot) => this.twitchBot = twitchBot;
+        public Hooky(ref TwitchBot twitchBot) => this.twitchBot = twitchBot;
 
         public void Start()
         {
@@ -100,7 +100,7 @@ namespace calledudeBot
             }
         }
 
-        private void key_KeyPress(object sender, KeyPressEventArgs e)
+        private async void key_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!KEYF9 || !applicationIsActivated()) return;
             if (e.KeyChar == (char)Keys.Escape)
@@ -120,7 +120,7 @@ namespace calledudeBot
             if (e.KeyChar == (char)Keys.Return && MessageToSend.Length > 0)
             {
                 position = 0;
-                twitchBot.SendMessage(new IrcMessage(MessageToSend, false));
+                await twitchBot.SendMessageAsync(new IrcMessage(MessageToSend));
                 MessageToSend = "";
             }
         }

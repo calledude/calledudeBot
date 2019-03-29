@@ -9,14 +9,17 @@ namespace calledudeBot.Bots
     {
         internal static bool TestRun { get; set; }
 
-        protected string Name { get; }
+        public string Name { get; }
         protected string Token { get; set; }
 
         internal abstract Task Start();
         internal abstract Task Logout();
         protected abstract void Dispose(bool disposing);
 
-        protected Bot(string name) => Name = name;
+        protected Bot(string name)
+        {
+            Name = name;
+        }
 
         public void TryLog(string message)
         {
@@ -33,7 +36,13 @@ namespace calledudeBot.Bots
         {
         }
 
-        public abstract void SendMessage(T message);
+        public virtual async Task SendMessageAsync(T message)
+        {
+            TryLog($"Sending message: {message.Content}");
+            await SendMessage(message);
+        }
+
+        protected abstract Task SendMessage(T message);
     }
 
     [Serializable]

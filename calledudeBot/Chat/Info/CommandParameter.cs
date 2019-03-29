@@ -9,10 +9,7 @@ namespace calledudeBot.Chat.Info
         public List<string> EnclosedWords { get; } = new List<string>();
         public List<string> Words { get; } = new List<string>();
         public Message Message { get; }
-        public bool SenderIsMod
-        {
-            get => Message?.Sender.IsMod ?? false;
-        }
+        public bool SenderIsMod => Message?.Sender.IsMod ?? false;
 
         public CommandParameter(IEnumerable<string> param, Message message)
         {

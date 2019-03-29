@@ -2,6 +2,7 @@
 using calledudeBot.Chat.Info;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Chat
 {
@@ -15,7 +16,7 @@ namespace calledudeBot.Chat
             RequiresMod = false;
         }
 
-        protected override string specialFunc(CommandParameter param)
+        protected override Task<string> specialFunc(CommandParameter param)
         {
             string response = "You ok there bud? Try again.";
             var allowed = param.Message.Sender.IsMod;
@@ -32,7 +33,7 @@ namespace calledudeBot.Chat
             }
             else if (CommandUtils.GetExistingCommand(cmdToHelp) is Command c) //"!help <command>"
             {
-                if (c.RequiresMod && !allowed) return response;
+                if (c.RequiresMod && !allowed) return Task.FromResult(response);
 
                 string cmds = c.Name;
                 if (c.AlternateName.Count != 0)
@@ -46,7 +47,7 @@ namespace calledudeBot.Chat
                 response = $"Command '{cmds}' {responseDescription}";
             }
 
-            return response;
+            return Task.FromResult(response);
         }
     }
 }

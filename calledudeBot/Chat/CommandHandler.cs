@@ -1,9 +1,11 @@
-﻿using calledudeBot.Chat.Commands;
+﻿using calledudeBot.Bots;
+using calledudeBot.Chat.Commands;
 using calledudeBot.Chat.Info;
 using calledudeBot.Services;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Chat
 {
@@ -16,15 +18,14 @@ namespace calledudeBot.Chat
 
     public sealed class CommandHandler<T> : CommandHandler where T : Message
     {
-        private readonly MessageHandler<T> messageHandler;
-
-        public CommandHandler(MessageHandler<T> messageHandler)
+        public CommandHandler(Bot<T> bot)
         {
-            this.messageHandler = messageHandler;
             lock (m)
             {
                 if (!initialized) init();
             }
+            if (bot is DiscordBot discord)
+                CommandUtils.Commands.Add(new UptimeCommand(discord));
         }
 
         private void init()
@@ -37,15 +38,14 @@ namespace calledudeBot.Chat
                 new AddCommand(),
                 new DeleteCommand(),
                 new HelpCommand(),
-                new NowPlayingCommand(),
-                new UptimeCommand(),
+                new NowPlayingCommand()
             });
             Logger.Log($"[CommandHandler]: Done. Loaded {CommandUtils.Commands.Count} commands.");
         }
 
         public bool IsPrefixed(string message) => message[0] == '!';
 
-        public T GetResponse(CommandParameter param)
+        public async Task<T> GetResponse(CommandParameter param)
         {
             string response;
             var cmd = CommandUtils.GetExistingCommand(param.PrefixedWords[0]);
@@ -58,18 +58,21 @@ namespace calledudeBot.Chat
             {
                 response = "You're not allowed to use that command";
             }
-            else if (cmd is SpecialCommand<CommandParameter> sp) //Does the command exist?
+            else //Get the appropriate response depending on command-type
             {
-                param.PrefixedWords.RemoveAt(0); //Remove whatever command they were executing from PrefixedWords e.g. !addcmd
-                response = sp.GetResponse(param);
-            }
-            else if (cmd is SpecialCommand s)
-            {
-                response = s.GetResponse();
-            }
-            else
-            {
-                response = cmd.Response;
+                switch (cmd)
+                {
+                    case SpecialCommand<CommandParameter> sp:
+                        param.PrefixedWords.RemoveAt(0); //Remove whatever command they were executing from PrefixedWords e.g. !addcmd
+                        response = await sp.GetResponse(param);
+                        break;
+                    case SpecialCommand s:
+                        response = s.GetResponse();
+                        break;
+                    default:
+                        response = cmd.Response;
+                        break;
+                }
             }
             param.Message.Content = response;
             return (T)param.Message;

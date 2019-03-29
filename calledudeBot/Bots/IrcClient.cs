@@ -16,8 +16,9 @@ namespace calledudeBot.Bots
         protected int port = 6667;
         protected string server;
         protected string channelName;
-        protected event Func<Task> OnReady;
-        protected abstract Task Listen();
+        protected event Func<Task> Ready;
+        protected event Action<string, string> MessageReceived;
+        protected event Action<string> UnhandledMessage;
 
         protected IrcClient(string server, string name, int successCode) : base(name)
         {
@@ -61,7 +62,7 @@ namespace calledudeBot.Bots
             TryLog(pong);
         }
 
-        public override async void SendMessage(IrcMessage message)
+        protected override async Task SendMessage(IrcMessage message)
             => await WriteLine($"PRIVMSG {channelName} :{message.Content}");
 
         protected async void Reconnect()
@@ -97,11 +98,40 @@ namespace calledudeBot.Bots
                 }
                 if (result == 001)
                 {
-                    await WriteLine($"JOIN {channelName}");
-                    if (OnReady != null)
-                        await OnReady.Invoke();
+                    if(channelName != null)
+                        await WriteLine($"JOIN {channelName}");
 
-                    if (!TestRun) TryLog($"Connected to {Name}-IRC.");
+                    if (Ready != null)
+                        await Ready.Invoke();
+
+                    if (!TestRun)
+                    {
+                        TryLog($"Connected to {Name}-IRC.");
+                    }
+                }
+            }
+        }
+
+        protected virtual async Task Listen()
+        {
+            while (true)
+            {
+                var buffer = await input.ReadLineAsync();
+                var b = buffer.Split(' ');
+
+                if (b[0] == "PING")
+                {
+                    await SendPong(buffer);
+                }
+                else if (b[1] == "PRIVMSG")
+                {
+                    var parsedMessage = IrcMessage.ParseMessage(buffer);
+                    var parsedUser = IrcMessage.ParseUser(buffer);
+                    MessageReceived?.Invoke(parsedMessage, parsedUser);
+                }
+                else
+                {
+                    UnhandledMessage?.Invoke(buffer);
                 }
             }
         }

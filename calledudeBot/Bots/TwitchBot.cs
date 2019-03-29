@@ -1,90 +1,70 @@
 ﻿using calledudeBot.Chat;
 using calledudeBot.Services;
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using Nito.AsyncEx;
+using System;
 
 namespace calledudeBot.Bots
 {
     public sealed class TwitchBot : IrcClient
     {
+        private List<string> mods;
+        private readonly OsuUserService osuUserService;
         private readonly RelayHandler messageHandler;
-        private List<string> mods = new List<string>();
-        private Timer modLockTimer;
+        private readonly Timer modLockTimer;
         private bool modCheckLock;
-        private OsuUser oldOsuData;
-        private APIHandler<OsuUser> api;
-        private readonly string osuAPIToken, osuNick;
+        private readonly AsyncAutoResetEvent modWait = new AsyncAutoResetEvent();
 
-        public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName)
+        public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName, OsuBot osuBot)
             : base("irc.chat.twitch.tv", "Twitch", 366)
         {
             Token = token;
-            this.osuAPIToken = osuAPIToken;
-            this.osuNick = osuNick;
             this.channelName = channelName;
-
             nick = botNick;
-            messageHandler = new RelayHandler(this, channelName, osuAPIToken);
-            OnReady += onReady;
+
+            modLockTimer = new Timer(60000);
+            messageHandler = new RelayHandler(this, channelName, osuAPIToken, osuBot);
+            osuUserService = new OsuUserService(osuAPIToken, osuNick, this);
+
+            Ready += OnReady;
+            MessageReceived += HandleMessage;
+            UnhandledMessage += HandleRawMessage;
         }
 
-        private async Task onReady()
+        private async Task OnReady()
         {
-            modLockTimer = new Timer(60000);
+            IrcMessage.TwitchBot = this;
+
             modLockTimer.Elapsed += modLockEvent;
             modLockTimer.Start();
+
             await WriteLine("CAP REQ :twitch.tv/commands");
-
-            GetMods();
-            api = new APIHandler<OsuUser>($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}");
-            api.DataReceived += checkUserUpdate;
-            await api.Start();
+            await osuUserService.Start();
         }
 
-        protected override async Task Listen()
+        private async void HandleMessage(string message, string user)
         {
-            while (true)
-            {
-                var buffer = await input.ReadLineAsync();
-                var b = buffer.Split(' ');
-                if (b[1] == "PRIVMSG") //This is a private message, check if we should respond to it.
-                {
-                    messageHandler.DetermineResponse(new IrcMessage(buffer));
-                }
-                else if (buffer.StartsWith($":tmi.twitch.tv NOTICE {channelName} :The moderators of this channel are:"))
-                {
-                    int modsIndex = buffer.LastIndexOf(':') + 1;
-                    var modsArr = buffer.Substring(modsIndex).Split(',');
-                    mods = modsArr.Select(x => x.Trim()).ToList();
-                }
-                else if (b[0] == "PING")
-                {
-                    await SendPong(buffer);
-                }
-            }
+            var mods = await GetMods();
+            var isMod = mods.Any(u => u.Equals(user, StringComparison.OrdinalIgnoreCase));
+
+            var sender = new User(user, isMod);
+            var msg = new IrcMessage(message, sender);
+
+            await messageHandler.DetermineResponse(msg);
         }
 
-        private void checkUserUpdate(OsuUser user)
+        private void HandleRawMessage(string buffer)
         {
-            if (user == null) throw new ArgumentException("Invalid username.", nameof(user));
-
-            if (oldOsuData != null && oldOsuData.Rank != user.Rank && Math.Abs(user.PP - oldOsuData.PP) >= 0.1)
+            if (buffer.Contains("The moderators of this channel are:"))
             {
-                int rankDiff = user.Rank - oldOsuData.Rank;
-                float ppDiff = user.PP - oldOsuData.PP;
-
-                string formatted = string.Format(CultureInfo.InvariantCulture, "{0:0.00}", Math.Abs(ppDiff));
-                string totalPP = user.PP.ToString(CultureInfo.InvariantCulture);
-
-                string rankMessage = $"{Math.Abs(rankDiff)} ranks (#{user.Rank}). ";
-                string ppMessage = $"PP: {(ppDiff < 0 ? "-" : "+")}{formatted}pp ({totalPP}pp)";
-                SendMessage(new IrcMessage($"{user.Username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}"));
+                int modsIndex = buffer.LastIndexOf(':') + 1;
+                var modsArr = buffer.Substring(modsIndex).Split(',');
+                mods = modsArr.Select(x => x.Trim()).ToList();
+                modWait.Set();
             }
-            oldOsuData = user;
         }
 
         private void modLockEvent(object sender, ElapsedEventArgs e)
@@ -93,14 +73,16 @@ namespace calledudeBot.Bots
             modLockTimer.Stop();
         }
 
-        public List<string> GetMods()
+        private async Task<List<string>> GetMods()
         {
             if (!modCheckLock)
             {
-                WriteLine($"PRIVMSG {channelName} /mods").GetAwaiter().GetResult();
                 modCheckLock = true;
                 modLockTimer.Start();
+                await WriteLine($"PRIVMSG {channelName} /mods");
+                await modWait.WaitAsync();
             }
+
             return mods;
         }
 
@@ -108,7 +90,7 @@ namespace calledudeBot.Bots
         {
             base.Dispose(disposing);
             messageHandler.Dispose();
-            api?.Dispose();
+            osuUserService?.Dispose();
             modLockTimer?.Dispose();
         }
     }
