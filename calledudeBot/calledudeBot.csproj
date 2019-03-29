@@ -147,6 +147,7 @@
     <Compile Include="Services\JsonData.cs" />
     <Compile Include="Services\Logger.cs" />
     <Compile Include="Services\OsuUserService.cs" />
+    <Compile Include="Services\SongRequester.cs" />
     <Compile Include="Services\StreamMonitor.cs" />
   </ItemGroup>
   <ItemGroup>
