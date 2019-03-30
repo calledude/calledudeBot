@@ -118,6 +118,7 @@ namespace calledudeBot.Services
                     && m.Content == msg
                     && StreamStarted - m.Timestamp < TimeSpan.FromMinutes(3)))
                 {
+                    Log($"Streamer went live. Sending announcement to #{_announceChannel.Name}");
                     await _announceChannel.SendMessageAsync(msg);
                 }
             }
