@@ -8,32 +8,32 @@ namespace calledudeBot.Bots
 {
     public abstract class IrcClient : Bot<IrcMessage>
     {
-        private readonly int successCode;
-        protected TcpClient sock;
-        protected StreamWriter output;
-        protected StreamReader input;
-        protected string nick;
-        protected int port = 6667;
-        protected string server;
-        protected string channelName;
+        private readonly int _successCode;
+        private TcpClient _sock;
+        private StreamWriter _output;
+        private StreamReader _input;
+        protected string Nick;
+        protected int Port = 6667;
+        protected string Server;
+        protected string ChannelName;
         protected event Func<Task> Ready;
         protected event Action<string, string> MessageReceived;
         protected event Action<string> UnhandledMessage;
 
         protected IrcClient(string server, string name, int successCode) : base(name)
         {
-            this.server = server;
-            this.successCode = successCode;
+            Server = server;
+            _successCode = successCode;
             Setup();
         }
 
         private void Setup()
         {
-            sock = new TcpClient();
-            sock.Connect(server, port);
-            output = new StreamWriter(sock.GetStream());
-            output.AutoFlush = true;
-            input = new StreamReader(sock.GetStream());
+            _sock = new TcpClient();
+            _sock.Connect(Server, Port);
+            _output = new StreamWriter(_sock.GetStream());
+            _output.AutoFlush = true;
+            _input = new StreamReader(_sock.GetStream());
         }
 
         internal override async Task Start()
@@ -62,14 +62,14 @@ namespace calledudeBot.Bots
         }
 
         protected override async Task SendMessage(IrcMessage message)
-            => await WriteLine($"PRIVMSG {channelName} :{message.Content}");
+            => await WriteLine($"PRIVMSG {ChannelName} :{message.Content}");
 
         protected async void Reconnect()
         {
             TryLog($"Disconnected. Re-establishing connection..");
             Dispose(true);
 
-            while (!sock.Connected)
+            while (!_sock.Connected)
             {
                 Setup();
                 await Start();
@@ -79,15 +79,15 @@ namespace calledudeBot.Bots
 
         internal override Task Logout()
         {
-            sock.Close();
+            _sock.Close();
             return Task.CompletedTask;
         }
 
         protected async Task Login()
         {
-            await WriteLine("PASS " + Token + "\r\nNICK " + nick + "\r\n");
+            await WriteLine("PASS " + Token + "\r\nNICK " + Nick + "\r\n");
             int result = 0;
-            for (var buf = await input.ReadLineAsync(); result != successCode; buf = await input.ReadLineAsync())
+            for (var buf = await _input.ReadLineAsync(); result != _successCode; buf = await _input.ReadLineAsync())
             {
                 int.TryParse(buf.Split(' ')[1], out result);
                 if (buf == null || result == 464
@@ -97,8 +97,8 @@ namespace calledudeBot.Bots
                 }
                 if (result == 001)
                 {
-                    if(channelName != null)
-                        await WriteLine($"JOIN {channelName}");
+                    if(ChannelName != null)
+                        await WriteLine($"JOIN {ChannelName}");
 
                     if (Ready != null)
                         await Ready.Invoke();
@@ -115,7 +115,7 @@ namespace calledudeBot.Bots
         {
             while (true)
             {
-                var buffer = await input.ReadLineAsync();
+                var buffer = await _input.ReadLineAsync();
                 var b = buffer.Split(' ');
 
                 if (b[0] == "PING")
@@ -136,13 +136,13 @@ namespace calledudeBot.Bots
         }
 
         protected async Task WriteLine(string message)
-            => await output.WriteLineAsync(message);
+            => await _output.WriteLineAsync(message);
 
         protected override void Dispose(bool disposing)
         {
-            sock.Dispose();
-            input.Dispose();
-            output.Dispose();
+            _sock.Dispose();
+            _input.Dispose();
+            _output.Dispose();
         }
     }
 }

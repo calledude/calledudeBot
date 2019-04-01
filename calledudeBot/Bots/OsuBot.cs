@@ -5,7 +5,7 @@
         public OsuBot(string token, string osuNick) : base("cho.ppy.sh", "osu!", 376)
         {
             Token = token;
-            nick = osuNick;
+            Nick = osuNick;
         }
     }
 }

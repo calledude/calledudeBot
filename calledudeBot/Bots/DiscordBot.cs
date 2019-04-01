@@ -50,7 +50,7 @@ namespace calledudeBot.Bots
         private async Task OnReady()
         {
             _streamMonitor = await StreamMonitor.Create(_announceChanID, _streamerID, _bot);
-            var _ = Task.Run(() => _streamMonitor.Connect());
+            _ = Task.Run(() => _streamMonitor.Connect());
         }
 
         private async Task OnMessageReceived(SocketMessage messageParam)
@@ -64,9 +64,9 @@ namespace calledudeBot.Bots
             }
 
             var isMod = GetModerators()
-                .Any(u => u.Id == user.Id
+                .Any(u => u.Id == user.Id)
                 || user.GuildPermissions.BanMembers
-                || user.GuildPermissions.KickMembers);
+                || user.GuildPermissions.KickMembers;
 
             DiscordMessage msg = new DiscordMessage(
                 message.Content,

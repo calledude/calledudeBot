@@ -11,12 +11,12 @@ namespace calledudeBot.Bots
 {
     public sealed class TwitchBot : IrcClient
     {
-        private List<string> mods;
-        private OsuUserService osuUserService;
-        private RelayHandler messageHandler;
-        private Timer modLockTimer;
-        private bool modCheckLock;
-        private readonly AsyncAutoResetEvent modWait = new AsyncAutoResetEvent();
+        private List<string> _mods;
+        private OsuUserService _osuUserService;
+        private RelayHandler _messageHandler;
+        private Timer _modLockTimer;
+        private bool _modCheckLock;
+        private readonly AsyncAutoResetEvent _modWait;
         private readonly string _osuAPIToken, _osuNick, _botNick;
         private readonly OsuBot _osuBot;
 
@@ -24,13 +24,15 @@ namespace calledudeBot.Bots
             : base("irc.chat.twitch.tv", "Twitch", 366)
         {
             Token = token;
-            this.channelName = channelName;
-            nick = botNick;
+            ChannelName = channelName;
+            Nick = botNick;
 
             _osuAPIToken = osuAPIToken;
             _osuNick = osuNick;
             _botNick = botNick;
             _osuBot = osuBot;
+
+            _modWait = new AsyncAutoResetEvent();
 
             Ready += OnReady;
             MessageReceived += HandleMessage;
@@ -39,14 +41,14 @@ namespace calledudeBot.Bots
 
         private async Task OnReady()
         {
-            modLockTimer = new Timer(60000);
-            messageHandler = new RelayHandler(this, channelName, _osuAPIToken, _osuBot);
-            osuUserService = new OsuUserService(_osuAPIToken, _osuNick, this);
-            modLockTimer.Elapsed += modLockEvent;
-            modLockTimer.Start();
+            _modLockTimer = new Timer(60000);
+            _messageHandler = new RelayHandler(this, ChannelName, _osuAPIToken, _osuBot);
+            _osuUserService = new OsuUserService(_osuAPIToken, _osuNick, this);
+            _modLockTimer.Elapsed += ModLockEvent;
+            _modLockTimer.Start();
 
             await WriteLine("CAP REQ :twitch.tv/commands");
-            await osuUserService.Start();
+            await _osuUserService.Start();
         }
 
         private async void HandleMessage(string message, string user)
@@ -57,7 +59,7 @@ namespace calledudeBot.Bots
             var sender = new User(user, isMod);
             var msg = new IrcMessage(message, sender);
 
-            await messageHandler.DetermineResponse(msg);
+            await _messageHandler.DetermineResponse(msg);
         }
 
         private void HandleRawMessage(string buffer)
@@ -66,36 +68,36 @@ namespace calledudeBot.Bots
             {
                 int modsIndex = buffer.LastIndexOf(':') + 1;
                 var modsArr = buffer.Substring(modsIndex).Split(',');
-                mods = modsArr.Select(x => x.Trim()).ToList();
-                modWait.Set();
+                _mods = modsArr.Select(x => x.Trim()).ToList();
+                _modWait.Set();
             }
         }
 
-        private void modLockEvent(object sender, ElapsedEventArgs e)
+        private void ModLockEvent(object sender, ElapsedEventArgs e)
         {
-            modCheckLock = false;
-            modLockTimer.Stop();
+            _modCheckLock = false;
+            _modLockTimer.Stop();
         }
 
         private async Task<List<string>> GetMods()
         {
-            if (!modCheckLock)
+            if (!_modCheckLock)
             {
-                modCheckLock = true;
-                modLockTimer.Start();
-                await WriteLine($"PRIVMSG {channelName} /mods");
-                await modWait.WaitAsync();
+                _modCheckLock = true;
+                _modLockTimer.Start();
+                await WriteLine($"PRIVMSG {ChannelName} /mods");
+                await _modWait.WaitAsync();
             }
 
-            return mods;
+            return _mods;
         }
 
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            messageHandler?.Dispose();
-            osuUserService?.Dispose();
-            modLockTimer?.Dispose();
+            _messageHandler?.Dispose();
+            _osuUserService?.Dispose();
+            _modLockTimer?.Dispose();
         }
     }
 }

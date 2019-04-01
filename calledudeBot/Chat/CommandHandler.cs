@@ -10,27 +10,27 @@ namespace calledudeBot.Chat
 {
     public abstract class CommandHandler
     {
-        protected readonly string cmdFile = CommandUtils.CmdFile;
-        protected static bool initialized;
-        protected static readonly object m = new object();
+        protected readonly string CmdFile = CommandUtils.CmdFile;
+        protected static bool Initialized;
+        protected static readonly object Lock = new object();
     }
 
     public sealed class CommandHandler<T> : CommandHandler where T : Message
     {
         public CommandHandler(Bot<T> bot)
         {
-            lock (m)
+            lock (Lock)
             {
-                if (!initialized) init();
+                if (!Initialized) Initialize();
             }
             if (bot is DiscordBot discord)
                 CommandUtils.Commands.Add(new UptimeCommand(discord));
         }
 
-        private void init()
+        private void Initialize()
         {
-            initialized = true;
-            var cmdArr = File.ReadAllLines(cmdFile);
+            Initialized = true;
+            var cmdArr = File.ReadAllLines(CmdFile);
             CommandUtils.Commands = cmdArr.Select(x => new Command(new CommandParameter(x))).ToList();
             CommandUtils.Commands.AddRange(new List<Command>
             {

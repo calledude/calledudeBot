@@ -78,7 +78,9 @@ namespace calledudeBot.Services
             }
 
             //Trying 5 times just in case.
-            if (Enumerable.Range(1, 5).Select(_ => _obs.Connect("ws://localhost:4444")).All(x => !x))
+            if (Enumerable.Range(1, 5)
+                .Select(_ => _obs.Connect("ws://localhost:4444"))
+                .All(x => !x))
             {
                 Log("You need to install the obs-websocket plugin for OBS and configure it to run on port 4444.");
                 await Task.Delay(3000);

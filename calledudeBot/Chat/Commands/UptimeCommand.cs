@@ -18,7 +18,7 @@ namespace calledudeBot.Chat.Commands
             _discordbot = discordbot;
         }
 
-        protected override string specialFunc()
+        protected override string SpecialFunc()
         {
             DateTime d = _discordbot.WentLiveAt();
             TimeSpan t = DateTime.Now - d;

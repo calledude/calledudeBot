@@ -11,121 +11,121 @@ namespace calledudeBot
 {
     public sealed class Hooky
     {
-        private bool allIsSelected;
-        private bool CONTROLKEY;
-        private KeyboardInterceptor key;
-        private bool KEYF9;
-        private string MessageToSend = "";
-        private int position;
-        private readonly TwitchBot twitchBot;
+        private bool _allIsSelected;
+        private bool _ctrlKeyToggled;
+        private KeyboardInterceptor _key;
+        private bool _f9KeyToggled;
+        private string _messageToSend = "";
+        private int _position;
+        private readonly TwitchBot _twitchBot;
 
-        public Hooky(ref TwitchBot twitchBot) => this.twitchBot = twitchBot;
+        public Hooky(TwitchBot twitchBot) => _twitchBot = twitchBot;
 
         public void Start()
         {
-            key = new KeyboardInterceptor();
+            _key = new KeyboardInterceptor();
 
-            key.KeyDown += key_KeyDown;
-            key.KeyUp += key_KeyUp;
-            key.KeyPress += key_KeyPress;
+            _key.KeyDown += Key_KeyDown;
+            _key.KeyUp += Key_KeyUp;
+            _key.KeyPress += Key_KeyPress;
 
-            key.StartCapturing();
+            _key.StartCapturing();
 
             Logger.Log("[Hooky] Started Hooky.");
             Application.Run();
         }
 
-        private void key_KeyUp(object sender, KeyEventArgs e)
+        private void Key_KeyUp(object sender, KeyEventArgs e)
         {
             if (!e.KeyCode.ToString().Contains("Control")) return;
-            if (applicationIsActivated())
-                CONTROLKEY = false;
+            if (ApplicationIsActivated())
+                _ctrlKeyToggled = false;
         }
 
-        private void key_KeyDown(object sender, KeyEventArgs e)
+        private void Key_KeyDown(object sender, KeyEventArgs e)
         {
-            if (!applicationIsActivated()) return;
+            if (!ApplicationIsActivated()) return;
             if (e.KeyCode == Keys.F9)
             {
-                KEYF9 = !KEYF9;
+                _f9KeyToggled = !_f9KeyToggled;
             }
             else if (e.KeyCode == Keys.F11)
             {
-                if (KEYF9)
+                if (_f9KeyToggled)
                 {
-                    KEYF9 = false;
+                    _f9KeyToggled = false;
                 }
             }
-            else if (e.KeyCode == Keys.A && CONTROLKEY)
+            else if (e.KeyCode == Keys.A && _ctrlKeyToggled)
             {
-                allIsSelected = true;
+                _allIsSelected = true;
             }
             else if (e.KeyCode.ToString().Contains("Control"))
             {
-                CONTROLKEY = true;
+                _ctrlKeyToggled = true;
             }
             else if (e.KeyCode == Keys.Left)
             {
-                if (position > 0) position--;
+                if (_position > 0) _position--;
             }
             else if (e.KeyCode == Keys.Right)
             {
-                if (position < MessageToSend.Length) position++;
+                if (_position < _messageToSend.Length) _position++;
             }
             else if (e.KeyCode == Keys.Back)
             {
-                if (allIsSelected)
+                if (_allIsSelected)
                 {
-                    MessageToSend = "";
-                    allIsSelected = false;
-                    position = 0;
+                    _messageToSend = "";
+                    _allIsSelected = false;
+                    _position = 0;
                 }
-                else if (MessageToSend.Length > 0 && position > 0)
+                else if (_messageToSend.Length > 0 && _position > 0)
                 {
-                    MessageToSend = MessageToSend.Remove(position - 1, 1);
-                    if (position > 0) position--;
+                    _messageToSend = _messageToSend.Remove(_position - 1, 1);
+                    if (_position > 0) _position--;
                 }
             }
             else if (e.KeyCode == Keys.Delete)
             {
-                if (allIsSelected)
+                if (_allIsSelected)
                 {
-                    MessageToSend = "";
-                    allIsSelected = false;
-                    position = 0;
+                    _messageToSend = "";
+                    _allIsSelected = false;
+                    _position = 0;
                 }
 
-                if (MessageToSend.Length > 0 && position < MessageToSend.Length)
-                    MessageToSend = MessageToSend.Remove(position, 1);
+                if (_messageToSend.Length > 0 && _position < _messageToSend.Length)
+                    _messageToSend = _messageToSend.Remove(_position, 1);
             }
         }
 
-        private async void key_KeyPress(object sender, KeyPressEventArgs e)
+        private async void Key_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!KEYF9 || !applicationIsActivated()) return;
+            if (!_f9KeyToggled || !ApplicationIsActivated()) return;
             if (e.KeyChar == (char)Keys.Escape)
             {
-                KEYF9 = false;
+                _f9KeyToggled = false;
                 return;
             }
 
             if (char.IsLetterOrDigit(e.KeyChar) || char.IsSymbol(e.KeyChar)
                 || char.IsWhiteSpace(e.KeyChar) || char.IsPunctuation(e.KeyChar) || char.IsSeparator(e.KeyChar))
             {
-                MessageToSend = MessageToSend.Insert(position, e.KeyChar.ToString());
-                if (position < MessageToSend.Length) position++;
-                if (MessageToSend.Length == 0) position++;
+                _messageToSend = _messageToSend.Insert(_position, e.KeyChar.ToString());
+                if (_position < _messageToSend.Length) _position++;
+                if (_messageToSend.Length == 0) _position++;
             }
 
-            if (e.KeyChar == (char)Keys.Return && MessageToSend.Length > 0)
+            if (e.KeyChar == (char)Keys.Return && _messageToSend.Length > 0)
             {
-                position = 0;
-                await twitchBot.SendMessageAsync(new IrcMessage(MessageToSend));
-                MessageToSend = "";
+                _position = 0;
+                await _twitchBot.SendMessageAsync(new IrcMessage(_messageToSend));
+                _messageToSend = "";
             }
         }
 
-        private bool applicationIsActivated()
+        private bool ApplicationIsActivated()
         {
             var activatedHandle = GetForegroundWindow();
             if (activatedHandle == IntPtr.Zero) return false; // No window is currently activated

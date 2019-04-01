@@ -26,7 +26,7 @@ namespace calledudeBot.Chat.Commands
             Description = string.Join(" ", cmdParam.EnclosedWords).Trim('<', '>');
             Response = string.Join(" ", cmdParam.Words);
 
-            if (cmdParam.PrefixedWords.Any(hasSpecialChars))
+            if (cmdParam.PrefixedWords.Any(HasSpecialChars))
                 throw new ArgumentException("Special characters in commands are not allowed.");
         }
 
@@ -34,7 +34,7 @@ namespace calledudeBot.Chat.Commands
         {
         }
 
-        private static bool hasSpecialChars(string str)
+        private static bool HasSpecialChars(string str)
         {
             str = str[0] == '!' ? str.Substring(1) : str;
             return str.Any(c => !char.IsLetterOrDigit(c));

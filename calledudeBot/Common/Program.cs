@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace calledudeBot
 {
@@ -11,7 +12,7 @@ namespace calledudeBot
     {
         private static Hooky _hooky;
 
-        private static void Main()
+        private static async Task Main()
         {
             Console.Title = "calledudeBot";
             Console.CancelKeyPress += (object sender, ConsoleCancelEventArgs e) =>
@@ -23,13 +24,13 @@ namespace calledudeBot
             };
             CleanCmdFile();
 
-            CredentialChecker.ProduceBots().Wait();
+            await CredentialChecker.ProduceBots();
             var _bots = CredentialChecker.GetVerifiedBots(out var discordBot, out var twitchBot, out var osuBot);
 
             foreach (var bot in _bots)
-                bot.Start();
+                _ = bot.Start();
 
-            _hooky = new Hooky(ref twitchBot);
+            _hooky = new Hooky(twitchBot);
             new Thread(_hooky.Start).Start();
         }
 

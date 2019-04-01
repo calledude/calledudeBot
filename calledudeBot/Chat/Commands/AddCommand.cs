@@ -13,7 +13,7 @@ namespace calledudeBot.Chat.Commands
             RequiresMod = true;
         }
 
-        private static string createCommand(CommandParameter param)
+        private static string CreateCommand(CommandParameter param)
         {
             try
             {
@@ -22,7 +22,7 @@ namespace calledudeBot.Chat.Commands
 
                 if (cmd1 is Command && cmd1.Name == cmd2.Name)
                 {
-                    return editCmd(cmd1, cmd2);
+                    return EditCmd(cmd1, cmd2);
                 }
                 else if (cmd1 is Command && cmd1.Name != cmd2.Name)
                 {
@@ -41,11 +41,11 @@ namespace calledudeBot.Chat.Commands
             }
         }
 
-        protected override string specialFunc(CommandParameter param)
+        protected override string SpecialFunc(CommandParameter param)
         {
             if (param.PrefixedWords.Count >= 1 || param.Words.Count >= 1) //has user entered a command to enter? i.e. !addcmd !test someAnswer
             {
-                return createCommand(param);
+                return CreateCommand(param);
             }
             else
             {
@@ -53,7 +53,7 @@ namespace calledudeBot.Chat.Commands
             }
         }
 
-        private static string editCmd(Command c, Command f)
+        private static string EditCmd(Command c, Command f)
         {
             string response;
             if (c is SpecialCommand || c is SpecialCommand<CommandParameter>)

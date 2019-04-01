@@ -18,7 +18,7 @@ namespace calledudeBot.Services
         public async Task RequestSong(Message message)
         {
             var idx = message.Content.IndexOf("/b/") + "/b/".Length;
-            var num = message.Content.Skip(idx).TakeWhile(c => char.IsNumber(c));
+            var num = message.Content.Skip(idx).TakeWhile(char.IsDigit);
             var beatmapID = string.Concat(num);
             var reqLink = string.Format(_songRequestLink, _osuAPIToken, beatmapID);
 

@@ -27,7 +27,7 @@ namespace calledudeBot
             Bot.TestRun = true;
             while (!await VerifyCredentials())
             {
-                getMissingCredentials();
+                GetMissingCredentials();
                 TryLoadCredentials();
             }
             Bot.TestRun = false;
@@ -54,7 +54,7 @@ namespace calledudeBot
 
         public static async Task<bool> VerifyBot<T>() where T : Bot
         {
-            using (Bot bot = getBotInstance<T>())
+            using (Bot bot = GetBotInstance<T>())
             {
                 bool success = false;
                 try
@@ -86,7 +86,7 @@ namespace calledudeBot
                     bot.TryLog("Invalid osu! API token.");
                     _creds.Remove("osuAPI");
                 }
-                catch (ArgumentException)
+                catch (ArgumentNullException)
                 {
                     _creds.Remove("OsuNick");
                     bot.TryLog("Invalid osu!-nickname.");
@@ -100,7 +100,7 @@ namespace calledudeBot
             }
         }
 
-        private static Bot getBotInstance<T>() where T : Bot
+        private static Bot GetBotInstance<T>() where T : Bot
         {
             if (typeof(T) == typeof(DiscordBot))
             {
@@ -142,7 +142,7 @@ namespace calledudeBot
                 && _creds.TryGetValue("StreamerID", out _streamerID);
         }
 
-        private static void getMissingCredentials()
+        private static void GetMissingCredentials()
         {
             Dictionary<string, string> required = new Dictionary<string, string>
             {
@@ -164,7 +164,7 @@ namespace calledudeBot
             Type t = typeof(CredentialChecker);
             foreach (string s in missing)
             {
-                MethodInfo m = t.GetMethod("get" + s, BindingFlags.NonPublic | BindingFlags.Static);
+                MethodInfo m = t.GetMethod("Get" + s, BindingFlags.NonPublic | BindingFlags.Static);
                 m.Invoke(null, null);
             }
 
@@ -196,13 +196,13 @@ namespace calledudeBot
             }
             while (!TryLoadCredentials())
             {
-                getMissingCredentials();
+                GetMissingCredentials();
                 GetCredentials(); //Lets try the newly entered credentials again.
             }
         }
 
         #region Setup
-        private static void openWebsite(int delay, string url) //Opens a website in a non-blocking manner after the specified delay
+        private static void OpenWebsite(int delay, string url) //Opens a website in a non-blocking manner after the specified delay
         {
             Task.Run(() =>
             {
@@ -212,7 +212,7 @@ namespace calledudeBot
             });
         }
 
-        private static bool getConfirmation()
+        private static bool GetConfirmation()
         {
             ConsoleKey c;
             do c = Console.ReadKey(true).Key;
@@ -222,17 +222,17 @@ namespace calledudeBot
             return c == ConsoleKey.Y;
         }
 
-        private static void getBotNick()
+        private static void GetBotNick()
         {
             Console.Write("What will the username be of your bot be?: ");
             _botNick = Console.ReadLine();
             _creds.Add("BotNick", _botNick);
         }
 
-        private static void getChannelName()
+        private static void GetChannelName()
         {
             Console.Write("Will you be using your personal twitch account as the 'bot'? Y/N: ");
-            if (getConfirmation())
+            if (GetConfirmation())
             {
                 _channelName = "#" + _botNick;
             }
@@ -244,64 +244,64 @@ namespace calledudeBot
             _creds.Add("ChannelName", _channelName);
         }
 
-        private static void getOsuNick()
+        private static void GetOsuNick()
         {
             Console.Write("What's your osu! username?: ");
             _osuNick = Console.ReadLine();
             _creds.Add("OsuNick", _osuNick);
         }
 
-        private static void getAnnounceChannelID()
+        private static void GetAnnounceChannelID()
         {
             Console.Write("What channel on your discord server do you want the announcements to be made on? (Long number): ");
-            openWebsite(4000, "https://support.discordapp.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID");
+            OpenWebsite(4000, "https://support.discordapp.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID");
 
             _announceChanID = Console.ReadLine();
             _creds.Add("AnnounceChannelID", _announceChanID);
         }
 
-        private static void getDiscordToken()
+        private static void GetDiscordToken()
         {
             Console.WriteLine("First you need to create a bot/app on the discord developer website.");
             Console.Write("Discord token: ");
-            openWebsite(3000, "https://discordapp.com/developers/applications/me");
+            OpenWebsite(3000, "https://discordapp.com/developers/applications/me");
 
             _discordToken = Console.ReadLine();
             Console.Write("Have you figured out how to get the bot to join your own channel? Y/N: ");
 
-            if (!getConfirmation())
+            if (!GetConfirmation())
             {
                 Console.Write("Alright, enter the bots Client-ID here: ");
-                openWebsite(0, $"https://discordapp.com/oauth2/authorize?client_id={Console.ReadLine()}&scope=bot");
+                OpenWebsite(0, $"https://discordapp.com/oauth2/authorize?client_id={Console.ReadLine()}&scope=bot");
             }
             _creds.Add("DiscordToken", _discordToken);
         }
 
-        private static void getTwitchIRC()
+        private static void GetTwitchIRC()
         {
             Console.Write("Twitch IRC token: ");
-            openWebsite(2000, "http://www.twitchapps.com/tmi/");
+            OpenWebsite(2000, "http://www.twitchapps.com/tmi/");
             _twitchIRCtoken = Console.ReadLine();
             _creds.Add("TwitchIRC", _twitchIRCtoken);
         }
 
-        private static void getosuIRC()
+        private static void GetosuIRC()
         {
             Console.Write("osu! IRC password: ");
-            openWebsite(2000, "https://osu.ppy.sh/p/irc");
+            OpenWebsite(2000, "https://osu.ppy.sh/p/irc");
             _osuIRCtoken = Console.ReadLine();
             _creds.Add("osuIRC", _osuIRCtoken);
         }
 
-        private static void getosuAPI()
+        private static void GetosuAPI()
         {
             Console.Write("osu! API key: ");
-            openWebsite(2000, "https://osu.ppy.sh/p/api");
+            OpenWebsite(2000, "https://osu.ppy.sh/p/api");
             _osuAPIToken = Console.ReadLine();
             _creds.Add("osuAPI", _osuAPIToken);
         }
 
-        private static void getStreamerID()
+        private static void GetStreamerID()
         {
             Console.Write("YOUR User-ID (On Discord): ");
             _streamerID = Console.ReadLine();
