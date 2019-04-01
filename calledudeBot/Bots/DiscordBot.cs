@@ -50,7 +50,7 @@ namespace calledudeBot.Bots
         private async Task OnReady()
         {
             _streamMonitor = await StreamMonitor.Create(_announceChanID, _streamerID, _bot);
-            _ = Task.Run(() => _streamMonitor.Connect());
+            _ = _streamMonitor.Connect();
         }
 
         private async Task OnMessageReceived(SocketMessage messageParam)
