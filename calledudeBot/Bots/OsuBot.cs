@@ -1,25 +1,18 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace calledudeBot.Bots
 {
     public sealed class OsuBot : IrcClient
     {
-        public OsuBot(string token, string osuNick) : base("cho.ppy.sh", "osu!", 376)
-        {
-            Token = token;
-            channelName = nick = osuNick;
-        }
+        protected override List<string> Failures { get; }
 
-        protected override async Task Listen()
+        public OsuBot(string token, string osuNick) 
+            : base("cho.ppy.sh", token, "osu!", 376, osuNick)
         {
-            while (true)
+            Failures = new List<string>
             {
-                var buf = await input.ReadLineAsync();
-
-                if (buf.Split(' ')[1] == "QUIT") continue;
-                if (buf.StartsWith("PING "))
-                    await SendPong(buf);
-            }
+                $":cho.ppy.sh 464 {Nick} :Bad authentication token.",
+            };
         }
     }
 }

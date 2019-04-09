@@ -15,8 +15,8 @@ namespace calledudeBot.Chat.Commands
         internal static Command GetExistingCommand(string cmd)
         {
             cmd = cmd.ToLower().AddPrefix();
-            return Commands.Find(x => x.Name == cmd)
-                ?? Commands.Find(x => x.AlternateName?.Any(a => a == cmd) ?? false);
+            return Commands.Find(x => x.Name.Equals(cmd))
+                ?? Commands.Find(x => x.AlternateName?.Any(a => a.Equals(cmd)) ?? false);
         }
 
         internal static Command GetExistingCommand(IEnumerable<string> prefixedWords)

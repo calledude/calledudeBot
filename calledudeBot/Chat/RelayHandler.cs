@@ -2,82 +2,74 @@
 using calledudeBot.Services;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 using System.Timers;
 
 namespace calledudeBot.Chat
 {
     public sealed class RelayHandler : MessageHandler<IrcMessage>, IDisposable
     {
-        private readonly OsuBot osu;
-        private readonly Queue<IrcMessage> messageQueue = new Queue<IrcMessage>();
-        private DateTime lastMessage;
-        private readonly Timer relayTimer;
-        private readonly string osuAPIToken, streamerNick;
-        private const string _songRequestLink = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
+        private readonly Queue<IrcMessage> _messageQueue;
+        private DateTime _lastMessage;
+        private readonly Timer _relayTimer;
+        private readonly string _streamerNick;
+        private readonly Bot<IrcMessage> _relaySubject;
+        private readonly SongRequester _songRequester;
+        private readonly TwitchBot _twitch;
 
-        public RelayHandler(IrcClient bot, string streamerNick, string osuAPIToken) : base(bot)
+        public RelayHandler(
+            TwitchBot twitch,
+            string osuAPIToken,
+            Bot<IrcMessage> relaySubject) : base(twitch)
         {
-            osu = calledudeBot.osuBot;
-            this.osuAPIToken = osuAPIToken;
-            this.streamerNick = streamerNick.Substring(1).ToLower();
-            relayTimer = new Timer(200);
-            relayTimer.Elapsed += tryRelay;
-            relayTimer.Start();
+            _lastMessage = DateTime.Now;
+            _messageQueue = new Queue<IrcMessage>();
+            _songRequester = new SongRequester(osuAPIToken);
+
+            _twitch = twitch;
+            _relaySubject = relaySubject;
+
+            _streamerNick = twitch.ChannelName.Substring(1).ToLower();
+            _relayTimer = new Timer(200);
+            _relayTimer.Elapsed += TryRelay;
+            _relayTimer.Start();
         }
 
-        new public void DetermineResponse(IrcMessage message)
+        new public async Task DetermineResponse(IrcMessage message)
         {
-            if (!base.DetermineResponse(message))
+            if (!await base.DetermineResponse(message))
             {
                 if (message.Content.Contains("://osu.ppy.sh/b/"))
                 {
-                    requestSong(message);
+                    await _songRequester.RequestSong(message);
                 }
-                if (message.Sender.Name.ToLower() != streamerNick) //We only want to relay messages from twitch
+                if (message.Sender.Name.ToLower() != _streamerNick) //Only relay messages that aren't from the streamer
                 {
-                    messageQueue.Enqueue(message);
-                    tryRelay(null, null);
+                    _messageQueue.Enqueue(message);
+                    TryRelay(null, null);
                 }
             }
         }
 
-        private void tryRelay(object sender, ElapsedEventArgs e)
+        private async void TryRelay(object sender, ElapsedEventArgs e)
         {
-            if (DateTime.Now - lastMessage > TimeSpan.FromMilliseconds(500) && messageQueue.Count > 0)
+            if (DateTime.Now - _lastMessage > TimeSpan.FromMilliseconds(500) && _messageQueue.Count > 0)
             {
-                relay(messageQueue.Dequeue());
-                lastMessage = DateTime.Now;
+                await Relay(_messageQueue.Dequeue());
+                _lastMessage = DateTime.Now;
             }
         }
 
-        private void relay(IrcMessage message)
+        private async Task Relay(IrcMessage message)
         {
             message.Content = $"{message.Sender.Name}: {message.Content}";
-            osu.SendMessage(message);
-        }
-
-        //[http://osu.ppy.sh/b/795232 fhana - Wonder Stella [Stella]]
-        private async void requestSong(Message message)
-        {
-            var idx = message.Content.IndexOf("/b/") + "/b/".Length;
-            var num = message.Content.Skip(idx).TakeWhile(c => char.IsNumber(c));
-            var beatmapID = string.Concat(num);
-            var reqLink = string.Format(_songRequestLink, osuAPIToken, beatmapID);
-
-            using (var api = new APIHandler<OsuSong>(reqLink))
-            {
-                OsuSong song = await api.RequestOnce();
-                if (song != null)
-                {
-                    message.Content = $"[http://osu.ppy.sh/b/{beatmapID} {song.Artist} - {song.Title} [{song.BeatmapVersion}]]";
-                }
-            }
+            _twitch.TryLog($"-> {_relaySubject.Name}: {message.Content}");
+            await _relaySubject.SendMessageAsync(message);
         }
 
         public void Dispose()
         {
-            relayTimer.Dispose();
+            _relayTimer.Dispose();
         }
     }
 }

@@ -8,27 +8,27 @@ namespace calledudeBot.Services
 {
     public sealed class APIHandler<T> : IDisposable
     {
-        private readonly string URL;
-        private readonly WebClient client;
-        private readonly Timer timer;
+        private readonly string _url;
+        private readonly WebClient _client;
+        private readonly Timer _timer;
         public event Action<T> DataReceived;
 
         public APIHandler(string URL)
         {
-            this.URL = URL;
-            client = new WebClient();
-            timer = new Timer(30000);
-            timer.Elapsed += async (_, __) => await requestData();
+            _url = URL;
+            _client = new WebClient();
+            _timer = new Timer(30000);
+            _timer.Elapsed += async (_, __) => await RequestData();
         }
 
         public async Task Start()
         {
-            await requestData();
-            timer.Start();
+            await RequestData();
+            _timer.Start();
         }
 
         //is called continuously and raises the DataReceived event when payload is ready.
-        private async Task requestData()
+        private async Task RequestData()
         {
             var payload = await RequestOnce();
             DataReceived?.Invoke(payload);
@@ -36,15 +36,15 @@ namespace calledudeBot.Services
 
         public async Task<T> RequestOnce()
         {
-            var jsonString = await client.DownloadStringTaskAsync(URL);
+            var jsonString = await _client.DownloadStringTaskAsync(_url);
             jsonString = jsonString.Trim('[', ']');
             return JsonConvert.DeserializeObject<T>(jsonString);
         }
 
         public void Dispose()
         {
-            client.Dispose();
-            timer.Dispose();
+            _client.Dispose();
+            _timer.Dispose();
         }
     }
 }

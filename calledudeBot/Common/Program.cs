@@ -1,5 +1,4 @@
-﻿using calledudeBot.Bots;
-using calledudeBot.Chat.Commands;
+﻿using calledudeBot.Chat.Commands;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,13 +10,9 @@ namespace calledudeBot
 {
     public static class calledudeBot
     {
-        public static OsuBot osuBot;
-        public static DiscordBot discordBot;
-        public static TwitchBot twitchBot;
         private static Hooky _hooky;
-        private static List<Bot> _bots;
 
-        private static void Main()
+        private static async Task Main()
         {
             Console.Title = "calledudeBot";
             Console.CancelKeyPress += (object sender, ConsoleCancelEventArgs e) =>
@@ -29,14 +24,14 @@ namespace calledudeBot
             };
             CleanCmdFile();
 
-            CredentialChecker.ProduceBots();
-            _bots = CredentialChecker.GetVerifiedBots(out discordBot, out twitchBot, out osuBot);
+            await CredentialChecker.ProduceBots();
+            var _bots = CredentialChecker.GetVerifiedBots(out _, out var twitchBot, out _);
+
+            foreach (var bot in _bots)
+                _ = bot.Start();
 
             _hooky = new Hooky(twitchBot);
             new Thread(_hooky.Start).Start();
-
-            Parallel.ForEach(_bots, (bot)
-                => bot.Start());
         }
 
         private static void CleanCmdFile()

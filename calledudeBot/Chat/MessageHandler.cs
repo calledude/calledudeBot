@@ -1,30 +1,31 @@
 ﻿using calledudeBot.Bots;
 using calledudeBot.Chat.Info;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Chat
 {
     public class MessageHandler<T> where T : Message
     {
-        private readonly Bot<T> bot;
-        private readonly CommandHandler<T> commandHandler;
+        private readonly Bot<T> _bot;
+        private readonly CommandHandler<T> _commandHandler;
 
         public MessageHandler(Bot<T> bot)
         {
             if (Bot.TestRun) return;
-            commandHandler = new CommandHandler<T>(this);
-            this.bot = bot;
+            _commandHandler = new CommandHandler<T>(bot);
+            _bot = bot;
         }
 
-        private void respond(T message) => bot.SendMessage(message);
+        private async Task Respond(T message) => await _bot.SendMessageAsync(message);
 
-        public bool DetermineResponse(T message)
+        public async Task<bool> DetermineResponse(T message)
         {
-            var msg = message.Content.Split(' ');
-            var cmd = msg[0];
-            if (commandHandler.IsPrefixed(cmd))
+            var cmd = message.Content.Split(' ')[0];
+            if (_commandHandler.IsPrefixed(cmd))
             {
-                var param = new CommandParameter(msg, message);
-                respond(commandHandler.GetResponse(param));
+                _bot.TryLog($"Handling message: {message.Content} from {message.Sender.Name} in {message.Channel}");
+                var param = new CommandParameter(message.Content, message);
+                await Respond(_commandHandler.GetResponse(param));
                 return true;
             }
             return false;

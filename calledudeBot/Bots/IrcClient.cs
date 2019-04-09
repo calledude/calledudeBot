@@ -1,6 +1,8 @@
 ﻿using calledudeBot.Chat;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -8,36 +10,66 @@ namespace calledudeBot.Bots
 {
     public abstract class IrcClient : Bot<IrcMessage>
     {
-        private readonly int successCode;
-        protected TcpClient sock;
-        protected StreamWriter output;
-        protected StreamReader input;
-        protected string nick;
-        protected int port = 6667;
-        protected string server;
-        protected string channelName;
-        protected event Func<Task> OnReady;
-        protected abstract Task Listen();
+        public string Nick { get; }
+        public string ChannelName { get; }
 
-        protected IrcClient(string server, string name, int successCode) : base(name)
+        protected abstract List<string> Failures { get; }
+        protected event Func<Task> Ready;
+        protected event Action<string, string> MessageReceived;
+        protected event Action<string> UnhandledMessage;
+
+        private readonly string _server;
+        private readonly int _port;
+        private readonly int _successCode;
+        private TcpClient _sock;
+        private StreamWriter _output;
+        private StreamReader _input;
+
+        protected IrcClient(
+            string server,
+            string token,
+            string botName,
+            int successCode,
+            string nick,
+            string channelName = null,
+            int port = 6667) : base(botName, token)
         {
-            this.server = server;
-            this.successCode = successCode;
+            Nick = nick;
+            ChannelName = channelName;
+
+            _port = port;
+            _server = server;
+            _successCode = successCode;
+
             Setup();
         }
 
-        protected void Setup()
+        private void Setup()
         {
-            sock = new TcpClient();
-            sock.Connect(server, port);
-            output = new StreamWriter(sock.GetStream());
-            output.AutoFlush = true;
-            input = new StreamReader(sock.GetStream());
+            _sock = new TcpClient();
+            _sock.Connect(_server, _port);
+            _output = new StreamWriter(_sock.GetStream());
+            _output.AutoFlush = true;
+            _input = new StreamReader(_sock.GetStream());
         }
 
         internal override async Task Start()
         {
-            await Login();
+            var waitTask = Task.Delay(5000);
+            var loginTask = Login();
+
+            var completedTask = await Task.WhenAny(waitTask, loginTask);
+
+            if(loginTask.IsFaulted)
+            {
+                TryLog("Login failed. Are you sure your credentials are correct?");
+                throw loginTask.Exception.InnerException;
+            }
+            else if (completedTask != loginTask)
+            {
+                TryLog("Login timed out. Are you sure your credentials are correct?");
+                throw new TimeoutException();
+            }
 
             if (!TestRun)
             {
@@ -48,72 +80,107 @@ namespace calledudeBot.Bots
                 catch (Exception e)
                 {
                     TryLog(e.Message);
-                    TryLog(e.StackTrace);
-                    Reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
+                    await Reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
                 }
             }
         }
 
         protected async Task SendPong(string ping)
         {
-            string pong = ping.Replace("PING", "PONG");
-            await WriteLine(pong);
-            TryLog(pong);
+            await WriteLine(ping.Replace("PING", "PONG"));
+            TryLog($"Heartbeat sent.");
         }
 
-        public override async void SendMessage(IrcMessage message)
-            => await WriteLine($"PRIVMSG {channelName} :{message.Content}");
+        protected override async Task SendMessage(IrcMessage message)
+            => await WriteLine($"PRIVMSG {ChannelName} :{message.Content}");
 
-        protected async void Reconnect()
+        protected async Task Reconnect()
         {
-            TryLog($"Disconnected. Re-establishing connection..");
+            TryLog("Disconnected. Re-establishing connection..");
             Dispose(true);
 
-            while (!sock.Connected)
+            while (!_sock.Connected)
             {
+                Dispose(true);
                 Setup();
-                await Start();
+                _ = Start();
                 await Task.Delay(5000);
             }
         }
 
         internal override Task Logout()
         {
-            sock.Close();
+            _sock.Close();
             return Task.CompletedTask;
+        }
+
+        private bool IsFailure(string buffer)
+        {
+            return Failures?.Any(x => x.Equals(buffer)) == true;
         }
 
         protected async Task Login()
         {
-            await WriteLine("PASS " + Token + "\r\nNICK " + nick + "\r\n");
-            int result = 0;
-            for (var buf = await input.ReadLineAsync(); result != successCode; buf = await input.ReadLineAsync())
-            {
-                int.TryParse(buf.Split(' ')[1], out result);
-                if (buf == null || result == 464
-                    || (buf.StartsWith(":tmi.twitch.tv NOTICE * ") && (buf.EndsWith(":Improperly formatted auth") || buf.EndsWith(":Login authentication failed"))))
-                {
-                    throw new InvalidOrWrongTokenException(buf);
-                }
-                if (result == 001)
-                {
-                    await WriteLine($"JOIN {channelName}");
-                    if (OnReady != null)
-                        await OnReady.Invoke();
+            await WriteLine("PASS " + Token + "\r\nNICK " + Nick + "\r\n");
+            int resultCode = 0;
 
-                    if (!TestRun) TryLog($"Connected to {Name}-IRC.");
+            while(resultCode != _successCode)
+            {
+                var buffer = await _input.ReadLineAsync();
+
+                int.TryParse(buffer?.Split(' ')[1], out resultCode);
+                if (buffer == null || IsFailure(buffer))
+                {
+                    throw new InvalidOrWrongTokenException();
+                }
+                else if (resultCode == 001)
+                {
+                    if(ChannelName != null)
+                        await WriteLine($"JOIN {ChannelName}");
+
+                    if (Ready != null)
+                        await Ready.Invoke();
+
+                    if (!TestRun)
+                    {
+                        TryLog($"Connected to {Name}-IRC.");
+                    }
+                }
+            }
+        }
+
+        protected async Task Listen()
+        {
+            while (true)
+            {
+                var buffer = await _input.ReadLineAsync();
+                var splitBuffer = buffer.Split(' ');
+
+                if (splitBuffer[0].Equals("PING"))
+                {
+                    await SendPong(buffer);
+                }
+                else if (splitBuffer[1].Equals("PRIVMSG"))
+                {
+                    var parsedMessage = IrcMessage.ParseMessage(buffer);
+                    var parsedUser = IrcMessage.ParseUser(buffer);
+                    MessageReceived?.Invoke(parsedMessage, parsedUser);
+                }
+                else
+                {
+                    UnhandledMessage?.Invoke(buffer);
                 }
             }
         }
 
         protected async Task WriteLine(string message)
-            => await output.WriteLineAsync(message);
+            => await _output.WriteLineAsync(message);
 
         protected override void Dispose(bool disposing)
         {
-            sock.Dispose();
-            input.Dispose();
-            output.Dispose();
+            _sock.Dispose();
+            _input.Dispose();
+            _output.Dispose();
         }
     }
 }

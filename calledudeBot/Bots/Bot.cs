@@ -9,14 +9,18 @@ namespace calledudeBot.Bots
     {
         internal static bool TestRun { get; set; }
 
-        protected string Name { get; }
-        protected string Token { get; set; }
+        public string Name { get; }
+        protected string Token { get; }
 
         internal abstract Task Start();
         internal abstract Task Logout();
         protected abstract void Dispose(bool disposing);
 
-        protected Bot(string name) => Name = name;
+        protected Bot(string name, string token)
+        {
+            Name = name;
+            Token = token;
+        }
 
         public void TryLog(string message)
         {
@@ -29,18 +33,21 @@ namespace calledudeBot.Bots
 
     public abstract class Bot<T> : Bot where T : Message
     {
-        protected Bot(string name) : base(name)
+        protected Bot(string name, string token) : base(name, token)
         {
         }
 
-        public abstract void SendMessage(T message);
+        public async Task SendMessageAsync(T message)
+        {
+            TryLog($"Sending message: {message.Content}");
+            await SendMessage(message);
+        }
+
+        protected abstract Task SendMessage(T message);
     }
 
     [Serializable]
     internal class InvalidOrWrongTokenException : Exception
     {
-        public InvalidOrWrongTokenException(string message) : base(message)
-        {
-        }
     }
 }

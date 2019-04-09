@@ -1,4 +1,5 @@
-﻿using calledudeBot.Chat.Commands;
+﻿using calledudeBot.Bots;
+using calledudeBot.Chat.Commands;
 using calledudeBot.Chat.Info;
 using calledudeBot.Services;
 using System.Collections.Generic;
@@ -9,38 +10,38 @@ namespace calledudeBot.Chat
 {
     public abstract class CommandHandler
     {
-        protected readonly string cmdFile = CommandUtils.CmdFile;
-        protected static bool initialized;
-        protected static readonly object m = new object();
+        protected readonly string CmdFile = CommandUtils.CmdFile;
+        protected static bool Initialized;
+        protected static readonly object Lock = new object();
     }
 
     public sealed class CommandHandler<T> : CommandHandler where T : Message
     {
-        private readonly MessageHandler<T> messageHandler;
-
-        public CommandHandler(MessageHandler<T> messageHandler)
+        public CommandHandler(Bot<T> bot)
         {
-            this.messageHandler = messageHandler;
-            lock (m)
+            lock (Lock)
             {
-                if (!initialized) init();
+                if (!Initialized) Initialize();
+            }
+            if (bot is DiscordBot discord)
+            {
+                CommandUtils.Commands.Add(new UptimeCommand(discord));
+                Logger.Log($"[CommandHandler]: Done. Loaded {CommandUtils.Commands.Count} commands.");
             }
         }
 
-        private void init()
+        private void Initialize()
         {
-            initialized = true;
-            var cmdArr = File.ReadAllLines(cmdFile);
+            Initialized = true;
+            var cmdArr = File.ReadAllLines(CmdFile);
             CommandUtils.Commands = cmdArr.Select(x => new Command(new CommandParameter(x))).ToList();
             CommandUtils.Commands.AddRange(new List<Command>
             {
                 new AddCommand(),
                 new DeleteCommand(),
                 new HelpCommand(),
-                new NowPlayingCommand(),
-                new UptimeCommand(),
+                new NowPlayingCommand()
             });
-            Logger.Log($"[CommandHandler]: Done. Loaded {CommandUtils.Commands.Count} commands.");
         }
 
         public bool IsPrefixed(string message) => message[0] == '!';
@@ -58,18 +59,21 @@ namespace calledudeBot.Chat
             {
                 response = "You're not allowed to use that command";
             }
-            else if (cmd is SpecialCommand<CommandParameter> sp) //Does the command exist?
+            else //Get the appropriate response depending on command-type
             {
-                param.PrefixedWords.RemoveAt(0); //Remove whatever command they were executing from PrefixedWords e.g. !addcmd
-                response = sp.GetResponse(param);
-            }
-            else if (cmd is SpecialCommand s)
-            {
-                response = s.GetResponse();
-            }
-            else
-            {
-                response = cmd.Response;
+                switch (cmd)
+                {
+                    case SpecialCommand<CommandParameter> sp:
+                        param.PrefixedWords.RemoveAt(0); //Remove whatever command they were executing from PrefixedWords e.g. !addcmd
+                        response = sp.GetResponse(param);
+                        break;
+                    case SpecialCommand s:
+                        response = s.GetResponse();
+                        break;
+                    default:
+                        response = cmd.Response;
+                        break;
+                }
             }
             param.Message.Content = response;
             return (T)param.Message;

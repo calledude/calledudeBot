@@ -17,9 +17,8 @@ namespace calledudeBot.Bots
         private StreamMonitor _streamMonitor;
 
         public DiscordBot(string token, ulong announceChanID, ulong streamerID)
-            : base("Discord")
+            : base("Discord", token)
         {
-            Token = token;
             _announceChanID = announceChanID;
             _streamerID = streamerID;
             _messageHandler = new MessageHandler<DiscordMessage>(this);
@@ -27,13 +26,20 @@ namespace calledudeBot.Bots
 
         internal override async Task Start()
         {
-            _bot = new DiscordSocketClient();
+            _bot = new DiscordSocketClient(new DiscordSocketConfig()
+            {
+                LogLevel = LogSeverity.Info
+            });
+
             if (!TestRun)
             {
+                _bot.Log += (e) =>
+                {
+                    TryLog($"{e.Message}.");
+                    return Task.CompletedTask;
+                };
                 _bot.MessageReceived += OnMessageReceived;
-                _bot.Connected += OnConnect;
                 _bot.Ready += OnReady;
-                _bot.Disconnected += OnDisconnect;
             }
 
             await _bot.LoginAsync(TokenType.Bot, Token);
@@ -42,54 +48,45 @@ namespace calledudeBot.Bots
 
         private async Task OnReady()
         {
-            _streamMonitor = new StreamMonitor(_streamerID, _announceChanID, _bot);
-            await _streamMonitor.Connect();
+            _streamMonitor = await StreamMonitor.Create(_announceChanID, _streamerID, _bot);
+            _ = _streamMonitor.Connect();
         }
 
-        private Task OnConnect()
-        {
-            TryLog("Connected to Discord.");
-            return Task.CompletedTask;
-        }
-
-        private Task OnDisconnect(Exception e)
-        {
-            TryLog("Disconnected from Discord.");
-            return Task.CompletedTask;
-        }
-
-        private Task OnMessageReceived(SocketMessage messageParam)
+        private async Task OnMessageReceived(SocketMessage messageParam)
         {
             // Don't process the command if it was a System Message or if we sent it ourselves
-            var message = messageParam as SocketUserMessage;
-            if (message == null || _bot.CurrentUser.Id == message.Author.Id)
+            if (!(messageParam is SocketUserMessage message)
+                || _bot.CurrentUser.Id == message.Author.Id
+                || !(message.Author is SocketGuildUser user))
             {
-                return Task.CompletedTask;
+                return;
             }
 
-            DiscordMessage msg = new DiscordMessage(message.Content)
-            {
-                Sender = new DiscordUser(message.Author),
-                Destination = message.Channel.Id
-            };
-            _messageHandler.DetermineResponse(msg);
+            var isMod = GetModerators()
+                .Any(u => u.Id == user.Id)
+                || user.GuildPermissions.BanMembers
+                || user.GuildPermissions.KickMembers;
 
-            return Task.CompletedTask;
+            DiscordMessage msg = new DiscordMessage(
+                message.Content,
+                $"#{message.Channel.Name}",
+                new User($"{user.Username}#{user.Discriminator}", isMod),
+                message.Channel.Id);
+
+            await _messageHandler.DetermineResponse(msg);
         }
 
-        public bool IsMod(SocketGuildUser user)
-        {
-            return user.GuildPermissions.BanMembers || user.GuildPermissions.KickMembers;
-        }
-
-        public IEnumerable<SocketGuildUser> GetModerators()
+        private IReadOnlyCollection<SocketGuildUser> GetModerators()
         {
             var channel = _bot.GetChannel(_announceChanID) as IGuildChannel;
-            var roles = channel.Guild.Roles as IReadOnlyCollection<SocketRole>;
-            return roles.Where(x => x.Permissions.BanMembers || x.Permissions.KickMembers).SelectMany(r => r.Members);
+            var roles = channel.Guild.Roles.Cast<SocketRole>();
+            return roles
+                .Where(x => x.Permissions.BanMembers || x.Permissions.KickMembers)
+                .SelectMany(r => r.Members)
+                .ToArray();
         }
 
-        public override async void SendMessage(DiscordMessage message)
+        protected override async Task SendMessage(DiscordMessage message)
         {
             var channel = _bot.GetChannel(message.Destination) as IMessageChannel;
             await channel.SendMessageAsync(message.Content);
@@ -97,7 +94,7 @@ namespace calledudeBot.Bots
 
         public DateTime WentLiveAt()
         {
-            return _streamMonitor.IsStreaming
+            return _streamMonitor?.IsStreaming ?? false
                 ? _streamMonitor.StreamStarted
                 : default;
         }

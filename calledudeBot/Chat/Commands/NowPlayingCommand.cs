@@ -13,13 +13,13 @@ namespace calledudeBot.Chat.Commands
             RequiresMod = false;
         }
 
-        protected override string specialFunc()
+        protected override string SpecialFunc()
         {
             string nowPlaying = null;
             const string procName = "osu!";
             foreach (var p in Process.GetProcesses())
             {
-                if (p.ProcessName == procName)
+                if (p.ProcessName.Equals(procName))
                 {
                     nowPlaying = p.MainWindowTitle.Contains("-") ? p.MainWindowTitle.Substring(p.MainWindowTitle.IndexOf("-") + 1).Trim() : null;
                     break;

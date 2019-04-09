@@ -15,10 +15,10 @@ namespace calledudeBot.Chat
             RequiresMod = false;
         }
 
-        protected override string specialFunc(CommandParameter param)
+        protected override string SpecialFunc(CommandParameter param)
         {
             string response = "You ok there bud? Try again.";
-            var allowed = param.Message.Sender.IsMod;
+            var allowed = param.SenderIsMod;
             var cmdToHelp = param.PrefixedWords.FirstOrDefault() ?? param.Words.FirstOrDefault();
             if (cmdToHelp == null)
             {
