@@ -1,11 +1,18 @@
-﻿namespace calledudeBot.Bots
+﻿using System.Collections.Generic;
+
+namespace calledudeBot.Bots
 {
     public sealed class OsuBot : IrcClient
     {
-        public OsuBot(string token, string osuNick) : base("cho.ppy.sh", "osu!", 376)
+        protected override List<string> Failures { get; }
+
+        public OsuBot(string token, string osuNick) 
+            : base("cho.ppy.sh", token, "osu!", 376, osuNick)
         {
-            Token = token;
-            Nick = osuNick;
+            Failures = new List<string>
+            {
+                $":cho.ppy.sh 464 {Nick} :Bad authentication token.",
+            };
         }
     }
 }

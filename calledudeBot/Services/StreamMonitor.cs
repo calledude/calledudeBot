@@ -117,7 +117,7 @@ namespace calledudeBot.Services
                 //In that case we assume that the bot has been restarted (for whatever reason)
                 if (!messages.Any(m =>
                     m.Author.Id == _client.CurrentUser.Id
-                    && m.Content == msg
+                    && m.Content.Equals(msg)
                     && StreamStarted - m.Timestamp < TimeSpan.FromMinutes(3)))
                 {
                     Log($"Streamer went live. Sending announcement to #{_announceChannel.Name}");

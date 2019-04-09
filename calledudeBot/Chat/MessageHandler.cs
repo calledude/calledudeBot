@@ -20,12 +20,11 @@ namespace calledudeBot.Chat
 
         public async Task<bool> DetermineResponse(T message)
         {
-            var msg = message.Content.Split(' ');
-            var cmd = msg[0];
+            var cmd = message.Content.Split(' ')[0];
             if (_commandHandler.IsPrefixed(cmd))
             {
-                _bot.TryLog($"Handling message: {message.Content} from {message.Sender.Name}");
-                var param = new CommandParameter(msg, message);
+                _bot.TryLog($"Handling message: {message.Content} from {message.Sender.Name} in {message.Channel}");
+                var param = new CommandParameter(message.Content, message);
                 await Respond(_commandHandler.GetResponse(param));
                 return true;
             }

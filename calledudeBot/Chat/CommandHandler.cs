@@ -24,7 +24,10 @@ namespace calledudeBot.Chat
                 if (!Initialized) Initialize();
             }
             if (bot is DiscordBot discord)
+            {
                 CommandUtils.Commands.Add(new UptimeCommand(discord));
+                Logger.Log($"[CommandHandler]: Done. Loaded {CommandUtils.Commands.Count} commands.");
+            }
         }
 
         private void Initialize()
@@ -39,7 +42,6 @@ namespace calledudeBot.Chat
                 new HelpCommand(),
                 new NowPlayingCommand()
             });
-            Logger.Log($"[CommandHandler]: Done. Loaded {CommandUtils.Commands.Count} commands.");
         }
 
         public bool IsPrefixed(string message) => message[0] == '!';

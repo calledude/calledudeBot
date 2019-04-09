@@ -17,9 +17,8 @@ namespace calledudeBot.Bots
         private StreamMonitor _streamMonitor;
 
         public DiscordBot(string token, ulong announceChanID, ulong streamerID)
-            : base("Discord")
+            : base("Discord", token)
         {
-            Token = token;
             _announceChanID = announceChanID;
             _streamerID = streamerID;
             _messageHandler = new MessageHandler<DiscordMessage>(this);
@@ -70,6 +69,7 @@ namespace calledudeBot.Bots
 
             DiscordMessage msg = new DiscordMessage(
                 message.Content,
+                $"#{message.Channel.Name}",
                 new User($"{user.Username}#{user.Discriminator}", isMod),
                 message.Channel.Id);
 

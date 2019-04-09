@@ -128,13 +128,15 @@ namespace calledudeBot
         private bool ApplicationIsActivated()
         {
             var activatedHandle = GetForegroundWindow();
-            if (activatedHandle == IntPtr.Zero) return false; // No window is currently activated
+            if (activatedHandle == IntPtr.Zero)
+                return false; // No window is currently activated
+
             const string procName = "osu!";
             var procId = 0;
 
             foreach (var proc in Process.GetProcesses())
             {
-                if (proc.ProcessName == procName)
+                if (proc.ProcessName.Equals(procName))
                 {
                     procId = proc.Id;
                     break;

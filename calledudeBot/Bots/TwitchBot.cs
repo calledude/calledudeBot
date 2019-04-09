@@ -19,13 +19,21 @@ namespace calledudeBot.Bots
         private readonly AsyncAutoResetEvent _modWait;
         private readonly string _osuAPIToken, _osuNick, _botNick;
         private readonly OsuBot _osuBot;
+        protected override List<string> Failures { get; }
 
-        public TwitchBot(string token, string osuAPIToken, string osuNick, string botNick, string channelName, OsuBot osuBot)
-            : base("irc.chat.twitch.tv", "Twitch", 366)
+        public TwitchBot(
+            string token,
+            string osuAPIToken,
+            string osuNick,
+            string botNick,
+            string channelName,
+            OsuBot osuBot) : base("irc.chat.twitch.tv", token, "Twitch", 366, botNick, channelName)
         {
-            Token = token;
-            ChannelName = channelName;
-            Nick = botNick;
+            Failures = new List<string>
+            {
+                ":tmi.twitch.tv NOTICE * :Improperly formatted auth",
+                ":tmi.twitch.tv NOTICE * :Login authentication failed",
+            };
 
             _osuAPIToken = osuAPIToken;
             _osuNick = osuNick;
@@ -42,7 +50,7 @@ namespace calledudeBot.Bots
         private async Task OnReady()
         {
             _modLockTimer = new Timer(60000);
-            _messageHandler = new RelayHandler(this, ChannelName, _osuAPIToken, _osuBot);
+            _messageHandler = new RelayHandler(this, _osuAPIToken, _osuBot);
             _osuUserService = new OsuUserService(_osuAPIToken, _osuNick, this);
             _modLockTimer.Elapsed += ModLockEvent;
             _modLockTimer.Start();
@@ -57,7 +65,7 @@ namespace calledudeBot.Bots
             var isMod = mods.Any(u => u.Equals(user, StringComparison.OrdinalIgnoreCase));
 
             var sender = new User(user, isMod);
-            var msg = new IrcMessage(message, sender);
+            var msg = new IrcMessage(message, ChannelName, sender);
 
             await _messageHandler.DetermineResponse(msg);
         }

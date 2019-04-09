@@ -25,7 +25,7 @@ namespace calledudeBot
             CleanCmdFile();
 
             await CredentialChecker.ProduceBots();
-            var _bots = CredentialChecker.GetVerifiedBots(out var discordBot, out var twitchBot, out var osuBot);
+            var _bots = CredentialChecker.GetVerifiedBots(out _, out var twitchBot, out _);
 
             foreach (var bot in _bots)
                 _ = bot.Start();

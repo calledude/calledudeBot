@@ -33,23 +33,27 @@ namespace calledudeBot
             Bot.TestRun = false;
         }
 
-        public static Bot[] GetVerifiedBots(out DiscordBot discordBot, out TwitchBot twitchBot, out OsuBot osuBot)
+        public static IReadOnlyCollection<Bot> GetVerifiedBots(out DiscordBot discordBot, out TwitchBot twitchBot, out OsuBot osuBot)
         {
-            if (!_verifiedBots) throw new InvalidOperationException("You're not allowed to call this method before all bots have been verified.");
+            if (!_verifiedBots)
+                throw new InvalidOperationException("You're not allowed to call this method before all bots have been verified.");
+
             discordBot = new DiscordBot(_discordToken, ulong.Parse(_announceChanID), ulong.Parse(_streamerID));
             osuBot = new OsuBot(_osuIRCtoken, _osuNick);
             twitchBot = new TwitchBot(_twitchIRCtoken, _osuAPIToken, _osuNick, _botNick, _channelName, osuBot);
+
             return new Bot[] { discordBot, twitchBot, osuBot };
         }
 
         //Returns a boolean after running every single bot through the verify function
         private static async Task<bool> VerifyCredentials()
         {
-            var discToken = VerifyBot<DiscordBot>();
-            var twitchToken = VerifyBot<TwitchBot>();
-            var osuToken = VerifyBot<OsuBot>();
+            var discToken = Task.Run(() => VerifyBot<DiscordBot>());
+            var twitchToken = Task.Run(() => VerifyBot<TwitchBot>());
+            var osuToken = Task.Run(() => VerifyBot<OsuBot>());
 
-            return _verifiedBots = await osuToken && await twitchToken && await discToken;
+            var results = await Task.WhenAll(discToken, twitchToken, osuToken);
+            return _verifiedBots = results.All(x => x);
         }
 
         public static async Task<bool> VerifyBot<T>() where T : Bot
@@ -73,12 +77,22 @@ namespace calledudeBot
                     {
                         _creds.Remove("osuIRC");
                         _creds.Remove("OsuNick");
-                        bot.TryLog("Invalid token and/or osu!-nickname");
+                        bot.TryLog("Invalid token and/or osu!-nickname.");
                     }
                     else
                     {
                         _creds.Remove("TwitchIRC");
-                        bot.TryLog("Invalid token");
+                        bot.TryLog("Invalid token.");
+                    }
+                }
+                catch (TimeoutException)
+                {
+                    //For whatever reason, Twitch IRC doesn't verify the nickname
+                    //Nor does it verify that the channel actually exists
+                    if (bot is TwitchBot)
+                    {
+                        _creds.Remove("ChannelName");
+                        _creds.Remove("BotNick");
                     }
                 }
                 catch (WebException)
@@ -169,9 +183,9 @@ namespace calledudeBot
             }
 
             File.Create(_credFile).Close();
-            foreach (KeyValuePair<string, string> k in _creds)
+            foreach (var kvp in _creds)
             {
-                File.AppendAllText(_credFile, k.Key + " " + k.Value + Environment.NewLine);
+                File.AppendAllText(_credFile, $"{kvp.Key} {kvp.Value} {Environment.NewLine}");
             }
 
             Console.WriteLine("Alright! We're all done. Let's go! :)");

@@ -4,8 +4,8 @@
     {
         public ulong Destination { get; }
 
-        public DiscordMessage(string message, User sender, ulong destination) 
-            : base(message, sender)
+        public DiscordMessage(string message, string channel, User sender, ulong destination) 
+            : base(message, channel, sender)
         {
             Destination = destination;
         }

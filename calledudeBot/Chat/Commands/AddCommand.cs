@@ -20,7 +20,7 @@ namespace calledudeBot.Chat.Commands
                 Command cmd1 = CommandUtils.GetExistingCommand(param.PrefixedWords) ?? CommandUtils.GetExistingCommand(param.Words[0]);
                 Command cmd2 = new Command(param);
 
-                if (cmd1 is Command && cmd1.Name == cmd2.Name)
+                if (cmd1 is Command && cmd1.Name.Equals(cmd2.Name))
                 {
                     return EditCmd(cmd1, cmd2);
                 }

@@ -19,7 +19,7 @@ namespace calledudeBot.Chat.Commands
             const string procName = "osu!";
             foreach (var p in Process.GetProcesses())
             {
-                if (p.ProcessName == procName)
+                if (p.ProcessName.Equals(procName))
                 {
                     nowPlaying = p.MainWindowTitle.Contains("-") ? p.MainWindowTitle.Substring(p.MainWindowTitle.IndexOf("-") + 1).Trim() : null;
                     break;

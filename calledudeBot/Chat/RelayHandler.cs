@@ -17,7 +17,10 @@ namespace calledudeBot.Chat
         private readonly SongRequester _songRequester;
         private readonly TwitchBot _twitch;
 
-        public RelayHandler(TwitchBot twitch, string streamerNick, string osuAPIToken, Bot<IrcMessage> relaySubject) : base(twitch)
+        public RelayHandler(
+            TwitchBot twitch,
+            string osuAPIToken,
+            Bot<IrcMessage> relaySubject) : base(twitch)
         {
             _lastMessage = DateTime.Now;
             _messageQueue = new Queue<IrcMessage>();
@@ -26,7 +29,7 @@ namespace calledudeBot.Chat
             _twitch = twitch;
             _relaySubject = relaySubject;
 
-            _streamerNick = streamerNick.Substring(1).ToLower();
+            _streamerNick = twitch.ChannelName.Substring(1).ToLower();
             _relayTimer = new Timer(200);
             _relayTimer.Elapsed += TryRelay;
             _relayTimer.Start();
