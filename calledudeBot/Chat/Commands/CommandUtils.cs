@@ -1,5 +1,4 @@
-﻿using calledudeBot.Chat.Info;
-using System;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,7 +8,10 @@ namespace calledudeBot.Chat.Commands
     public static class CommandUtils
     {
         internal static List<Command> Commands { get; set; } = new List<Command>();
-        internal static string CmdFile { get; } = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + @"\cmds.txt";
+        internal static string CmdFile { get; } = "commands.json";
+
+        public static bool IsCommand(string message)
+            => message[0] == '!' && message.Length > 1;
 
         //Returns the Command object or null depending on if it exists or not.
         internal static Command GetExistingCommand(string cmd)
@@ -27,20 +29,6 @@ namespace calledudeBot.Chat.Commands
                     return c;
             }
             return null;
-        }
-
-        internal static void AppendCmdToFile(Command cmd)
-        {
-            if (cmd is SpecialCommand || cmd is SpecialCommand<CommandParameter>) return;
-
-            string alternates = cmd.AlternateName.Count > 0 ? string.Join(" ", cmd.AlternateName) : null;
-            string description = string.IsNullOrEmpty(cmd.Description) ? null : $"<{cmd.Description}>";
-            string line = $"{cmd.Name} {cmd.Response}";
-
-            if (alternates != null) line = $"{cmd.Name} {alternates} {cmd.Response}";
-            if (description != null) line += " " + description;
-            line = line.Trim();
-            File.AppendAllText(CmdFile, line + Environment.NewLine);
         }
 
         internal static string RemoveCommand(Command cmd, string altName = null)
@@ -61,12 +49,27 @@ namespace calledudeBot.Chat.Commands
                 response = $"Deleted command '{altName}'";
             }
 
-            File.Create(CmdFile).Close();
-            foreach (Command c in Commands)
-            {
-                AppendCmdToFile(c);
-            }
+            SaveCommandsToFile();
+
             return response;
+        }
+
+        internal static void SaveCommandsToFile()
+        {
+            File.Create(CmdFile).Close();
+
+            var filteredCommands = Commands
+                .Where(x => x.GetType() == typeof(Command));
+
+            var commands =
+                JsonConvert.SerializeObject(
+                    filteredCommands,
+                    Formatting.Indented,
+                    new JsonSerializerSettings()
+                    {
+                        NullValueHandling = NullValueHandling.Ignore
+                    });
+            File.WriteAllText(CmdFile, commands);
         }
 
         internal static string AddPrefix(this string str)

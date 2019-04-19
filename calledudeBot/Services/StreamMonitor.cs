@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using calledudeBot.Config;
+using Discord;
 using Discord.WebSocket;
 using OBSWebsocketDotNet;
 using System;
@@ -13,15 +14,18 @@ namespace calledudeBot.Services
     public sealed class StreamMonitor : IDisposable
     {
         private IGuildUser _streamer;
+        private ITextChannel _announceChannel;
+
         private readonly OBSWebsocket _obs;
         private readonly Timer _streamStatusTimer;
         private readonly DiscordSocketClient _client;
-        private readonly ITextChannel _announceChannel;
+        private readonly ulong _announceChannelID;
+        private readonly ulong _streamerID;
 
         public bool IsStreaming { get; private set; }
         public DateTime StreamStarted { get; private set; }
 
-        private StreamMonitor(ulong announceChanID, DiscordSocketClient client)
+        public StreamMonitor(BotConfig config, DiscordSocketClient client)
         {
             _client = client;
             _obs = new OBSWebsocket();
@@ -31,42 +35,31 @@ namespace calledudeBot.Services
             _streamStatusTimer = new Timer(2000);
             _streamStatusTimer.Elapsed += CheckDiscordStatus;
 
-            _announceChannel = _client.GetChannel(announceChanID) as ITextChannel;
-        }
-
-        public static async Task<StreamMonitor> Create(ulong announceChanID, ulong streamerID, DiscordSocketClient client)
-        {
-            var monitor = new StreamMonitor(announceChanID, client);
-            return await monitor.TryInitialize(streamerID) 
-                ? monitor
-                : throw new ArgumentException("One or more of the arguments were invalid.");
-        }
-
-        private async Task<bool> TryInitialize(ulong streamerID)
-        {
-            if (_announceChannel == null)
-            {
-                Log("Invalid channel. Will not announce when stream goes live.");
-                return false;
-            }
-
-            _streamer = await _announceChannel.Guild.GetUserAsync(streamerID);
-            if (_streamer == null)
-            {
-                Log("Invalid StreamerID. Could not find user.");
-                return false;
-            }
-
-            return true;
+            _announceChannelID = config.AnnounceChannelId;
+            _streamerID = config.StreamerId;
         }
 
         private void Log(string message)
         {
-            Logger.Log($"[StreamMonitor]: {message}");
+            Logger.Log($"{message}", this);
         }
 
         public async Task Connect()
         {
+            _announceChannel = _client.GetChannel(_announceChannelID) as ITextChannel;
+            if (_announceChannel == null)
+            {
+                Log("Invalid channel. Will not announce when stream goes live.");
+                return;
+            }
+
+            _streamer = await _announceChannel.Guild.GetUserAsync(_streamerID);
+            if (_streamer == null)
+            {
+                Log("Invalid StreamerID. Could not find user.");
+                return;
+            }
+
             Log("Waiting for OBS to start.");
             List<Process> procs = null;
             while (procs is null || !procs.Any())

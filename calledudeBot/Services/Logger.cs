@@ -9,12 +9,12 @@ namespace calledudeBot.Services
 
         static Logger()
         {
-            Log("[Logger] Started logging.");
+            Log("Started logging.");
             Run();
         }
 
-        public static void Log(string logMessage)
-            => _logQueue.AddAsync(logMessage);
+        public static void Log(string logMessage, object sender = null)
+            => _logQueue.AddAsync($"[{sender as string ?? sender?.GetType().Name ?? "Logger"}]: {logMessage}");
 
         private static async void Run()
         {

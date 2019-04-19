@@ -11,7 +11,7 @@ namespace calledudeBot.Chat.Commands
         public string Name { get; set; }
         public string Description { get; set; }
         public bool RequiresMod { get; protected set; }
-        public List<string> AlternateName { get; set; }
+        public List<string> AlternateName { get; set; } = new List<string>();
 
         public Command(CommandParameter cmdParam)
         {
@@ -30,7 +30,7 @@ namespace calledudeBot.Chat.Commands
                 throw new ArgumentException("Special characters in commands are not allowed.");
         }
 
-        protected Command()
+        public Command()
         {
         }
 

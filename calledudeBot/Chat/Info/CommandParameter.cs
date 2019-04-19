@@ -1,10 +1,11 @@
 ﻿using calledudeBot.Chat.Commands;
+using MediatR;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace calledudeBot.Chat.Info
 {
-    public class CommandParameter
+    public class CommandParameter : IRequest<Message>
     {
         public List<string> PrefixedWords { get; } = new List<string>();
         public List<string> EnclosedWords { get; } = new List<string>();
@@ -16,12 +17,12 @@ namespace calledudeBot.Chat.Info
         {
             var paramSplit = param.Split(' ');
             PrefixedWords = paramSplit.Where(x => x[0] == '!').ToList();
-            
+
             var encIdx = param.LastIndexOf('<');
             var encEndIdx = param.LastIndexOf('>') + 1;
 
-            var encWords = encIdx > 1 && encEndIdx > 1 
-                            ? param.Substring(encIdx, encEndIdx - encIdx) 
+            var encWords = encIdx > 1 && encEndIdx > 1
+                            ? param.Substring(encIdx, encEndIdx - encIdx)
                             : null;
 
             EnclosedWords = encWords?
@@ -39,11 +40,6 @@ namespace calledudeBot.Chat.Info
             PrefixedWords = PrefixedWords
                             .Select(x => x.AddPrefix())
                             .ToList();
-        }
-
-        //This ctor is used for offline initializations, e.g. CommandHandler at bootup.
-        public CommandParameter(string param) : this(param, null)
-        {
         }
     }
 }

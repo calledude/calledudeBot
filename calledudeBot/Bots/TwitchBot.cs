@@ -1,33 +1,32 @@
 ﻿using calledudeBot.Chat;
+using calledudeBot.Config;
 using calledudeBot.Services;
+using Nito.AsyncEx;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
-using Nito.AsyncEx;
-using System;
 
 namespace calledudeBot.Bots
 {
     public sealed class TwitchBot : IrcClient
     {
         private List<string> _mods;
-        private OsuUserService _osuUserService;
-        private RelayHandler _messageHandler;
+        private readonly OsuUserService _osuUserService;
         private Timer _modLockTimer;
         private bool _modCheckLock;
         private readonly AsyncAutoResetEvent _modWait;
-        private readonly string _osuAPIToken, _osuNick, _botNick;
-        private readonly OsuBot _osuBot;
+        private readonly MessageDispatcher _dispatcher;
+
         protected override List<string> Failures { get; }
+        protected override string Token { get; }
 
         public TwitchBot(
-            string token,
-            string osuAPIToken,
-            string osuNick,
-            string botNick,
-            string channelName,
-            OsuBot osuBot) : base("irc.chat.twitch.tv", token, "Twitch", 366, botNick, channelName)
+            BotConfig config,
+            OsuUserService osuUserService,
+            MessageDispatcher dispatcher)
+            : base("irc.chat.twitch.tv", "Twitch", 366, config.TwitchBotUsername, config.TwitchChannel)
         {
             Failures = new List<string>
             {
@@ -35,23 +34,21 @@ namespace calledudeBot.Bots
                 ":tmi.twitch.tv NOTICE * :Login authentication failed",
             };
 
-            _osuAPIToken = osuAPIToken;
-            _osuNick = osuNick;
-            _botNick = botNick;
-            _osuBot = osuBot;
+            Token = config.TwitchToken;
 
             _modWait = new AsyncAutoResetEvent();
+            _osuUserService = osuUserService;
 
             Ready += OnReady;
             MessageReceived += HandleMessage;
             UnhandledMessage += HandleRawMessage;
+            _dispatcher = dispatcher;
         }
 
         private async Task OnReady()
         {
             _modLockTimer = new Timer(60000);
-            _messageHandler = new RelayHandler(this, _osuAPIToken, _osuBot);
-            _osuUserService = new OsuUserService(_osuAPIToken, _osuNick, this);
+
             _modLockTimer.Elapsed += ModLockEvent;
             _modLockTimer.Start();
 
@@ -67,7 +64,7 @@ namespace calledudeBot.Bots
             var sender = new User(user, isMod);
             var msg = new IrcMessage(message, ChannelName, sender);
 
-            await _messageHandler.DetermineResponse(msg);
+            await _dispatcher.PublishAsync(msg);
         }
 
         private void HandleRawMessage(string buffer)
@@ -100,10 +97,9 @@ namespace calledudeBot.Bots
             return _mods;
         }
 
-        protected override void Dispose(bool disposing)
+        public override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            _messageHandler?.Dispose();
             _osuUserService?.Dispose();
             _modLockTimer?.Dispose();
         }

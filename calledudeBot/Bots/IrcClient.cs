@@ -27,12 +27,11 @@ namespace calledudeBot.Bots
 
         protected IrcClient(
             string server,
-            string token,
             string botName,
             int successCode,
             string nick,
             string channelName = null,
-            int port = 6667) : base(botName, token)
+            int port = 6667) : base(botName)
         {
             Nick = nick;
             ChannelName = channelName;
@@ -53,7 +52,7 @@ namespace calledudeBot.Bots
             _input = new StreamReader(_sock.GetStream());
         }
 
-        internal override async Task Start()
+        public override async Task Start()
         {
             var waitTask = Task.Delay(5000);
             var loginTask = Login();
@@ -62,41 +61,38 @@ namespace calledudeBot.Bots
 
             if(loginTask.IsFaulted)
             {
-                TryLog("Login failed. Are you sure your credentials are correct?");
+                Log("Login failed. Are you sure your credentials are correct?");
                 throw loginTask.Exception.InnerException;
             }
             else if (completedTask != loginTask)
             {
-                TryLog("Login timed out. Are you sure your credentials are correct?");
+                Log("Login timed out. Are you sure your credentials are correct?");
                 throw new TimeoutException();
             }
 
-            if (!TestRun)
+            try
             {
-                try
-                {
-                    await Listen();
-                }
-                catch (Exception e)
-                {
-                    TryLog(e.Message);
-                    await Reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
-                }
+                await Listen();
+            }
+            catch (Exception e)
+            {
+                Log(e.Message);
+                await Reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
             }
         }
 
         protected async Task SendPong(string ping)
         {
             await WriteLine(ping.Replace("PING", "PONG"));
-            TryLog($"Heartbeat sent.");
+            Log($"Heartbeat sent.");
         }
 
         protected override async Task SendMessage(IrcMessage message)
-            => await WriteLine($"PRIVMSG {ChannelName} :{message.Content}");
+            => await WriteLine($"PRIVMSG {ChannelName} :{message.Response ?? message.Content}");
 
         protected async Task Reconnect()
         {
-            TryLog("Disconnected. Re-establishing connection..");
+            Log("Disconnected. Re-establishing connection..");
             Dispose(true);
 
             while (!_sock.Connected)
@@ -108,7 +104,7 @@ namespace calledudeBot.Bots
             }
         }
 
-        internal override Task Logout()
+        public override Task Logout()
         {
             _sock.Close();
             return Task.CompletedTask;
@@ -141,10 +137,7 @@ namespace calledudeBot.Bots
                     if (Ready != null)
                         await Ready.Invoke();
 
-                    if (!TestRun)
-                    {
-                        TryLog($"Connected to {Name}-IRC.");
-                    }
+                    Log($"Connected to {Name}-IRC.");
                 }
             }
         }
@@ -176,7 +169,7 @@ namespace calledudeBot.Bots
         protected async Task WriteLine(string message)
             => await _output.WriteLineAsync(message);
 
-        protected override void Dispose(bool disposing)
+        public override void Dispose(bool disposing)
         {
             _sock.Dispose();
             _input.Dispose();

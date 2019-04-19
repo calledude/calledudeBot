@@ -1,4 +1,4 @@
-﻿using calledudeBot.Bots;
+﻿using calledudeBot.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,32 +7,46 @@ namespace calledudeBot.Chat.Commands
 {
     internal sealed class UptimeCommand : SpecialCommand
     {
-        private readonly DiscordBot _discordbot;
+        private readonly StreamMonitor _streamMonitor;
 
-        public UptimeCommand(DiscordBot discordbot)
+        public UptimeCommand(StreamMonitor streamMonitor)
         {
             Name = "!uptime";
             Description = "Shows how long the stream has been live";
             AlternateName = new List<string> { "!live" };
             RequiresMod = false;
-            _discordbot = discordbot;
+            _streamMonitor = streamMonitor;
         }
 
         protected override string SpecialFunc()
         {
-            DateTime d = _discordbot.WentLiveAt();
-            TimeSpan t = DateTime.Now - d;
-            if (default != d)
+            DateTime wentLiveAt = WentLiveAt();
+            TimeSpan timeSinceLive = DateTime.Now - wentLiveAt;
+            if (default != wentLiveAt)
             {
                 StringBuilder sb = new StringBuilder();
 
                 sb.Append("Stream uptime: ");
-                if (t.Hours > 0) sb.Append(t.Hours).Append("h ");
-                if (t.Minutes > 0) sb.Append(t.Minutes).Append("m ");
-                if (t.Seconds > 0) sb.Append(t.Seconds).Append("s");
+
+                if (timeSinceLive.Hours > 0)
+                    sb.Append($"{timeSinceLive.Hours}h ");
+
+                if (timeSinceLive.Minutes > 0)
+                    sb.Append($"{timeSinceLive.Minutes}m ");
+
+                if (timeSinceLive.Seconds > 0)
+                    sb.Append($"{timeSinceLive.Seconds}s");
+
                 return sb.ToString();
             }
             return "Streamer isn't live.";
+        }
+
+        private DateTime WentLiveAt()
+        {
+            return _streamMonitor.IsStreaming
+                ? _streamMonitor.StreamStarted
+                : default;
         }
     }
 }

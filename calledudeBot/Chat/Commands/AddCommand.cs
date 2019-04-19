@@ -13,11 +13,14 @@ namespace calledudeBot.Chat.Commands
             RequiresMod = true;
         }
 
-        private static string CreateCommand(CommandParameter param)
+        private string CreateCommand(CommandParameter param)
         {
             try
             {
-                Command cmd1 = CommandUtils.GetExistingCommand(param.PrefixedWords) ?? CommandUtils.GetExistingCommand(param.Words[0]);
+                Command cmd1 = 
+                    CommandUtils.GetExistingCommand(param.PrefixedWords) 
+                    ?? CommandUtils.GetExistingCommand(param.Words[0]);
+
                 Command cmd2 = new Command(param);
 
                 if (cmd1 is Command && cmd1.Name.Equals(cmd2.Name))
@@ -32,6 +35,7 @@ namespace calledudeBot.Chat.Commands
                 {
                     //at this point we've tried everything, it doesn't exist, let's add it.
                     CommandUtils.Commands.Add(cmd2);
+                    CommandUtils.SaveCommandsToFile();
                     return $"Added command '{cmd2.Name}'";
                 }
             }
@@ -53,7 +57,7 @@ namespace calledudeBot.Chat.Commands
             }
         }
 
-        private static string EditCmd(Command c, Command f)
+        private string EditCmd(Command c, Command f)
         {
             string response;
             if (c is SpecialCommand || c is SpecialCommand<CommandParameter>)

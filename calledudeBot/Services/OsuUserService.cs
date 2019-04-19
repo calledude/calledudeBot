@@ -1,8 +1,10 @@
 ﻿using calledudeBot.Bots;
 using calledudeBot.Chat;
+using calledudeBot.Config;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace calledudeBot.Services
 {
@@ -10,13 +12,16 @@ namespace calledudeBot.Services
     {
         private OsuUser _oldOsuData;
         private readonly APIHandler<OsuUser> _api;
-        private readonly TwitchBot _twitch;
+        private readonly IServiceProvider _serviceProvider;
 
-        public OsuUserService(string osuAPIToken, string osuNick, TwitchBot twitch)
+        public OsuUserService(BotConfig config, IServiceProvider serviceProvider)
         {
+            var osuAPIToken = config.OsuAPIToken;
+            var osuNick = config.OsuUsername;
+
             _api = new APIHandler<OsuUser>($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}");
             _api.DataReceived += CheckUserUpdateAsync;
-            _twitch = twitch;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task Start()
@@ -28,8 +33,8 @@ namespace calledudeBot.Services
         {
             if (user == null) throw new ArgumentNullException("Invalid username.", nameof(user));
 
-            if (_oldOsuData != null 
-                && _oldOsuData.Rank != user.Rank 
+            if (_oldOsuData != null
+                && _oldOsuData.Rank != user.Rank
                 && Math.Abs(user.PP - _oldOsuData.PP) >= 0.1)
             {
                 int rankDiff = user.Rank - _oldOsuData.Rank;
@@ -42,7 +47,10 @@ namespace calledudeBot.Services
                 string ppMessage = $"PP: {(ppDiff < 0 ? "-" : "+")}{formatted}pp ({totalPP}pp)";
 
                 var newRankMessage = new IrcMessage($"{user.Username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}");
-                await _twitch.SendMessageAsync(newRankMessage);
+
+                await _serviceProvider
+                    .GetRequiredService<Bot<IrcMessage>>()
+                    .SendMessageAsync(newRankMessage);
             }
             _oldOsuData = user;
         }

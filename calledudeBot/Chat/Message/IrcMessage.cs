@@ -8,7 +8,7 @@ namespace calledudeBot.Chat
         {
         }
 
-        public IrcMessage(string message, string channel, User sender) 
+        public IrcMessage(string message, string channel, User sender)
             : base(message, channel, sender)
         {
         }

@@ -1,61 +1,47 @@
-﻿using calledudeBot.Bots;
-using calledudeBot.Chat.Commands;
+﻿using calledudeBot.Chat.Commands;
 using calledudeBot.Chat.Info;
 using calledudeBot.Services;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Chat
 {
-    public abstract class CommandHandler
+    public sealed class CommandHandler : IRequestHandler<CommandParameter, Message>
     {
-        protected readonly string CmdFile = CommandUtils.CmdFile;
-        protected static bool Initialized;
-        protected static readonly object Lock = new object();
-    }
+        private readonly string _cmdFile = CommandUtils.CmdFile;
+        private readonly IServiceProvider _serviceProvider;
 
-    public sealed class CommandHandler<T> : CommandHandler where T : Message
-    {
-        public CommandHandler(Bot<T> bot)
+        public CommandHandler(IServiceProvider serviceProvider)
         {
-            lock (Lock)
-            {
-                if (!Initialized) Initialize();
-            }
-            if (bot is DiscordBot discord)
-            {
-                CommandUtils.Commands.Add(new UptimeCommand(discord));
-                Logger.Log($"[CommandHandler]: Done. Loaded {CommandUtils.Commands.Count} commands.");
-            }
+            _serviceProvider = serviceProvider;
         }
 
-        private void Initialize()
+        public void Initialize()
         {
-            Initialized = true;
-            var cmdArr = File.ReadAllLines(CmdFile);
-            CommandUtils.Commands = cmdArr.Select(x => new Command(new CommandParameter(x))).ToList();
-            CommandUtils.Commands.AddRange(new List<Command>
-            {
-                new AddCommand(),
-                new DeleteCommand(),
-                new HelpCommand(),
-                new NowPlayingCommand()
-            });
+            
+            CommandUtils.Commands = 
+                JsonConvert.DeserializeObject<List<Command>>(File.ReadAllText(_cmdFile)) 
+                ?? new List<Command>();
+            CommandUtils.Commands.AddRange(_serviceProvider.GetServices<Command>());
+            Logger.Log($"Done. Loaded {CommandUtils.Commands.Count} commands.", this);
         }
 
-        public bool IsPrefixed(string message) => message[0] == '!';
-
-        public T GetResponse(CommandParameter param)
+        public Task<Message> Handle(CommandParameter request, CancellationToken cancellationToken)
         {
             string response;
-            var cmd = CommandUtils.GetExistingCommand(param.PrefixedWords[0]);
+            var cmd = CommandUtils.GetExistingCommand(request.PrefixedWords[0]);
 
             if (cmd == null)
             {
                 response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
             }
-            else if (cmd.RequiresMod && !param.SenderIsMod)
+            else if (cmd.RequiresMod && !request.SenderIsMod)
             {
                 response = "You're not allowed to use that command";
             }
@@ -64,8 +50,9 @@ namespace calledudeBot.Chat
                 switch (cmd)
                 {
                     case SpecialCommand<CommandParameter> sp:
-                        param.PrefixedWords.RemoveAt(0); //Remove whatever command they were executing from PrefixedWords e.g. !addcmd
-                        response = sp.GetResponse(param);
+                        //Remove whatever command they were executing from PrefixedWords e.g. !addcmd
+                        request.PrefixedWords.RemoveAt(0);
+                        response = sp.GetResponse(request);
                         break;
                     case SpecialCommand s:
                         response = s.GetResponse();
@@ -75,8 +62,9 @@ namespace calledudeBot.Chat
                         break;
                 }
             }
-            param.Message.Content = response;
-            return (T)param.Message;
+
+            request.Message.Response = response;
+            return Task.FromResult(request.Message);
         }
     }
 }
