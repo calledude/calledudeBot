@@ -1,6 +1,7 @@
 ﻿using calledudeBot.Chat.Info;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace calledudeBot.Chat.Commands
 {
@@ -17,37 +18,38 @@ namespace calledudeBot.Chat.Commands
         {
             try
             {
-                Command cmd1 = 
+                Command foundCommand = 
                     CommandUtils.GetExistingCommand(param.PrefixedWords) 
                     ?? CommandUtils.GetExistingCommand(param.Words[0]);
 
-                Command cmd2 = new Command(param);
+                Command newCommand = new Command(param);
 
-                if (cmd1 is Command && cmd1.Name.Equals(cmd2.Name))
+                if (foundCommand is Command && foundCommand.Name.Equals(newCommand.Name))
                 {
-                    return EditCmd(cmd1, cmd2);
+                    return EditCmd(foundCommand, newCommand);
                 }
-                else if (cmd1 is Command && cmd1.Name != cmd2.Name)
+                else if (foundCommand is Command && foundCommand.Name != newCommand.Name)
                 {
                     return "One or more of the alternate commands already exists.";
                 }
                 else
                 {
                     //at this point we've tried everything, it doesn't exist, let's add it.
-                    CommandUtils.Commands.Add(cmd2);
+                    CommandUtils.Commands.Add(newCommand);
                     CommandUtils.SaveCommandsToFile();
-                    return $"Added command '{cmd2.Name}'";
+                    return $"Added command '{newCommand.Name}'";
                 }
             }
-            catch (ArgumentException e)
+            catch (Exception e)
             {
                 return e.Message;
             }
         }
 
-        protected override string SpecialFunc(CommandParameter param)
+        protected override string Handle(CommandParameter param)
         {
-            if (param.PrefixedWords.Count >= 1 || param.Words.Count >= 1) //has user entered a command to enter? i.e. !addcmd !test someAnswer
+            //has user entered a command to enter? i.e. !addcmd !test someAnswer
+            if (param.PrefixedWords.Count >= 1 && param.Words.Count >= 1) 
             {
                 return CreateCommand(param);
             }
@@ -57,46 +59,49 @@ namespace calledudeBot.Chat.Commands
             }
         }
 
-        private string EditCmd(Command c, Command f)
+        private string EditCmd(Command foundCommand, Command newCommand)
         {
             string response;
-            if (c is SpecialCommand || c is SpecialCommand<CommandParameter>)
+            if (foundCommand is SpecialCommand || foundCommand is SpecialCommand<CommandParameter>)
                 return "You can't change a special command.";
 
             int changes = 0;
-            response = $"Command '{f.Name}' already exists.";
+            response = $"Command '{newCommand.Name}' already exists.";
 
-            if (f.Response != c.Response)
+            if (newCommand.Response != foundCommand.Response)
             {
-                c.Response = f.Response;
-                response = $"Changed response of '{c.Name}'.";
+                foundCommand.Response = newCommand.Response;
+                response = $"Changed response of '{foundCommand.Name}'.";
                 changes++;
             }
-            if (f.Description != c.Description)
+            if (newCommand.Description != foundCommand.Description)
             {
-                c.Description = f.Description;
-                response = $"Changed description of '{c.Name}'.";
+                foundCommand.Description = newCommand.Description;
+                response = $"Changed description of '{foundCommand.Name}'.";
                 changes++;
             }
-            if (f.AlternateName.Count != c.AlternateName.Count)
+            if (newCommand.AlternateName?.Count != foundCommand.AlternateName?.Count)
             {
-                if (f.AlternateName.Count == 0)
+                if (newCommand.AlternateName == default)
                 {
-                    c.AlternateName = f.AlternateName;
-                    response = $"Removed all alternate commands for {c.Name}";
+                    foundCommand.AlternateName = newCommand.AlternateName;
+                    response = $"Removed all alternate commands for '{foundCommand.Name}'";
                 }
                 else
                 {
-                    c.AlternateName.AddRange(f.AlternateName);
-                    c.AlternateName = c.AlternateName.Distinct().ToList();
-                    response = $"Changed alternate command names for {c.Name}. It now has {c.AlternateName.Count} alternates.";
+                    if (foundCommand.AlternateName == default)
+                        foundCommand.AlternateName = new List<string>();
+
+                    foundCommand.AlternateName.AddRange(newCommand.AlternateName);
+                    foundCommand.AlternateName = foundCommand.AlternateName.Distinct().ToList();
+                    response = $"Changed alternate command names for '{foundCommand.Name}'. It now has {foundCommand.AlternateName.Count} alternates.";
                 }
                 changes++;
             }
             //Remove the new (wrongly) added new command from commandfile
             //and save the potentially new version.
-            CommandUtils.RemoveCommand(f);
-            return changes > 1 ? $"Done. Several changes made to command '{f.Name}'." : response;
+            CommandUtils.RemoveCommand(newCommand);
+            return changes > 1 ? $"Done. Several changes made to command '{newCommand.Name}'." : response;
         }
     }
 }

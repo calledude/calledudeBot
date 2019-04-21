@@ -16,6 +16,9 @@ namespace calledudeBot.Chat.Commands
         //Returns the Command object or null depending on if it exists or not.
         internal static Command GetExistingCommand(string cmd)
         {
+            if (string.IsNullOrWhiteSpace(cmd))
+                return null;
+
             cmd = cmd.ToLower().AddPrefix();
             return Commands.Find(x => x.Name.Equals(cmd))
                 ?? Commands.Find(x => x.AlternateName?.Any(a => a.Equals(cmd)) ?? false);
@@ -38,7 +41,7 @@ namespace calledudeBot.Chat.Commands
 
             string response;
 
-            if (altName != cmd.Name)
+            if (altName != cmd.Name && altName != null)
             {
                 cmd.AlternateName.Remove(altName);
                 response = $"Deleted alternative command '{altName}'";
@@ -67,7 +70,8 @@ namespace calledudeBot.Chat.Commands
                     Formatting.Indented,
                     new JsonSerializerSettings()
                     {
-                        NullValueHandling = NullValueHandling.Ignore
+                        NullValueHandling = NullValueHandling.Ignore,
+                        DefaultValueHandling = DefaultValueHandling.Ignore
                     });
             File.WriteAllText(CmdFile, commands);
         }

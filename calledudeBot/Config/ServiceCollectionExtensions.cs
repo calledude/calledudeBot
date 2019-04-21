@@ -17,36 +17,6 @@ namespace calledudeBot.Config
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddConfig(this IServiceCollection services)
-        {
-            BotConfig config;
-            if (File.Exists("config.json"))
-            {
-                var jsonString = File.ReadAllText("config.json");
-
-                config = JsonConvert.DeserializeObject<BotConfig>(jsonString,
-                    new JsonSerializerSettings()
-                    {
-                        Error = ParseErrorHandler
-                    });
-                return services.AddSingleton(config);
-            }
-            else
-            {
-                File.Create("config.json").Close();
-
-                var cfg = JsonConvert.SerializeObject(new BotConfig(), Formatting.Indented);
-
-                File.WriteAllText("config.json", cfg);
-
-                Logger.Log("FATAL: No config file detected. Created one for you with default values, please fill it in.");
-                Console.ReadKey();
-                Environment.Exit(0);
-            }
-
-            return services;
-        }
-
         public static IServiceCollection AddServices(this IServiceCollection services)
             => services
                 .AddMediatR()
@@ -82,11 +52,6 @@ namespace calledudeBot.Config
                 services.AddSingleton(typeof(Command), cmd);
             }
             return services;
-        }
-
-        private static void ParseErrorHandler(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs e)
-        {
-            e.ErrorContext.Handled = true;
         }
     }
 }

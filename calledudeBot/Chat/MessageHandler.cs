@@ -40,11 +40,11 @@ namespace calledudeBot.Chat
 
         public async Task Handle(T notification, CancellationToken cancellationToken)
         {
-            var cmd = notification.Content.Split(' ')[0];
-            if (CommandUtils.IsCommand(cmd))
+            var contentSplit = notification.Content.Split(' ');
+            if (CommandUtils.IsCommand(contentSplit[0]))
             {
                 _bot.Log($"Handling command: {notification.Content} from {notification.Sender.Name} in {notification.Channel}");
-                var param = new CommandParameter(notification.Content, notification);
+                var param = new CommandParameter(contentSplit, notification);
 
                 await Respond((T)await _dispatcher.SendRequest(param));
             }

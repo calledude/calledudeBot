@@ -15,7 +15,7 @@ namespace calledudeBot.Chat
             RequiresMod = false;
         }
 
-        protected override string SpecialFunc(CommandParameter param)
+        protected override string Handle(CommandParameter param)
         {
             string response = "You ok there bud? Try again.";
             var allowed = param.SenderIsMod;
@@ -35,14 +35,14 @@ namespace calledudeBot.Chat
                 if (c.RequiresMod && !allowed) return response;
 
                 string cmds = c.Name;
-                if (c.AlternateName.Count != 0)
+                if (c.AlternateName?.Count > 0)
                 {
                     var alts = string.Join("/", c.AlternateName);
                     cmds += $"/{alts}";
                 }
                 string responseDescription = string.IsNullOrEmpty(c.Description)
                     ? "has no description."
-                    : $"has description '{c.Description}'";
+                    : $"has the description '{c.Description}'";
                 response = $"Command '{cmds}' {responseDescription}";
             }
 

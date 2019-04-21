@@ -2,7 +2,9 @@
 using calledudeBot.Chat;
 using calledudeBot.Chat.Commands;
 using calledudeBot.Config;
+using calledudeBot.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,17 +17,39 @@ namespace calledudeBot
         private static void Main()
         {
             Console.Title = "calledudeBot";
-            Console.CancelKeyPress += (object sender, ConsoleCancelEventArgs e) =>
-            {
-                var isCtrlC = e.SpecialKey == ConsoleSpecialKey.ControlC;
-                var isCtrlBreak = e.SpecialKey == ConsoleSpecialKey.ControlBreak;
 
-                if (isCtrlC || isCtrlBreak) e.Cancel = true;
-            };
             CleanCmdFile();
 
-            var services = new ServiceCollection()
-                .AddConfig()
+            var services = new ServiceCollection();
+            const string cfgFile = "config.json";
+            BotConfig config;
+
+            if (File.Exists(cfgFile))
+            {
+                var jsonString = File.ReadAllText(cfgFile);
+
+                config = JsonConvert.DeserializeObject<BotConfig>(jsonString,
+                    new JsonSerializerSettings()
+                    {
+                        Error = (s, e) => e.ErrorContext.Handled = true
+                    });
+                services.AddSingleton(config);
+            }
+            else
+            {
+                File.Create(cfgFile).Close();
+
+                var cfg = JsonConvert.SerializeObject(new BotConfig(), Formatting.Indented);
+
+                File.WriteAllText(cfgFile, cfg);
+
+                Logger.Log("FATAL: No config file detected. Created one for you with default values, please fill it in.");
+                Logger.Log("Press any key to exit..");
+                Console.ReadKey();
+                Environment.Exit(0);
+            }
+
+            services
                 .AddBots()
                 .AddCommands()
                 .AddServices();

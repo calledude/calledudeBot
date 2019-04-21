@@ -18,7 +18,7 @@ namespace calledudeBot.Chat.Commands
             _streamMonitor = streamMonitor;
         }
 
-        protected override string SpecialFunc()
+        protected override string Handle()
         {
             DateTime wentLiveAt = WentLiveAt();
             TimeSpan timeSinceLive = DateTime.Now - wentLiveAt;

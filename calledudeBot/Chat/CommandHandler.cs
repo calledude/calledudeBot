@@ -24,7 +24,6 @@ namespace calledudeBot.Chat
 
         public void Initialize()
         {
-            
             CommandUtils.Commands = 
                 JsonConvert.DeserializeObject<List<Command>>(File.ReadAllText(_cmdFile)) 
                 ?? new List<Command>();
