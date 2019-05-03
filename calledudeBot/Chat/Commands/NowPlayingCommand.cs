@@ -13,7 +13,7 @@ namespace calledudeBot.Chat.Commands
             RequiresMod = false;
         }
 
-        protected override string Handle()
+        public override string Handle()
         {
             string nowPlaying = null;
             const string procName = "osu!";

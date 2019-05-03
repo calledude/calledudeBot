@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace calledudeBot.Services
+namespace calledudeBot.Models
 {
-    public sealed class OsuUser
+    public sealed class OsuUser : BaseModel
     {
         [JsonProperty("user_id")]
         public string UserID { get; set; }
@@ -29,18 +29,4 @@ namespace calledudeBot.Services
         [JsonProperty("events")]
         public List<object> Events { get; set; }
     }
-
-    public sealed class OsuSong
-    {
-        [JsonProperty("version")]
-        public string BeatmapVersion { get; set; }
-
-        [JsonProperty("artist")]
-        public string Artist { get; set; }
-
-        [JsonProperty("title")]
-        public string Title { get; set; }
-    }
 }
-
-

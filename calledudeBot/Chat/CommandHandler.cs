@@ -51,10 +51,10 @@ namespace calledudeBot.Chat
                     case SpecialCommand<CommandParameter> sp:
                         //Remove whatever command they were executing from PrefixedWords e.g. !addcmd
                         request.PrefixedWords.RemoveAt(0);
-                        response = sp.GetResponse(request);
+                        response = sp.Handle(request);
                         break;
                     case SpecialCommand s:
-                        response = s.GetResponse();
+                        response = s.Handle();
                         break;
                     default:
                         response = cmd.Response;

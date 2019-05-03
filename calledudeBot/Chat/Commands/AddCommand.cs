@@ -46,7 +46,7 @@ namespace calledudeBot.Chat.Commands
             }
         }
 
-        protected override string Handle(CommandParameter param)
+        public override string Handle(CommandParameter param)
         {
             //has user entered a command to enter? i.e. !addcmd !test someAnswer
             if (param.PrefixedWords.Count >= 1 && param.Words.Count >= 1) 

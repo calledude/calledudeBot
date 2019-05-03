@@ -1,15 +1,11 @@
 ﻿using calledudeBot.Bots;
 using calledudeBot.Chat;
 using calledudeBot.Chat.Commands;
-using calledudeBot.Chat.Info;
 using calledudeBot.Services;
 using Discord;
 using Discord.WebSocket;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using System;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -45,7 +41,7 @@ namespace calledudeBot.Config
         {
             var commands = Assembly.GetExecutingAssembly()
                 .GetTypes()
-                .Where(x => x.BaseType == typeof(SpecialCommand) || x.BaseType == typeof(SpecialCommand<CommandParameter>));
+                .Where(x => x.IsSubclassOf(typeof(Command)) && !x.IsAbstract);
 
             foreach (var cmd in commands)
             {

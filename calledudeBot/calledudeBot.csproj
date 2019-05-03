@@ -167,12 +167,14 @@
     <Compile Include="Chat\Message\User.cs" />
     <Compile Include="Chat\RelayHandler.cs" />
     <Compile Include="Config\ServiceCollectionExtensions.cs" />
+    <Compile Include="Models\OsuSong.cs" />
+    <Compile Include="Models\OsuUser.cs" />
     <Compile Include="Services\Hooky.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Config\BotConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ApiHandler.cs" />
-    <Compile Include="Services\JsonData.cs" />
+    <Compile Include="Models\BaseModel.cs" />
     <Compile Include="Services\Logger.cs" />
     <Compile Include="Services\MessageDispatcher.cs" />
     <Compile Include="Services\OsuUserService.cs" />

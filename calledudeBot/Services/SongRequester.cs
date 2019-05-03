@@ -1,6 +1,7 @@
 ﻿using calledudeBot.Bots;
 using calledudeBot.Chat;
 using calledudeBot.Config;
+using calledudeBot.Models;
 using MediatR;
 using System.Linq;
 using System.Threading;
@@ -12,12 +13,14 @@ namespace calledudeBot.Services
     {
         private const string _songRequestLink = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
         private readonly string _osuAPIToken;
-        private readonly TwitchBot _bot;
+        private readonly OsuBot _osuBot;
+        private readonly TwitchBot _twitchBot;
 
-        public SongRequester(BotConfig config, TwitchBot bot)
+        public SongRequester(BotConfig config, TwitchBot twitchBot, OsuBot osuBot)
         {
             _osuAPIToken = config.OsuAPIToken;
-            _bot = bot;
+            _osuBot = osuBot;
+            _twitchBot = twitchBot;
         }
 
         //[http://osu.ppy.sh/b/795232 fhana - Wonder Stella [Stella]]
@@ -28,8 +31,10 @@ namespace calledudeBot.Services
                 return;
             }
 
-            var idx = notification.Content.IndexOf("/b/") + "/b/".Length;
-            var num = notification.Content.Skip(idx).TakeWhile(char.IsDigit);
+            var num = notification.Content
+                .SkipWhile(x => !char.IsDigit(x))
+                .TakeWhile(char.IsDigit);
+
             var beatmapID = string.Concat(num);
             var reqLink = string.Format(_songRequestLink, _osuAPIToken, beatmapID);
 
@@ -39,12 +44,13 @@ namespace calledudeBot.Services
                 if (song != null)
                 {
                     notification.Response = $"[http://osu.ppy.sh/b/{beatmapID} {song.Artist} - {song.Title} [{song.BeatmapVersion}]]";
+                    await _osuBot.SendMessageAsync(notification);
                 }
                 else
                 {
                     notification.Response = "I couldn't find that song, sorry.";
+                    await _twitchBot.SendMessageAsync(notification);
                 }
-                await _bot.SendMessageAsync(notification);
             }
         }
     }

@@ -12,7 +12,7 @@ namespace calledudeBot.Chat.Commands
             RequiresMod = true;
         }
 
-        protected override string Handle(CommandParameter param)
+        public override string Handle(CommandParameter param)
         {
             string response = "You ok there bud? Try again.";
 

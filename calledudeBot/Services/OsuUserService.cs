@@ -1,10 +1,11 @@
 ﻿using calledudeBot.Bots;
 using calledudeBot.Chat;
 using calledudeBot.Config;
+using calledudeBot.Models;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace calledudeBot.Services
 {
@@ -49,7 +50,7 @@ namespace calledudeBot.Services
                 var newRankMessage = new IrcMessage($"{user.Username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}");
 
                 await _serviceProvider
-                    .GetRequiredService<Bot<IrcMessage>>()
+                    .GetRequiredService<TwitchBot>()
                     .SendMessageAsync(newRankMessage);
             }
             _oldOsuData = user;

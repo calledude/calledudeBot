@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using calledudeBot.Models;
+using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -6,7 +7,7 @@ using System.Timers;
 
 namespace calledudeBot.Services
 {
-    public sealed class APIHandler<T> : IDisposable
+    public sealed class APIHandler<T> : IDisposable where T : BaseModel
     {
         private readonly string _url;
         private readonly WebClient _client;
