@@ -19,7 +19,10 @@ namespace calledudeBot
         private int _position;
         private readonly TwitchBot _twitchBot;
 
-        public Hooky(TwitchBot twitchBot) => _twitchBot = twitchBot;
+        public Hooky(TwitchBot twitchBot)
+        {
+            _twitchBot = twitchBot;
+        }
 
         public void Start()
         {
@@ -31,7 +34,7 @@ namespace calledudeBot
 
             _key.StartCapturing();
 
-            Logger.Log("[Hooky] Started Hooky.");
+            Logger.Log("Started Hooky.", this);
             Application.Run();
         }
 

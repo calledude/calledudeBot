@@ -1,10 +1,13 @@
-﻿namespace calledudeBot.Chat
+﻿using MediatR;
+
+namespace calledudeBot.Chat
 {
-    public abstract class Message
+    public abstract class Message : INotification
     {
-        public string Content { get; set; }
+        public string Content { get; }
         public User Sender { get; }
         public string Channel { get; }
+        public string Response { get; set; }
 
         protected Message(string message)
         {

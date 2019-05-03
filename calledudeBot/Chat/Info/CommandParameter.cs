@@ -1,49 +1,33 @@
-﻿using calledudeBot.Chat.Commands;
+﻿using MediatR;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace calledudeBot.Chat.Info
 {
-    public class CommandParameter
+    public class CommandParameter : IRequest<Message>
     {
-        public List<string> PrefixedWords { get; } = new List<string>();
-        public List<string> EnclosedWords { get; } = new List<string>();
-        public List<string> Words { get; } = new List<string>();
+        public List<string> PrefixedWords { get; }
+        public List<string> EnclosedWords { get; }
+        public List<string> Words { get; }
         public Message Message { get; }
         public bool SenderIsMod => Message?.Sender.IsMod ?? false;
 
-        public CommandParameter(string param, Message message)
+        public CommandParameter(IEnumerable<string> param, Message message)
         {
-            var paramSplit = param.Split(' ');
-            PrefixedWords = paramSplit.Where(x => x[0] == '!').ToList();
-            
-            var encIdx = param.LastIndexOf('<');
-            var encEndIdx = param.LastIndexOf('>') + 1;
+            PrefixedWords = param
+                .TakeWhile(x => x[0] == '!')
+                .ToList();
 
-            var encWords = encIdx > 1 && encEndIdx > 1 
-                            ? param.Substring(encIdx, encEndIdx - encIdx) 
-                            : null;
+            EnclosedWords = param
+                .SkipWhile(x => !x.StartsWith("<"))
+                .ToList();
 
-            EnclosedWords = encWords?
-                            .Split(' ')?
-                            .ToList() 
-                            ?? EnclosedWords;
-
-            Words = paramSplit
-                    .Except(EnclosedWords)
-                    .Except(PrefixedWords)
-                    .ToList();
+            Words = param
+                .SkipWhile(x => x[0] == '!')
+                .TakeWhile(x => !x.StartsWith("<"))
+                .ToList();
 
             Message = message;
-
-            PrefixedWords = PrefixedWords
-                            .Select(x => x.AddPrefix())
-                            .ToList();
-        }
-
-        //This ctor is used for offline initializations, e.g. CommandHandler at bootup.
-        public CommandParameter(string param) : this(param, null)
-        {
         }
     }
 }

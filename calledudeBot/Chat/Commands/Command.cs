@@ -15,29 +15,34 @@ namespace calledudeBot.Chat.Commands
 
         public Command(CommandParameter cmdParam)
         {
-            Name = cmdParam.PrefixedWords.FirstOrDefault();
-            if (Name == null)
-            {
-                Name = cmdParam.Words[0].AddPrefix();
-                cmdParam.Words.RemoveAt(0);
-            }
-
-            AlternateName = cmdParam.PrefixedWords.Skip(1).Distinct().ToList();
-            Description = string.Join(" ", cmdParam.EnclosedWords).Trim('<', '>');
-            Response = string.Join(" ", cmdParam.Words);
-
             if (cmdParam.PrefixedWords.Any(HasSpecialChars))
                 throw new ArgumentException("Special characters in commands are not allowed.");
+
+            Name = cmdParam.PrefixedWords.FirstOrDefault();
+
+            var alts = cmdParam
+                .PrefixedWords
+                .Skip(1)
+                .Distinct();
+
+            AlternateName = alts.Any() 
+                ? alts.ToList() 
+                : AlternateName;
+
+            Description = string.Join(" ", cmdParam.EnclosedWords)
+                                .Trim('<', '>');
+
+            Response = string.Join(" ", cmdParam.Words);
         }
 
-        protected Command()
+        public Command()
         {
         }
 
         private static bool HasSpecialChars(string str)
         {
-            str = str[0] == '!' ? str.Substring(1) : str;
-            return str.Any(c => !char.IsLetterOrDigit(c));
+            str = str.AddPrefix() == str ? str.Substring(1) : str;
+            return !str.All(char.IsLetterOrDigit);
         }
     }
 }

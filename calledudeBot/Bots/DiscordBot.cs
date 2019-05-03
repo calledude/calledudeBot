@@ -1,8 +1,8 @@
 ﻿using calledudeBot.Chat;
+using calledudeBot.Config;
 using calledudeBot.Services;
 using Discord;
 using Discord.WebSocket;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,45 +11,48 @@ namespace calledudeBot.Bots
 {
     public sealed class DiscordBot : Bot<DiscordMessage>
     {
-        private DiscordSocketClient _bot;
-        private readonly MessageHandler<DiscordMessage> _messageHandler;
+        private readonly DiscordSocketClient _bot;
         private readonly ulong _announceChanID, _streamerID;
-        private StreamMonitor _streamMonitor;
+        private readonly StreamMonitor _streamMonitor;
+        private readonly MessageDispatcher _dispatcher;
 
-        public DiscordBot(string token, ulong announceChanID, ulong streamerID)
-            : base("Discord", token)
+        protected override string Token { get; }
+
+        public DiscordBot(
+            BotConfig config,
+            StreamMonitor streamMonitor,
+            DiscordSocketClient bot,
+            MessageDispatcher dispatcher)
+            : base("Discord")
         {
-            _announceChanID = announceChanID;
-            _streamerID = streamerID;
-            _messageHandler = new MessageHandler<DiscordMessage>(this);
+            _bot = bot;
+            Token = config.DiscordToken;
+
+            _announceChanID = config.AnnounceChannelId;
+            _streamerID = config.StreamerId;
+            _streamMonitor = streamMonitor;
+            _dispatcher = dispatcher;
         }
 
-        internal override async Task Start()
+        public override async Task Start()
         {
-            _bot = new DiscordSocketClient(new DiscordSocketConfig()
+            _bot.Log += (e) =>
             {
-                LogLevel = LogSeverity.Info
-            });
-
-            if (!TestRun)
-            {
-                _bot.Log += (e) =>
-                {
-                    TryLog($"{e.Message}.");
-                    return Task.CompletedTask;
-                };
-                _bot.MessageReceived += OnMessageReceived;
-                _bot.Ready += OnReady;
-            }
+                Log($"{e.Message}.");
+                return Task.CompletedTask;
+            };
+            _bot.MessageReceived += OnMessageReceived;
+            _bot.Ready += OnReady;
 
             await _bot.LoginAsync(TokenType.Bot, Token);
             await _bot.StartAsync();
         }
 
-        private async Task OnReady()
+        private Task OnReady()
         {
-            _streamMonitor = await StreamMonitor.Create(_announceChanID, _streamerID, _bot);
-            _ = _streamMonitor.Connect();
+            _ =_streamMonitor.Connect();
+
+            return Task.CompletedTask;
         }
 
         private async Task OnMessageReceived(SocketMessage messageParam)
@@ -73,7 +76,7 @@ namespace calledudeBot.Bots
                 new User($"{user.Username}#{user.Discriminator}", isMod),
                 message.Channel.Id);
 
-            await _messageHandler.DetermineResponse(msg);
+            await _dispatcher.PublishAsync(msg);
         }
 
         private IReadOnlyCollection<SocketGuildUser> GetModerators()
@@ -89,23 +92,16 @@ namespace calledudeBot.Bots
         protected override async Task SendMessage(DiscordMessage message)
         {
             var channel = _bot.GetChannel(message.Destination) as IMessageChannel;
-            await channel.SendMessageAsync(message.Content);
+            await channel.SendMessageAsync(message.Response ?? message.Content);
         }
 
-        public DateTime WentLiveAt()
-        {
-            return _streamMonitor?.IsStreaming ?? false
-                ? _streamMonitor.StreamStarted
-                : default;
-        }
-
-        internal override async Task Logout()
+        public override async Task Logout()
         {
             await _bot.LogoutAsync();
             await _bot.StopAsync();
         }
 
-        protected override void Dispose(bool disposing)
+        public override void Dispose(bool disposing)
         {
             _bot.Dispose();
             _streamMonitor?.Dispose();
