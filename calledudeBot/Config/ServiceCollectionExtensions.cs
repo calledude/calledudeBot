@@ -15,7 +15,7 @@ namespace calledudeBot.Config
     {
         public static IServiceCollection AddServices(this IServiceCollection services)
             => services
-                .AddMediatR()
+                .AddMediatR(Assembly.GetExecutingAssembly())
                 .AddSingleton(_ =>
                     new DiscordSocketClient(new DiscordSocketConfig()
                     {
