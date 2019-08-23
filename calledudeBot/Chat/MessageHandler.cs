@@ -35,7 +35,7 @@ namespace calledudeBot.Chat
             _dispatcher = dispatcher;
         }
 
-        protected async Task Respond(T message)
+        protected async Task Respond(Message message)
             => await _bot.SendMessageAsync(message);
 
         public async Task Handle(T notification, CancellationToken cancellationToken)
@@ -46,7 +46,7 @@ namespace calledudeBot.Chat
                 _bot.Log($"Handling command: {notification.Content} from {notification.Sender.Name} in {notification.Channel}");
                 var param = new CommandParameter(contentSplit, notification);
 
-                await Respond((T)await _dispatcher.SendRequest(param));
+                await Respond(await _dispatcher.SendRequest(param));
             }
         }
     }
