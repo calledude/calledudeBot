@@ -50,7 +50,7 @@ namespace calledudeBot.Bots
 
         private Task OnReady()
         {
-            _ =_streamMonitor.Connect();
+            _ = _streamMonitor.Connect();
 
             return Task.CompletedTask;
         }

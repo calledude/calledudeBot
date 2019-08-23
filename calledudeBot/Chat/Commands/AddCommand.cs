@@ -20,7 +20,7 @@ namespace calledudeBot.Chat.Commands
             {
                 Command foundCommand = 
                     CommandUtils.GetExistingCommand(param.PrefixedWords) 
-                    ?? CommandUtils.GetExistingCommand(param.Words[0]);
+                    ?? CommandUtils.GetExistingCommand(param.Words.First());
 
                 Command newCommand = new Command(param);
 
@@ -49,7 +49,7 @@ namespace calledudeBot.Chat.Commands
         public override string Handle(CommandParameter param)
         {
             //has user entered a command to enter? i.e. !addcmd !test someAnswer
-            if (param.PrefixedWords.Count >= 1 && param.Words.Count >= 1) 
+            if (param.PrefixedWords.Count >= 1 && param.Words.Any()) 
             {
                 return CreateCommand(param);
             }
