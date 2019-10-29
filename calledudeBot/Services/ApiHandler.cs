@@ -1,7 +1,7 @@
 ﻿using calledudeBot.Models;
 using Newtonsoft.Json;
 using System;
-using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -9,21 +9,22 @@ namespace calledudeBot.Services
 {
     public sealed class APIHandler<T> : IDisposable where T : BaseModel
     {
-        private readonly string _url;
-        private readonly WebClient _client;
+        private string _url;
         private readonly Timer _timer;
+        private readonly IHttpClientFactory _httpClientFactory;
+
         public event Action<T> DataReceived;
 
-        public APIHandler(string URL)
+        public APIHandler(IHttpClientFactory httpClientFactory)
         {
-            _url = URL;
-            _client = new WebClient();
             _timer = new Timer(30000);
             _timer.Elapsed += async (_, __) => await RequestData();
+            _httpClientFactory = httpClientFactory;
         }
 
-        public async Task Start()
+        public async Task Start(string URL)
         {
+            _url = URL;
             await RequestData();
             _timer.Start();
         }
@@ -31,20 +32,24 @@ namespace calledudeBot.Services
         //is called continuously and raises the DataReceived event when payload is ready.
         private async Task RequestData()
         {
-            var payload = await RequestOnce();
+            var payload = await RequestOnce(_url);
             DataReceived?.Invoke(payload);
         }
 
-        public async Task<T> RequestOnce()
+        public async Task<T> RequestOnce(string url)
         {
-            var jsonString = await _client.DownloadStringTaskAsync(_url);
+            if (url is null)
+                throw new ArgumentNullException(nameof(url));
+
+            var client = _httpClientFactory.CreateClient();
+
+            var jsonString = await client.GetStringAsync(url);
             jsonString = jsonString.Trim('[', ']');
             return JsonConvert.DeserializeObject<T>(jsonString);
         }
 
         public void Dispose()
         {
-            _client.Dispose();
             _timer.Dispose();
         }
     }

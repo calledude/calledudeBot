@@ -68,7 +68,7 @@ namespace calledudeBot
                 .Select(x => serviceProvider.GetRequiredService(x.ServiceType))
                 .Cast<IBot>();
 
-            foreach(var bot in bots)
+            foreach (var bot in bots)
             {
                 bot.Start();
             }

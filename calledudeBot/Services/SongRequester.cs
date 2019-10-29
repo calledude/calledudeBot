@@ -14,12 +14,14 @@ namespace calledudeBot.Services
         private const string _songRequestLink = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
         private readonly string _osuAPIToken;
         private readonly OsuBot _osuBot;
+        private readonly APIHandler<OsuSong> _api;
         private readonly TwitchBot _twitchBot;
 
-        public SongRequester(BotConfig config, TwitchBot twitchBot, OsuBot osuBot)
+        public SongRequester(BotConfig config, TwitchBot twitchBot, OsuBot osuBot, APIHandler<OsuSong> api)
         {
             _osuAPIToken = config.OsuAPIToken;
             _osuBot = osuBot;
+            _api = api;
             _twitchBot = twitchBot;
         }
 
@@ -38,19 +40,16 @@ namespace calledudeBot.Services
             var beatmapID = string.Concat(num);
             var reqLink = string.Format(_songRequestLink, _osuAPIToken, beatmapID);
 
-            using (var api = new APIHandler<OsuSong>(reqLink))
+            OsuSong song = await _api.RequestOnce(reqLink);
+            if (song != null)
             {
-                OsuSong song = await api.RequestOnce();
-                if (song != null)
-                {
-                    var response = notification.CloneWithMessage($"[http://osu.ppy.sh/b/{beatmapID} {song.Artist} - {song.Title} [{song.BeatmapVersion}]]");
-                    await _osuBot.SendMessageAsync(response);
-                }
-                else
-                {
-                    var response = notification.CloneWithMessage("I couldn't find that song, sorry.");
-                    await _twitchBot.SendMessageAsync(response);
-                }
+                var response = notification.CloneWithMessage($"[http://osu.ppy.sh/b/{beatmapID} {song.Artist} - {song.Title} [{song.BeatmapVersion}]]");
+                await _osuBot.SendMessageAsync(response);
+            }
+            else
+            {
+                var response = notification.CloneWithMessage("I couldn't find that song, sorry.");
+                await _twitchBot.SendMessageAsync(response);
             }
         }
     }

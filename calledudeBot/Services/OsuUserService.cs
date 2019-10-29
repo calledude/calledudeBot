@@ -12,22 +12,24 @@ namespace calledudeBot.Services
     public sealed class OsuUserService : IDisposable
     {
         private OsuUser _oldOsuData;
+        private readonly string _osuAPIToken;
+        private readonly string _osuNick;
         private readonly APIHandler<OsuUser> _api;
         private readonly IServiceProvider _serviceProvider;
 
-        public OsuUserService(BotConfig config, IServiceProvider serviceProvider)
+        public OsuUserService(APIHandler<OsuUser> api, BotConfig config, IServiceProvider serviceProvider)
         {
-            var osuAPIToken = config.OsuAPIToken;
-            var osuNick = config.OsuUsername;
+            _osuAPIToken = config.OsuAPIToken;
+            _osuNick = config.OsuUsername;
 
-            _api = new APIHandler<OsuUser>($"https://osu.ppy.sh/api/get_user?k={osuAPIToken}&u={osuNick}");
+            _api = api;
             _api.DataReceived += CheckUserUpdateAsync;
             _serviceProvider = serviceProvider;
         }
 
         public async Task Start()
         {
-            await _api.Start();
+            await _api.Start($"https://osu.ppy.sh/api/get_user?k={_osuAPIToken}&u={_osuNick}");
         }
 
         private async void CheckUserUpdateAsync(OsuUser user)

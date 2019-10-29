@@ -16,6 +16,7 @@ namespace calledudeBot.Config
         public static IServiceCollection AddServices(this IServiceCollection services)
             => services
                 .AddMediatR(Assembly.GetExecutingAssembly())
+                .AddHttpClient()
                 .AddSingleton(_ =>
                     new DiscordSocketClient(new DiscordSocketConfig()
                     {
@@ -25,6 +26,7 @@ namespace calledudeBot.Config
                 .AddSingleton<CommandHandler>()
                 .AddSingleton<MessageDispatcher>()
                 .AddSingleton<RelayHandler>()
+                .AddScoped(typeof(APIHandler<>))
                 .AddScoped<TwitchMessageHandler>()
                 .AddScoped<DiscordMessageHandler>()
                 .AddScoped<OsuUserService>()
