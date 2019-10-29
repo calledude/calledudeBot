@@ -37,8 +37,6 @@ namespace calledudeBot
             }
             else
             {
-                File.Create(cfgFile).Close();
-
                 var cfg = JsonConvert.SerializeObject(new BotConfig(), Formatting.Indented);
 
                 File.WriteAllText(cfgFile, cfg);
