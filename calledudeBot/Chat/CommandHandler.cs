@@ -24,8 +24,8 @@ namespace calledudeBot.Chat
 
         public void Initialize()
         {
-            CommandUtils.Commands = 
-                JsonConvert.DeserializeObject<List<Command>>(File.ReadAllText(_cmdFile)) 
+            CommandUtils.Commands =
+                JsonConvert.DeserializeObject<List<Command>>(File.ReadAllText(_cmdFile))
                 ?? new List<Command>();
             CommandUtils.Commands.AddRange(_serviceProvider.GetServices<Command>());
             Logger.Log($"Done. Loaded {CommandUtils.Commands.Count} commands.", this);
@@ -53,9 +53,11 @@ namespace calledudeBot.Chat
                         request.PrefixedWords.RemoveAt(0);
                         response = sp.Handle(request);
                         break;
+
                     case SpecialCommand s:
                         response = s.Handle();
                         break;
+
                     default:
                         response = cmd.Response;
                         break;

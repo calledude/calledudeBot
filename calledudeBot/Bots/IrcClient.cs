@@ -59,7 +59,7 @@ namespace calledudeBot.Bots
 
             var completedTask = await Task.WhenAny(waitTask, loginTask);
 
-            if(loginTask.IsFaulted)
+            if (loginTask.IsFaulted)
             {
                 Log("Login failed. Are you sure your credentials are correct?");
                 throw loginTask.Exception.InnerException;
@@ -120,7 +120,7 @@ namespace calledudeBot.Bots
             await WriteLine("PASS " + Token + "\r\nNICK " + Nick + "\r\n");
             int resultCode = 0;
 
-            while(resultCode != _successCode)
+            while (resultCode != _successCode)
             {
                 var buffer = await _input.ReadLineAsync();
 
@@ -131,7 +131,7 @@ namespace calledudeBot.Bots
                 }
                 else if (resultCode == 001)
                 {
-                    if(ChannelName != null)
+                    if (ChannelName != null)
                         await WriteLine($"JOIN {ChannelName}");
 
                     if (Ready != null)

@@ -16,7 +16,7 @@ namespace calledudeBot.Chat.Commands
         {
             string response = "You ok there bud? Try again.";
 
-            var cmdToDel = param.PrefixedWords.FirstOrDefault() 
+            var cmdToDel = param.PrefixedWords.FirstOrDefault()
                 ?? param.Words.FirstOrDefault()?.AddPrefix();
 
             if (CommandUtils.GetExistingCommand(cmdToDel) is Command c)

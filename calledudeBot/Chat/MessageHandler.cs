@@ -18,7 +18,7 @@ namespace calledudeBot.Chat
 
     public sealed class TwitchMessageHandler : MessageHandler<IrcMessage>
     {
-        public TwitchMessageHandler(TwitchBot bot, MessageDispatcher dispatcher) 
+        public TwitchMessageHandler(TwitchBot bot, MessageDispatcher dispatcher)
             : base(bot, dispatcher)
         {
         }

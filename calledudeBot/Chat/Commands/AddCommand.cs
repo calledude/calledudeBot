@@ -1,7 +1,7 @@
 ﻿using calledudeBot.Chat.Info;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace calledudeBot.Chat.Commands
 {
@@ -18,8 +18,8 @@ namespace calledudeBot.Chat.Commands
         {
             try
             {
-                Command foundCommand = 
-                    CommandUtils.GetExistingCommand(param.PrefixedWords) 
+                Command foundCommand =
+                    CommandUtils.GetExistingCommand(param.PrefixedWords)
                     ?? CommandUtils.GetExistingCommand(param.Words.First());
 
                 Command newCommand = new Command(param);
@@ -49,7 +49,7 @@ namespace calledudeBot.Chat.Commands
         public override string Handle(CommandParameter param)
         {
             //has user entered a command to enter? i.e. !addcmd !test someAnswer
-            if (param.PrefixedWords.Count >= 1 && param.Words.Any()) 
+            if (param.PrefixedWords.Count >= 1 && param.Words.Any())
             {
                 return CreateCommand(param);
             }

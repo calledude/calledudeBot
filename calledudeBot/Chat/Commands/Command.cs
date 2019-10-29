@@ -25,8 +25,8 @@ namespace calledudeBot.Chat.Commands
                 .Skip(1)
                 .Distinct();
 
-            AlternateName = alts.Any() 
-                ? alts.ToList() 
+            AlternateName = alts.Any()
+                ? alts.ToList()
                 : AlternateName;
 
             Description = string.Join(" ", cmdParam.EnclosedWords)

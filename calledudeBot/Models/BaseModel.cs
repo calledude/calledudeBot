@@ -1,6 +1,6 @@
 ﻿namespace calledudeBot.Models
 {
-    public class BaseModel
+    public abstract class BaseModel
     {
     }
 }
