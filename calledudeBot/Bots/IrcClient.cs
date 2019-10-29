@@ -88,7 +88,7 @@ namespace calledudeBot.Bots
         }
 
         protected override async Task SendMessage(IrcMessage message)
-            => await WriteLine($"PRIVMSG {ChannelName} :{message.Response ?? message.Content}");
+            => await WriteLine($"PRIVMSG {ChannelName} :{message.Content}");
 
         protected async Task Reconnect()
         {

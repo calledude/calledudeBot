@@ -12,5 +12,10 @@
         {
             Destination = destination;
         }
+
+        public override Message CloneWithMessage(string message)
+        {
+            return new DiscordMessage(message, Channel, Sender, Destination);
+        }
     }
 }

@@ -28,5 +28,10 @@ namespace calledudeBot.Chat
 
             return char.ToUpper(name[0]) + name.Substring(1); //capitalize first letter in username
         }
+
+        public override Message CloneWithMessage(string message)
+        {
+            return new IrcMessage(message, Channel, Sender);
+        }
     }
 }

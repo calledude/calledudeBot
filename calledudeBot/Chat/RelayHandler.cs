@@ -65,9 +65,9 @@ namespace calledudeBot.Chat
 
         private async Task Relay(IrcMessage message)
         {
-            message.Response = $"{message.Sender.Name}: {message.Content}";
-            _twitch.Log($"-> {_relaySubject.Name}: {message.Response}");
-            await _relaySubject.SendMessageAsync(message);
+            var response = message.CloneWithMessage($"{message.Sender.Name}: {message.Content}");
+            _twitch.Log($"-> {_relaySubject.Name}: {response.Content}");
+            await _relaySubject.SendMessageAsync(response);
         }
 
         public void Dispose()

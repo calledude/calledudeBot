@@ -62,8 +62,7 @@ namespace calledudeBot.Chat
                 }
             }
 
-            request.Message.Response = response;
-            return Task.FromResult(request.Message);
+            return Task.FromResult(request.Message.CloneWithMessage(response));
         }
     }
 }

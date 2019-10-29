@@ -32,7 +32,7 @@ namespace calledudeBot.Bots
 
         public async Task SendMessageAsync(Message message)
         {
-            Log($"Sending message: {message.Response ?? message.Content}");
+            Log($"Sending message: {message.Content}");
             await SendMessage(message as T);
         }
 

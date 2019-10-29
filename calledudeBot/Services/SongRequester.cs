@@ -43,13 +43,13 @@ namespace calledudeBot.Services
                 OsuSong song = await api.RequestOnce();
                 if (song != null)
                 {
-                    notification.Response = $"[http://osu.ppy.sh/b/{beatmapID} {song.Artist} - {song.Title} [{song.BeatmapVersion}]]";
-                    await _osuBot.SendMessageAsync(notification);
+                    var response = notification.CloneWithMessage($"[http://osu.ppy.sh/b/{beatmapID} {song.Artist} - {song.Title} [{song.BeatmapVersion}]]");
+                    await _osuBot.SendMessageAsync(response);
                 }
                 else
                 {
-                    notification.Response = "I couldn't find that song, sorry.";
-                    await _twitchBot.SendMessageAsync(notification);
+                    var response = notification.CloneWithMessage("I couldn't find that song, sorry.");
+                    await _twitchBot.SendMessageAsync(response);
                 }
             }
         }

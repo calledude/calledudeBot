@@ -92,7 +92,7 @@ namespace calledudeBot.Bots
         protected override async Task SendMessage(DiscordMessage message)
         {
             var channel = _bot.GetChannel(message.Destination) as IMessageChannel;
-            await channel.SendMessageAsync(message.Response ?? message.Content);
+            await channel.SendMessageAsync(message.Content);
         }
 
         public override async Task Logout()
