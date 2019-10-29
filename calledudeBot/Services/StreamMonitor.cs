@@ -62,11 +62,15 @@ namespace calledudeBot.Services
 
             Log("Waiting for OBS to start.");
             List<Process> procs = null;
-            while (procs is null || !procs.Any())
+            while (true)
             {
                 procs = Process.GetProcessesByName("obs32")
                         .Concat(Process.GetProcessesByName("obs64"))
                         .ToList();
+
+                if (procs.Count > 0)
+                    break;
+
                 await Task.Delay(2000);
             }
 
