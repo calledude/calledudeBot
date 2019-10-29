@@ -25,13 +25,13 @@ namespace calledudeBot.Services
                 response = await _serviceProvider
                     .GetRequiredService<IMediator>()
                     .Send(request);
+
+                Logger.Log($"Finished invoking {request.GetType().Name} handlers");
             }
             catch (Exception ex)
             {
-                Logger.Log($"An exception was thrown in the MediatR adapter: {ex.Message}");
+                Logger.Log($"An exception was thrown in the MediatR adapter: {ex}");
             }
-
-            Logger.Log($"Finished invoking {request.GetType().Name} handlers");
 
             return response;
         }
@@ -50,7 +50,7 @@ namespace calledudeBot.Services
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log($"An exception was thrown in the MediatR adapter: {ex.Message}");
+                    Logger.Log($"An exception was thrown in the MediatR adapter: {ex}");
                 }
 
                 Logger.Log($"Finished invoking {notification.GetType().Name} handlers");
