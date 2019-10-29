@@ -1,12 +1,11 @@
 ﻿using calledudeBot.Bots;
+using calledudeBot.Chat.Commands;
 using calledudeBot.Config;
-using calledudeBot.Services;
+using MediatR;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using MediatR;
 using System.Threading;
-using calledudeBot.Chat.Commands;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Chat
 {
@@ -17,18 +16,15 @@ namespace calledudeBot.Chat
         private readonly Timer _relayTimer;
         private readonly string _streamerNick;
         private readonly OsuBot _relaySubject;
-        private readonly SongRequester _songRequester;
         private readonly TwitchBot _twitch;
 
         public RelayHandler(
             OsuBot osuBot,
             BotConfig config,
-            SongRequester songRequester,
             TwitchBot twitch)
         {
             _lastMessage = DateTime.Now;
             _messageQueue = new Queue<IrcMessage>();
-            _songRequester = songRequester;
 
             _relaySubject = osuBot;
 
