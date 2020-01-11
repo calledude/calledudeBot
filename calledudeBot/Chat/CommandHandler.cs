@@ -49,8 +49,6 @@ namespace calledudeBot.Chat
                 switch (cmd)
                 {
                     case SpecialCommand<CommandParameter> sp:
-                        //Remove whatever command they were executing from PrefixedWords e.g. !addcmd
-                        request.PrefixedWords.RemoveAt(0);
                         response = sp.Handle(request);
                         break;
 

@@ -15,7 +15,7 @@ namespace calledudeBot.Chat
             RequiresMod = false;
         }
 
-        public override string Handle(CommandParameter param)
+        protected override string HandleCommand(CommandParameter param)
         {
             string response = "You ok there bud? Try again.";
             var allowed = param.SenderIsMod;
