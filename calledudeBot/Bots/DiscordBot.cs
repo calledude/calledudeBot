@@ -11,7 +11,7 @@ namespace calledudeBot.Bots
     public sealed class DiscordBot : Bot<DiscordMessage>
     {
         private readonly DiscordSocketClient _bot;
-        private readonly ulong _announceChanID, _streamerID;
+        private readonly ulong _announceChanID;
         private readonly StreamMonitor _streamMonitor;
         private readonly MessageDispatcher _dispatcher;
 
@@ -27,7 +27,6 @@ namespace calledudeBot.Bots
             Token = config.DiscordToken;
 
             _announceChanID = config.AnnounceChannelId;
-            _streamerID = config.StreamerId;
             _streamMonitor = streamMonitor;
             _dispatcher = dispatcher;
         }
