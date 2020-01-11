@@ -17,9 +17,10 @@ namespace calledudeBot.Chat
 
         protected override string HandleCommand(CommandParameter param)
         {
-            string response = "You ok there bud? Try again.";
+            const string errorResponse = "You ok there bud? Try again.";
             var allowed = param.SenderIsMod;
             var cmdToHelp = param.PrefixedWords.FirstOrDefault() ?? param.Words.FirstOrDefault();
+
             if (cmdToHelp == null)
             {
                 var availableCommands = CommandUtils.Commands
@@ -28,11 +29,11 @@ namespace calledudeBot.Chat
 
                 var commands = string.Join(" » ", availableCommands);
 
-                response = $"These are the commands you can use: {commands}";
+                return $"These are the commands you can use: {commands}";
             }
             else if (CommandUtils.GetExistingCommand(cmdToHelp) is Command c) //"!help <command>"
             {
-                if (c.RequiresMod && !allowed) return response;
+                if (c.RequiresMod && !allowed) return errorResponse;
 
                 string cmds = c.Name;
                 if (c.AlternateName?.Count > 0)
@@ -40,13 +41,15 @@ namespace calledudeBot.Chat
                     var alts = string.Join("/", c.AlternateName);
                     cmds += $"/{alts}";
                 }
+
                 string responseDescription = string.IsNullOrEmpty(c.Description)
                     ? "has no description."
                     : $"has the description '{c.Description}'";
-                response = $"Command '{cmds}' {responseDescription}";
+
+                return $"Command '{cmds}' {responseDescription}";
             }
 
-            return response;
+            return errorResponse;
         }
     }
 }
