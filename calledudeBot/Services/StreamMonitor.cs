@@ -3,7 +3,6 @@ using Discord;
 using Discord.WebSocket;
 using OBSWebsocketDotNet;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -60,20 +59,12 @@ namespace calledudeBot.Services
                 return;
             }
 
-            Log("Waiting for OBS to start.");
-            List<Process> procs = null;
-            while (true)
-            {
-                procs = Process.GetProcessesByName("obs32")
-                        .Concat(Process.GetProcessesByName("obs64"))
-                        .ToList();
+            await WaitForObsProcess();
+            await TryConnect();
+        }
 
-                if (procs.Count > 0)
-                    break;
-
-                await Task.Delay(2000);
-            }
-
+        private async Task TryConnect()
+        {
             //Trying 5 times just in case.
             if (Enumerable.Range(1, 5)
                 .Select(_ => _obs.Connect("ws://localhost:4444"))
@@ -83,15 +74,21 @@ namespace calledudeBot.Services
                 await Task.Delay(3000);
                 Process.Start("https://github.com/Palakis/obs-websocket/releases");
                 await Task.Delay(10000);
-                await Connect();
             }
-            else
-            {
-                Log("Connected to OBS. Start streaming!");
+        }
 
-                var obsProc = procs[0];
-                obsProc.EnableRaisingEvents = true;
-                obsProc.Exited += OnObsExit;
+        private async Task WaitForObsProcess()
+        {
+            Log("Waiting for OBS to start.");
+            while (true)
+            {
+                var procs = Process.GetProcessesByName("obs32")
+                                .Concat(Process.GetProcessesByName("obs64"));
+
+                if (procs.Any())
+                    break;
+
+                await Task.Delay(2000);
             }
         }
 
