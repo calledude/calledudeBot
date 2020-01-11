@@ -1,14 +1,23 @@
-﻿namespace calledudeBot.Chat
+﻿using System;
+using System.Threading.Tasks;
+
+namespace calledudeBot.Chat
 {
     public sealed class User
     {
-        internal string Name { get; }
-        internal bool IsMod { get; }
+        public string Name { get; }
 
-        public User(string userName, bool isMod)
+        private readonly Func<Task<bool>> _isModFunc;
+
+        public User(string userName, Func<Task<bool>> isModFunc)
         {
             Name = userName;
-            IsMod = isMod;
+            _isModFunc = isModFunc;
+        }
+
+        public async Task<bool> IsModerator()
+        {
+            return await _isModFunc();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Chat.Commands
 {
@@ -13,7 +14,7 @@ namespace calledudeBot.Chat.Commands
             RequiresMod = false;
         }
 
-        public override string Handle()
+        public override Task<string> Handle()
         {
             string nowPlaying = null;
             const string procName = "osu!";
@@ -21,11 +22,15 @@ namespace calledudeBot.Chat.Commands
             {
                 if (p.ProcessName.Equals(procName))
                 {
-                    nowPlaying = p.MainWindowTitle.Contains("-") ? p.MainWindowTitle.Substring(p.MainWindowTitle.IndexOf("-") + 1).Trim() : null;
+                    nowPlaying = p.MainWindowTitle.Contains("-")
+                        ? p.MainWindowTitle.Substring(p.MainWindowTitle.IndexOf("-") + 1).Trim()
+                        : null;
                     break;
                 }
             }
-            return nowPlaying == null ? "No song is playing right now." : $"Song playing right now: {nowPlaying}";
+
+            var response = nowPlaying == null ? "No song is playing right now." : $"Song playing right now: {nowPlaying}";
+            return Task.FromResult(response);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Chat.Info
 {
@@ -10,7 +11,14 @@ namespace calledudeBot.Chat.Info
         public IEnumerable<string> EnclosedWords { get; }
         public IEnumerable<string> Words { get; }
         public Message Message { get; }
-        public bool SenderIsMod => Message?.Sender.IsMod ?? false;
+
+        public async Task<bool> SenderIsMod()
+        {
+            if (Message == null)
+                return false;
+
+            return await Message.Sender.IsModerator();
+        }
 
         public CommandParameter(IEnumerable<string> param, Message message)
         {

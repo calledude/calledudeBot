@@ -3,7 +3,6 @@ using calledudeBot.Config;
 using calledudeBot.Services;
 using Discord;
 using Discord.WebSocket;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -65,28 +64,29 @@ namespace calledudeBot.Bots
                 return;
             }
 
-            var isMod = GetModerators()
-                .Any(u => u.Id == user.Id)
-                || user.GuildPermissions.BanMembers
-                || user.GuildPermissions.KickMembers;
-
             DiscordMessage msg = new DiscordMessage(
                 message.Content,
                 $"#{message.Channel.Name}",
-                new User($"{user.Username}#{user.Discriminator}", isMod),
+                new User($"{user.Username}#{user.Discriminator}", () => IsMod(user)),
                 message.Channel.Id);
 
             await _dispatcher.PublishAsync(msg);
         }
 
-        private IReadOnlyCollection<SocketGuildUser> GetModerators()
+        private Task<bool> IsMod(SocketGuildUser user)
         {
             var channel = _bot.GetChannel(_announceChanID) as IGuildChannel;
             var roles = channel.Guild.Roles.Cast<SocketRole>();
-            return roles
+            var moderatorUsers = roles
                 .Where(x => x.Permissions.BanMembers || x.Permissions.KickMembers)
-                .SelectMany(r => r.Members)
-                .ToArray();
+                .SelectMany(r => r.Members);
+
+            var isMod = moderatorUsers
+                .Any(u => u.Id == user.Id)
+                || user.GuildPermissions.BanMembers
+                || user.GuildPermissions.KickMembers;
+
+            return Task.FromResult(isMod);
         }
 
         protected override async Task SendMessage(DiscordMessage message)

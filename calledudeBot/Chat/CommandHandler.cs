@@ -31,7 +31,7 @@ namespace calledudeBot.Chat
             Logger.Log($"Done. Loaded {CommandUtils.Commands.Count} commands.", this);
         }
 
-        public Task<Message> Handle(CommandParameter request, CancellationToken cancellationToken)
+        public async Task<Message> Handle(CommandParameter request, CancellationToken cancellationToken)
         {
             string response;
             var cmd = CommandUtils.GetExistingCommand(request.PrefixedWords[0]);
@@ -40,7 +40,7 @@ namespace calledudeBot.Chat
             {
                 response = "Not sure what you were trying to do? That is not an available command. Try '!help' or '!help <command>'";
             }
-            else if (cmd.RequiresMod && !request.SenderIsMod)
+            else if (cmd.RequiresMod && !await request.SenderIsMod())
             {
                 response = "You're not allowed to use that command";
             }
@@ -49,11 +49,11 @@ namespace calledudeBot.Chat
                 switch (cmd)
                 {
                     case SpecialCommand<CommandParameter> sp:
-                        response = sp.Handle(request);
+                        response = await sp.Handle(request);
                         break;
 
                     case SpecialCommand s:
-                        response = s.Handle();
+                        response = await s.Handle();
                         break;
 
                     default:
@@ -62,7 +62,7 @@ namespace calledudeBot.Chat
                 }
             }
 
-            return Task.FromResult(request.Message.CloneWithMessage(response));
+            return request.Message.CloneWithMessage(response);
         }
     }
 }

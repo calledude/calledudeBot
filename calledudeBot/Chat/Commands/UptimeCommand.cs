@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Chat.Commands
 {
@@ -18,28 +19,29 @@ namespace calledudeBot.Chat.Commands
             _streamMonitor = streamMonitor;
         }
 
-        public override string Handle()
+        public override Task<string> Handle()
         {
-            DateTime wentLiveAt = WentLiveAt();
-            TimeSpan timeSinceLive = DateTime.Now - wentLiveAt;
-            if (default != wentLiveAt)
+            var wentLiveAt = WentLiveAt();
+            if (wentLiveAt == default)
             {
-                StringBuilder sb = new StringBuilder();
-
-                sb.Append("Stream uptime: ");
-
-                if (timeSinceLive.Hours > 0)
-                    sb.Append($"{timeSinceLive.Hours}h ");
-
-                if (timeSinceLive.Minutes > 0)
-                    sb.Append($"{timeSinceLive.Minutes}m ");
-
-                if (timeSinceLive.Seconds > 0)
-                    sb.Append($"{timeSinceLive.Seconds}s");
-
-                return sb.ToString();
+                return Task.FromResult("Streamer isn't live.");
             }
-            return "Streamer isn't live.";
+
+            var timeSinceLive = DateTime.Now - wentLiveAt;
+            var sb = new StringBuilder();
+
+            sb.Append("Stream uptime: ");
+
+            if (timeSinceLive.Hours > 0)
+                sb.Append($"{timeSinceLive.Hours}h ");
+
+            if (timeSinceLive.Minutes > 0)
+                sb.Append($"{timeSinceLive.Minutes}m ");
+
+            if (timeSinceLive.Seconds > 0)
+                sb.Append($"{timeSinceLive.Seconds}s");
+
+            return Task.FromResult(sb.ToString());
         }
 
         private DateTime WentLiveAt()

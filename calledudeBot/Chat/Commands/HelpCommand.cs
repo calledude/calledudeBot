@@ -2,6 +2,7 @@
 using calledudeBot.Chat.Info;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Chat
 {
@@ -15,10 +16,10 @@ namespace calledudeBot.Chat
             RequiresMod = false;
         }
 
-        protected override string HandleCommand(CommandParameter param)
+        protected override async Task<string> HandleCommand(CommandParameter param)
         {
             const string errorResponse = "You ok there bud? Try again.";
-            var allowed = param.SenderIsMod;
+            var allowed = await param.SenderIsMod();
             var cmdToHelp = param.PrefixedWords.FirstOrDefault() ?? param.Words.FirstOrDefault();
 
             if (cmdToHelp == null)

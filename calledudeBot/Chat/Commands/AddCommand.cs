@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace calledudeBot.Chat.Commands
 {
@@ -46,17 +47,20 @@ namespace calledudeBot.Chat.Commands
             }
         }
 
-        protected override string HandleCommand(CommandParameter param)
+        protected override Task<string> HandleCommand(CommandParameter param)
         {
+            string response;
             //has user entered a command to enter? i.e. !addcmd !test someAnswer
             if (param.PrefixedWords.Count >= 1 && param.Words.Any())
             {
-                return CreateCommand(param);
+                response = CreateCommand(param);
             }
             else
             {
-                return "You ok there bud? Try again.";
+                response = "You ok there bud? Try again.";
             }
+
+            return Task.FromResult(response);
         }
 
         private string EditCmd(Command foundCommand, Command newCommand)

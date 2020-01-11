@@ -58,13 +58,16 @@ namespace calledudeBot.Bots
 
         private async void HandleMessage(string message, string user)
         {
-            var mods = await GetMods();
-            var isMod = mods.Any(u => u.Equals(user, StringComparison.OrdinalIgnoreCase));
-
-            var sender = new User(user, isMod);
+            var sender = new User(user, () => IsMod(user));
             var msg = new IrcMessage(message, ChannelName, sender);
 
             await _dispatcher.PublishAsync(msg);
+        }
+
+        private async Task<bool> IsMod(string user)
+        {
+            var mods = await GetMods();
+            return mods.Any(u => u.Equals(user, StringComparison.OrdinalIgnoreCase));
         }
 
         private void HandleRawMessage(string buffer)
