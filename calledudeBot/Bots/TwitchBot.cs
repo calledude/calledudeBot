@@ -26,7 +26,7 @@ namespace calledudeBot.Bots
             BotConfig config,
             OsuUserService osuUserService,
             MessageDispatcher dispatcher)
-            : base("irc.chat.twitch.tv", "Twitch", 366, config.TwitchBotUsername, config.TwitchChannel)
+            : base("irc.chat.twitch.tv", 366, config.TwitchBotUsername, config.TwitchChannel)
         {
             Failures = new List<string>
             {

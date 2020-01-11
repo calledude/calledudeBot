@@ -27,11 +27,10 @@ namespace calledudeBot.Bots
 
         protected IrcClient(
             string server,
-            string botName,
             int successCode,
             string nick,
             string channelName = null,
-            int port = 6667) : base(botName)
+            int port = 6667)
         {
             Nick = nick;
             ChannelName = channelName;

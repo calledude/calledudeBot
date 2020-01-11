@@ -10,8 +10,9 @@ namespace calledudeBot.Bots
         protected override string Token { get; }
 
         public OsuBot(BotConfig config)
-            : base("cho.ppy.sh", "osu!", 376, config.OsuUsername)
+            : base("cho.ppy.sh", 376, config.OsuUsername)
         {
+            Name = "osu!";
             Token = config.OsuIRCToken;
             Failures = new List<string>
             {

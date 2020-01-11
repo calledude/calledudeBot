@@ -15,12 +15,12 @@ namespace calledudeBot.Bots
 
     public abstract class Bot<T> : IBot where T : Message
     {
-        protected Bot(string name)
+        protected Bot()
         {
-            Name = name;
+            Name = GetType().Name.Replace("Bot", "");
         }
 
-        public string Name { get; }
+        public string Name { get; protected set; }
         protected abstract string Token { get; }
 
         public abstract Task Start();

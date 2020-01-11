@@ -22,7 +22,6 @@ namespace calledudeBot.Bots
             StreamMonitor streamMonitor,
             DiscordSocketClient bot,
             MessageDispatcher dispatcher)
-            : base("Discord")
         {
             _bot = bot;
             Token = config.DiscordToken;
