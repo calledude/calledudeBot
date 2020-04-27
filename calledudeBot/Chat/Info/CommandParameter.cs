@@ -5,22 +5,13 @@ using System.Threading.Tasks;
 
 namespace calledudeBot.Chat.Info
 {
-    public class CommandParameter : IRequest<Message>
+    public abstract class CommandParameter
     {
         public List<string> PrefixedWords { get; }
         public IEnumerable<string> EnclosedWords { get; }
         public IEnumerable<string> Words { get; }
-        public Message Message { get; }
 
-        public async Task<bool> SenderIsMod()
-        {
-            if (Message == null)
-                return false;
-
-            return await Message.Sender.IsModerator();
-        }
-
-        public CommandParameter(IEnumerable<string> param, Message message)
+        protected CommandParameter(IEnumerable<string> param)
         {
             PrefixedWords = param
                 .TakeWhile(x => x[0] == '!')
@@ -32,8 +23,26 @@ namespace calledudeBot.Chat.Info
             Words = param
                 .SkipWhile(x => x[0] == '!')
                 .TakeWhile(x => !x.StartsWith("<"));
+        }
 
+        public abstract Task<bool> SenderIsMod();
+    }
+
+    public class CommandParameter<T> : CommandParameter, IRequest<T> where T : Message<T>
+    {
+        public T Message { get; }
+
+        public CommandParameter(IEnumerable<string> param, T message) : base(param)
+        {
             Message = message;
+        }
+
+        public override async Task<bool> SenderIsMod()
+        {
+            if (Message == null)
+                return false;
+
+            return await Message.Sender.IsModerator();
         }
     }
 }

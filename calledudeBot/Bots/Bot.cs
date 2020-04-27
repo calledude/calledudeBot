@@ -9,11 +9,10 @@ namespace calledudeBot.Bots
     {
         Task Start();
         Task Logout();
-        Task SendMessageAsync(Message message);
         void Log(string message);
     }
 
-    public abstract class Bot<T> : IBot where T : Message
+    public abstract class Bot<T> : IBot where T : Message<T>
     {
         protected Bot()
         {
@@ -28,12 +27,13 @@ namespace calledudeBot.Bots
         protected abstract Task SendMessage(T message);
         public abstract void Dispose(bool disposing);
 
-        public void Dispose() => Dispose(true);
+        public void Dispose()
+            => Dispose(true);
 
-        public async Task SendMessageAsync(Message message)
+        public async Task SendMessageAsync(T message)
         {
             Log($"Sending message: {message.Content}");
-            await SendMessage(message as T);
+            await SendMessage(message);
         }
 
         public void Log(string message)

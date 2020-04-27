@@ -2,7 +2,7 @@
 
 namespace calledudeBot.Chat
 {
-    public sealed class IrcMessage : Message
+    public sealed class IrcMessage : Message<IrcMessage>
     {
         public IrcMessage(string message) : base(message)
         {
@@ -29,7 +29,7 @@ namespace calledudeBot.Chat
             return char.ToUpper(name[0]) + name.Substring(1); //capitalize first letter in username
         }
 
-        public override Message CloneWithMessage(string message)
+        public override IrcMessage CloneWithMessage(string message)
         {
             return new IrcMessage(message, Channel, Sender);
         }

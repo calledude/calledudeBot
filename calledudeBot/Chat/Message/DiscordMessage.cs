@@ -1,6 +1,6 @@
 ﻿namespace calledudeBot.Chat
 {
-    public sealed class DiscordMessage : Message
+    public sealed class DiscordMessage : Message<DiscordMessage>
     {
         public ulong Destination { get; }
 
@@ -13,7 +13,7 @@
             Destination = destination;
         }
 
-        public override Message CloneWithMessage(string message)
+        public override DiscordMessage CloneWithMessage(string message)
         {
             return new DiscordMessage(message, Channel, Sender, Destination);
         }

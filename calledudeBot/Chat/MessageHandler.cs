@@ -24,7 +24,7 @@ namespace calledudeBot.Chat
         }
     }
 
-    public abstract class MessageHandler<T> : INotificationHandler<T> where T : Message
+    public abstract class MessageHandler<T> : INotificationHandler<T> where T : Message<T>
     {
         private readonly Bot<T> _bot;
         private readonly MessageDispatcher _dispatcher;
@@ -35,18 +35,15 @@ namespace calledudeBot.Chat
             _dispatcher = dispatcher;
         }
 
-        protected async Task Respond(Message message)
-            => await _bot.SendMessageAsync(message);
-
         public async Task Handle(T notification, CancellationToken cancellationToken)
         {
-            var contentSplit = notification.Content.Split(' ');
+            Logger.Log($"Handling message: {notification.Content} from {notification.Sender.Name} in {notification.Channel}", this);
+            var contentSplit = notification.Content.Split();
             if (CommandUtils.IsCommand(contentSplit[0]))
             {
-                _bot.Log($"Handling command: {notification.Content} from {notification.Sender.Name} in {notification.Channel}");
-                var param = new CommandParameter(contentSplit, notification);
-
-                await Respond(await _dispatcher.SendRequest(param));
+                var param = new CommandParameter<T>(contentSplit, notification);
+                var response = await _dispatcher.SendRequest(param);
+                await _bot.SendMessageAsync(response);
             }
         }
     }

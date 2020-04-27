@@ -23,7 +23,8 @@ namespace calledudeBot.Config
                         LogLevel = LogSeverity.Info
                     }))
                 .AddSingleton<Hooky>()
-                .AddSingleton<CommandHandler>()
+                .AddScoped<TwitchCommandHandler>()
+                .AddScoped<DiscordCommandHandler>()
                 .AddSingleton<MessageDispatcher>()
                 .AddSingleton<RelayHandler>()
                 .AddScoped(typeof(APIHandler<>))

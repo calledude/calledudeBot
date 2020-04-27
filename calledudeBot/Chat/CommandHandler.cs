@@ -2,21 +2,22 @@
 using calledudeBot.Chat.Info;
 using calledudeBot.Services;
 using MediatR;
-using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace calledudeBot.Chat
 {
-    public sealed class CommandHandler : IRequestHandler<CommandParameter, Message>
+    public class TwitchCommandHandler : CommandHandler<IrcMessage>
     {
+    }
 
+    public class DiscordCommandHandler : CommandHandler<DiscordMessage>
+    {
+    }
 
-        public async Task<Message> Handle(CommandParameter request, CancellationToken cancellationToken)
+    public class CommandHandler<T> : IRequestHandler<CommandParameter<T>, T> where T : Message<T>
+    {
+        public async Task<T> Handle(CommandParameter<T> request, CancellationToken cancellationToken)
         {
             string response;
             var cmd = CommandUtils.GetExistingCommand(request.PrefixedWords[0]);
@@ -31,6 +32,7 @@ namespace calledudeBot.Chat
             }
             else //Get the appropriate response depending on command-type
             {
+                Logger.Log($"Executing command: {cmd.Name}");
                 switch (cmd)
                 {
                     case SpecialCommand<CommandParameter> sp:

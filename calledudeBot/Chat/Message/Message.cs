@@ -18,7 +18,20 @@ namespace calledudeBot.Chat
             Sender = sender;
             Channel = channel;
         }
+    }
 
-        public abstract Message CloneWithMessage(string message);
+    public abstract class Message<T> : Message
+    {
+        protected Message(string message)
+            : base(message)
+        {
+        }
+
+        protected Message(string message, string channel, User sender)
+            : base(message, channel, sender)
+        {
+        }
+
+        public abstract T CloneWithMessage(string message);
     }
 }
