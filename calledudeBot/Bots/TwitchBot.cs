@@ -1,20 +1,19 @@
 ﻿using calledudeBot.Chat;
 using calledudeBot.Config;
+using calledudeBot.Models;
 using calledudeBot.Services;
 using Nito.AsyncEx;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace calledudeBot.Bots
 {
     public sealed class TwitchBot : IrcClient
     {
         private List<string> _mods;
-        private Timer _modLockTimer;
-        private bool _modCheckLock;
+        private DateTime _lastModCheck;
         private readonly AsyncAutoResetEvent _modWait;
         private readonly MessageDispatcher _dispatcher;
 
@@ -44,11 +43,6 @@ namespace calledudeBot.Bots
 
         private async Task OnReady()
         {
-            _modLockTimer = new Timer(60000);
-
-            _modLockTimer.Elapsed += ModLockEvent;
-            _modLockTimer.Start();
-
             await WriteLine("CAP REQ :twitch.tv/commands");
             await _dispatcher.PublishAsync(new ReadyNotification(this));
         }
@@ -78,29 +72,16 @@ namespace calledudeBot.Bots
             }
         }
 
-        private void ModLockEvent(object sender, ElapsedEventArgs e)
-        {
-            _modCheckLock = false;
-            _modLockTimer.Stop();
-        }
-
         private async Task<List<string>> GetMods()
         {
-            if (!_modCheckLock)
+            if (DateTime.Now > _lastModCheck.AddMinutes(1))
             {
-                _modCheckLock = true;
-                _modLockTimer.Start();
+                _lastModCheck = DateTime.Now;
                 await WriteLine($"PRIVMSG {ChannelName} /mods");
                 await _modWait.WaitAsync();
             }
 
             return _mods;
-        }
-
-        public override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            _modLockTimer?.Dispose();
         }
     }
 }
