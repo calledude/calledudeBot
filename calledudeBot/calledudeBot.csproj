@@ -95,6 +95,7 @@
     <Compile Include="Chat\Message\User.cs" />
     <Compile Include="Chat\RelayHandler.cs" />
     <Compile Include="Config\ServiceCollectionExtensions.cs" />
+    <Compile Include="Models\ReadyNotification.cs" />
     <Compile Include="Models\OsuSong.cs" />
     <Compile Include="Models\OsuUser.cs" />
     <Compile Include="Services\Hooky.cs" />

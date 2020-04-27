@@ -13,7 +13,6 @@ namespace calledudeBot.Bots
     public sealed class TwitchBot : IrcClient
     {
         private List<string> _mods;
-        private readonly OsuUserService _osuUserService;
         private Timer _modLockTimer;
         private bool _modCheckLock;
         private readonly AsyncAutoResetEvent _modWait;
@@ -24,7 +23,6 @@ namespace calledudeBot.Bots
 
         public TwitchBot(
             BotConfig config,
-            OsuUserService osuUserService,
             MessageDispatcher dispatcher)
             : base("irc.chat.twitch.tv", 366, config.TwitchBotUsername, config.TwitchChannel)
         {
@@ -37,7 +35,6 @@ namespace calledudeBot.Bots
             Token = config.TwitchToken;
 
             _modWait = new AsyncAutoResetEvent();
-            _osuUserService = osuUserService;
 
             Ready += OnReady;
             MessageReceived += HandleMessage;
@@ -53,7 +50,7 @@ namespace calledudeBot.Bots
             _modLockTimer.Start();
 
             await WriteLine("CAP REQ :twitch.tv/commands");
-            await _osuUserService.Start();
+            await _dispatcher.PublishAsync(new ReadyNotification(this));
         }
 
         private async void HandleMessage(string message, string user)
@@ -103,7 +100,6 @@ namespace calledudeBot.Bots
         public override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            _osuUserService?.Dispose();
             _modLockTimer?.Dispose();
         }
     }

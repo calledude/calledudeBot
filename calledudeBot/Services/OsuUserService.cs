@@ -2,33 +2,37 @@
 using calledudeBot.Chat;
 using calledudeBot.Config;
 using calledudeBot.Models;
-using Microsoft.Extensions.DependencyInjection;
+using MediatR;
 using System;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace calledudeBot.Services
 {
-    public sealed class OsuUserService : IDisposable
+    public sealed class OsuUserService : INotificationHandler<ReadyNotification>, IDisposable
     {
         private OsuUser _oldOsuData;
         private readonly string _osuAPIToken;
         private readonly string _osuNick;
         private readonly APIHandler<OsuUser> _api;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly TwitchBot _twitch;
 
-        public OsuUserService(APIHandler<OsuUser> api, BotConfig config, IServiceProvider serviceProvider)
+        public OsuUserService(APIHandler<OsuUser> api, BotConfig config, TwitchBot twitchBot)
         {
             _osuAPIToken = config.OsuAPIToken;
             _osuNick = config.OsuUsername;
 
             _api = api;
+            _twitch = twitchBot;
             _api.DataReceived += CheckUserUpdateAsync;
-            _serviceProvider = serviceProvider;
         }
 
-        public async Task Start()
+        public async Task Handle(ReadyNotification notification, CancellationToken cancellationToken)
         {
+            if (!(notification.Bot is TwitchBot))
+                return;
+
             await _api.Start($"https://osu.ppy.sh/api/get_user?k={_osuAPIToken}&u={_osuNick}");
         }
 
@@ -51,9 +55,7 @@ namespace calledudeBot.Services
 
                 var newRankMessage = new IrcMessage($"{user.Username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}");
 
-                await _serviceProvider
-                    .GetRequiredService<TwitchBot>()
-                    .SendMessageAsync(newRankMessage);
+                await _twitch.SendMessageAsync(newRankMessage);
             }
             _oldOsuData = user;
         }

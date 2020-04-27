@@ -1,5 +1,6 @@
 ﻿using calledudeBot.Chat;
 using calledudeBot.Config;
+using calledudeBot.Models;
 using calledudeBot.Services;
 using Discord;
 using Discord.WebSocket;
@@ -12,14 +13,12 @@ namespace calledudeBot.Bots
     {
         private readonly DiscordSocketClient _bot;
         private readonly ulong _announceChanID;
-        private readonly StreamMonitor _streamMonitor;
         private readonly MessageDispatcher _dispatcher;
 
         protected override string Token { get; }
 
         public DiscordBot(
             BotConfig config,
-            StreamMonitor streamMonitor,
             DiscordSocketClient bot,
             MessageDispatcher dispatcher)
         {
@@ -27,7 +26,6 @@ namespace calledudeBot.Bots
             Token = config.DiscordToken;
 
             _announceChanID = config.AnnounceChannelId;
-            _streamMonitor = streamMonitor;
             _dispatcher = dispatcher;
         }
 
@@ -45,11 +43,9 @@ namespace calledudeBot.Bots
             await _bot.StartAsync();
         }
 
-        private Task OnReady()
+        private async Task OnReady()
         {
-            _ = _streamMonitor.Connect();
-
-            return Task.CompletedTask;
+            await _dispatcher.PublishAsync(new ReadyNotification(this));
         }
 
         private async Task OnMessageReceived(SocketMessage messageParam)
@@ -102,7 +98,6 @@ namespace calledudeBot.Bots
         public override void Dispose(bool disposing)
         {
             _bot.Dispose();
-            _streamMonitor?.Dispose();
         }
     }
 }

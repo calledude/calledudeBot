@@ -1,22 +1,26 @@
-﻿using calledudeBot.Config;
+﻿using calledudeBot.Bots;
+using calledudeBot.Config;
+using calledudeBot.Models;
 using Discord;
 using Discord.WebSocket;
+using MediatR;
 using OBSWebsocketDotNet;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 
 namespace calledudeBot.Services
 {
-    public sealed class StreamMonitor : IDisposable
+    public sealed class StreamMonitor : INotificationHandler<ReadyNotification>, IDisposable
     {
         private IGuildUser _streamer;
         private ITextChannel _announceChannel;
 
         private readonly OBSWebsocket _obs;
-        private readonly Timer _streamStatusTimer;
+        private readonly System.Timers.Timer _streamStatusTimer;
         private readonly DiscordSocketClient _client;
         private readonly ulong _announceChannelID;
         private readonly ulong _streamerID;
@@ -31,17 +35,25 @@ namespace calledudeBot.Services
             _obs.WSTimeout = TimeSpan.FromSeconds(5);
             _obs.StreamStatus += CheckLiveStatus;
 
-            _streamStatusTimer = new Timer(2000);
+            _streamStatusTimer = new System.Timers.Timer(2000);
             _streamStatusTimer.Elapsed += CheckDiscordStatus;
 
             _announceChannelID = config.AnnounceChannelId;
             _streamerID = config.StreamerId;
         }
 
-        private void Log(string message)
+        public Task Handle(ReadyNotification notification, CancellationToken cancellationToken)
         {
-            Logger.Log($"{message}", this);
+            if (notification.Bot is DiscordBot)
+            {
+                _ = Connect();
+            }
+
+            return Task.CompletedTask;
         }
+
+        private void Log(string message)
+            => Logger.Log($"{message}", this);
 
         public async Task Connect()
         {
