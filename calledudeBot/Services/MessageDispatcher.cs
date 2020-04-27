@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
@@ -7,11 +6,11 @@ namespace calledudeBot.Services
 {
     public class MessageDispatcher
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IMediator _mediator;
 
-        public MessageDispatcher(IServiceProvider serviceProvider)
+        public MessageDispatcher(IMediator mediator)
         {
-            _serviceProvider = serviceProvider;
+            _mediator = mediator;
         }
 
         public async Task<TResponse> SendRequest<TResponse>(IRequest<TResponse> request)
@@ -22,9 +21,7 @@ namespace calledudeBot.Services
             TResponse response = default;
             try
             {
-                response = await _serviceProvider
-                    .GetRequiredService<IMediator>()
-                    .Send(request);
+                response = await _mediator.Send(request);
 
                 Logger.Log($"Finished invoking {request.GetType().Name} handlers");
             }
@@ -44,9 +41,7 @@ namespace calledudeBot.Services
 
                 try
                 {
-                    await _serviceProvider
-                        .GetRequiredService<IMediator>()
-                        .Publish(notification);
+                    await _mediator.Publish(notification);
                 }
                 catch (Exception ex)
                 {
