@@ -14,22 +14,7 @@ namespace calledudeBot.Chat
 {
     public sealed class CommandHandler : IRequestHandler<CommandParameter, Message>
     {
-        private readonly string _cmdFile = CommandUtils.CmdFile;
-        private readonly IServiceProvider _serviceProvider;
 
-        public CommandHandler(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
-
-        public void Initialize()
-        {
-            CommandUtils.Commands =
-                JsonConvert.DeserializeObject<List<Command>>(File.ReadAllText(_cmdFile))
-                ?? new List<Command>();
-            CommandUtils.Commands.AddRange(_serviceProvider.GetServices<Command>());
-            Logger.Log($"Done. Loaded {CommandUtils.Commands.Count} commands.", this);
-        }
 
         public async Task<Message> Handle(CommandParameter request, CancellationToken cancellationToken)
         {

@@ -1,5 +1,4 @@
 ﻿using calledudeBot.Bots;
-using calledudeBot.Chat;
 using calledudeBot.Chat.Commands;
 using calledudeBot.Config;
 using calledudeBot.Services;
@@ -55,9 +54,11 @@ namespace calledudeBot
             var serviceProvider = services
                 .BuildServiceProvider();
 
-            serviceProvider
-                .GetRequiredService<CommandHandler>()
-                .Initialize();
+            CommandUtils.Commands =
+                JsonConvert.DeserializeObject<List<Command>>(File.ReadAllText(CommandUtils.CmdFile))
+                ?? new List<Command>();
+            CommandUtils.Commands.AddRange(serviceProvider.GetServices<Command>());
+            Logger.Log($"Done. Loaded {CommandUtils.Commands.Count} commands.");
 
             var bots = services
                 .Where(x => x.ImplementationType?
