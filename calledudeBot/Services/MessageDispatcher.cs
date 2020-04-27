@@ -16,18 +16,18 @@ namespace calledudeBot.Services
         public async Task<TResponse> SendRequest<TResponse>(IRequest<TResponse> request)
         {
             Logger.Log($"Beginning to publish a {request.GetType().Name} request" +
-                $". Expecting a {typeof(TResponse).Name} response.");
+                $". Expecting a {typeof(TResponse).Name} response.", this);
 
             TResponse response = default;
             try
             {
                 response = await _mediator.Send(request);
 
-                Logger.Log($"Finished invoking {request.GetType().Name} handlers");
+                Logger.Log($"Finished invoking {request.GetType().Name} handlers", this);
             }
             catch (Exception ex)
             {
-                Logger.Log($"An exception was thrown in the MediatR adapter: {ex}");
+                Logger.Log($"An exception was thrown in the MediatR adapter: {ex}", this);
             }
 
             return response;
@@ -37,7 +37,7 @@ namespace calledudeBot.Services
         {
             _ = Task.Run(async () =>
             {
-                Logger.Log($"Beginning to publish a {notification.GetType().Name} message");
+                Logger.Log($"Beginning to publish a {notification.GetType().Name} message", this);
 
                 try
                 {
@@ -45,10 +45,10 @@ namespace calledudeBot.Services
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log($"An exception was thrown in the MediatR adapter: {ex}");
+                    Logger.Log($"An exception was thrown in the MediatR adapter: {ex}", this);
                 }
 
-                Logger.Log($"Finished invoking {notification.GetType().Name} handlers");
+                Logger.Log($"Finished invoking {notification.GetType().Name} handlers", this);
             });
 
             return Task.CompletedTask;
