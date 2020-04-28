@@ -22,10 +22,33 @@ namespace calledudeBot.Chat.Commands
 
             if (CommandUtils.GetExistingCommand(cmdToDel) is Command c)
             {
-                response = CommandUtils.RemoveCommand(c, cmdToDel);
+                response = RemoveCommand(c, cmdToDel);
             }
 
             return Task.FromResult(response);
+        }
+
+        private string RemoveCommand(Command cmd, string altName = null)
+        {
+            if (cmd is SpecialCommand)
+                return "You can't remove a special command.";
+
+            string response;
+
+            if (altName != cmd.Name && altName != null)
+            {
+                cmd.AlternateName.Remove(altName);
+                response = $"Deleted alternative command '{altName}'";
+            }
+            else
+            {
+                CommandUtils.Commands.Remove(cmd);
+                response = $"Deleted command '{altName}'";
+            }
+
+            CommandUtils.SaveCommandsToFile();
+
+            return response;
         }
     }
 }

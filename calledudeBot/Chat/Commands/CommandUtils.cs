@@ -34,29 +34,6 @@ namespace calledudeBot.Chat.Commands
             return null;
         }
 
-        internal static string RemoveCommand(Command cmd, string altName = null)
-        {
-            if (cmd is SpecialCommand)
-                return "You can't change a special command.";
-
-            string response;
-
-            if (altName != cmd.Name && altName != null)
-            {
-                cmd.AlternateName.Remove(altName);
-                response = $"Deleted alternative command '{altName}'";
-            }
-            else
-            {
-                Commands.Remove(cmd);
-                response = $"Deleted command '{altName}'";
-            }
-
-            SaveCommandsToFile();
-
-            return response;
-        }
-
         internal static void SaveCommandsToFile()
         {
             File.Create(CmdFile).Close();
