@@ -2,7 +2,7 @@
 
 namespace calledudeBot.Chat
 {
-    public abstract class Message : INotification
+    public abstract class Message<T> : INotification
     {
         public string Content { get; }
         public User Sender { get; }
@@ -17,19 +17,6 @@ namespace calledudeBot.Chat
         {
             Sender = sender;
             Channel = channel;
-        }
-    }
-
-    public abstract class Message<T> : Message
-    {
-        protected Message(string message)
-            : base(message)
-        {
-        }
-
-        protected Message(string message, string channel, User sender)
-            : base(message, channel, sender)
-        {
         }
 
         public abstract T CloneWithMessage(string message);
