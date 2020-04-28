@@ -19,7 +19,6 @@ namespace calledudeBot.Services
         public async Task<TResponse> SendRequest<TResponse>(IRequest<TResponse> request)
         {
             var requestType = request.GetType().Name;
-
             _logger.LogInformation("Beginning to publish a {0} request. Expecting a {1} response.", requestType, typeof(TResponse).Name);
 
             TResponse response = default;

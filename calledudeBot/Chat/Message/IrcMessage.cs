@@ -14,7 +14,7 @@ namespace calledudeBot.Chat
         }
 
         public static string ParseMessage(string buffer)
-            => string.Join(" ", buffer.Split(' ').Skip(3)).Substring(1);
+            => string.Join(" ", buffer.Split().Skip(3)).Substring(1);
 
         public static string ParseUser(string buffer)
         {

@@ -127,7 +127,7 @@ namespace calledudeBot.Bots
             {
                 var buffer = await _input.ReadLineAsync();
 
-                int.TryParse(buffer?.Split(' ')[1], out resultCode);
+                int.TryParse(buffer?.Split()[1], out resultCode);
                 if (buffer == null || IsFailure(buffer))
                 {
                     throw new InvalidOrWrongTokenException();
@@ -150,7 +150,7 @@ namespace calledudeBot.Bots
             while (true)
             {
                 var buffer = await _input.ReadLineAsync();
-                var splitBuffer = buffer.Split(' ');
+                var splitBuffer = buffer.Split();
 
                 if (splitBuffer[0].Equals("PING"))
                 {

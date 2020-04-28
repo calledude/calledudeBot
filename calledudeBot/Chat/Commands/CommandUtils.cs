@@ -32,6 +32,7 @@ namespace calledudeBot.Chat.Commands
                 if (GetExistingCommand(word) is Command c)
                     return c;
             }
+
             return null;
         }
 
@@ -49,6 +50,7 @@ namespace calledudeBot.Chat.Commands
                         NullValueHandling = NullValueHandling.Ignore,
                         DefaultValueHandling = DefaultValueHandling.Ignore
                     });
+
             File.WriteAllText(CmdFile, commands);
         }
 
