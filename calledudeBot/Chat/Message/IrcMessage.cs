@@ -14,9 +14,7 @@ namespace calledudeBot.Chat
         }
 
         public static string ParseMessage(string buffer)
-        {
-            return string.Join(" ", buffer.Split(' ').Skip(3)).Substring(1);
-        }
+            => string.Join(" ", buffer.Split(' ').Skip(3)).Substring(1);
 
         public static string ParseUser(string buffer)
         {
@@ -30,8 +28,6 @@ namespace calledudeBot.Chat
         }
 
         public override IrcMessage CloneWithMessage(string message)
-        {
-            return new IrcMessage(message, Channel, Sender);
-        }
+            => new IrcMessage(message, Channel, Sender);
     }
 }

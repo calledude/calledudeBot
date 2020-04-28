@@ -49,8 +49,6 @@ namespace calledudeBot.Services
         }
 
         public void Dispose()
-        {
-            _timer.Dispose();
-        }
+            => _timer.Dispose();
     }
 }

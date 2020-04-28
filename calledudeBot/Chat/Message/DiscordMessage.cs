@@ -14,8 +14,6 @@
         }
 
         public override DiscordMessage CloneWithMessage(string message)
-        {
-            return new DiscordMessage(message, Channel, Sender, Destination);
-        }
+            => new DiscordMessage(message, Channel, Sender, Destination);
     }
 }

@@ -33,7 +33,7 @@ namespace calledudeBot.Services
             if (!(notification.Bot is TwitchBot))
                 return;
 
-            await _api.Start($"https://osu.ppy.sh/api/get_user?k={_osuAPIToken}&u={_osuNick}");
+            await _api.Start(string.Format("https://osu.ppy.sh/api/get_user?k={0}&u={1}", _osuAPIToken, _osuNick));
         }
 
         private async void CheckUserUpdateAsync(OsuUser user)
@@ -44,14 +44,14 @@ namespace calledudeBot.Services
                 && _oldOsuData.Rank != user.Rank
                 && Math.Abs(user.PP - _oldOsuData.PP) >= 0.1)
             {
-                int rankDiff = user.Rank - _oldOsuData.Rank;
-                float ppDiff = user.PP - _oldOsuData.PP;
+                var rankDiff = user.Rank - _oldOsuData.Rank;
+                var ppDiff = user.PP - _oldOsuData.PP;
 
-                string formatted = string.Format(CultureInfo.InvariantCulture, "{0:0.00}", Math.Abs(ppDiff));
-                string totalPP = user.PP.ToString(CultureInfo.InvariantCulture);
+                var formatted = string.Format(CultureInfo.InvariantCulture, "{0:0.00}", Math.Abs(ppDiff));
+                var totalPP = user.PP.ToString(CultureInfo.InvariantCulture);
 
-                string rankMessage = $"{Math.Abs(rankDiff)} ranks (#{user.Rank}). ";
-                string ppMessage = $"PP: {(ppDiff < 0 ? "-" : "+")}{formatted}pp ({totalPP}pp)";
+                var rankMessage = $"{Math.Abs(rankDiff)} ranks (#{user.Rank}). ";
+                var ppMessage = $"PP: {(ppDiff < 0 ? "-" : "+")}{formatted}pp ({totalPP}pp)";
 
                 var newRankMessage = new IrcMessage($"{user.Username} just {(rankDiff < 0 ? "gained" : "lost")} {rankMessage} {ppMessage}");
 
@@ -61,8 +61,6 @@ namespace calledudeBot.Services
         }
 
         public void Dispose()
-        {
-            _api.Dispose();
-        }
+            => _api.Dispose();
     }
 }

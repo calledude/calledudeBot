@@ -40,7 +40,7 @@ namespace calledudeBot.Services
             var beatmapID = string.Concat(num);
             var reqLink = string.Format(_songRequestLink, _osuAPIToken, beatmapID);
 
-            OsuSong song = await _api.RequestOnce(reqLink);
+            var song = await _api.RequestOnce(reqLink);
             if (song != null)
             {
                 var response = notification.CloneWithMessage($"[http://osu.ppy.sh/b/{beatmapID} {song.Artist} - {song.Title} [{song.BeatmapVersion}]]");
