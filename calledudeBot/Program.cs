@@ -17,8 +17,6 @@ namespace calledudeBot
         {
             Console.Title = "calledudeBot";
 
-            CleanCmdFile();
-
             var services = new ServiceCollection();
             const string cfgFile = "config.json";
             BotConfig config;
@@ -73,23 +71,6 @@ namespace calledudeBot
             }
 
             serviceProvider.GetRequiredService<Hooky>().Start();
-        }
-
-        private static void CleanCmdFile()
-        {
-            if (!File.Exists(CommandUtils.CmdFile))
-            {
-                File.Create(CommandUtils.CmdFile).Close();
-                return; //In this case, file is empty (newly created) -> no need for cleaning -> return
-            }
-
-            //Cleaning up
-            List<string> cleanList = File.ReadAllLines(CommandUtils.CmdFile)
-                                         .Where(p => !string.IsNullOrWhiteSpace(p))
-                                         .Select(p => p.Trim())
-                                         .ToList();
-
-            File.WriteAllLines(CommandUtils.CmdFile, cleanList);
         }
     }
 }
