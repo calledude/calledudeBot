@@ -4,6 +4,7 @@ using calledudeBot.Models;
 using calledudeBot.Services;
 using Discord;
 using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,14 +15,16 @@ namespace calledudeBot.Bots
         private readonly DiscordSocketClient _bot;
         private readonly ulong _announceChanID;
         private readonly MessageDispatcher _dispatcher;
-
+        private readonly ILogger<DiscordBot> _logger;
         protected override string Token { get; }
 
         public DiscordBot(
+            ILogger<DiscordBot> logger,
             BotConfig config,
             DiscordSocketClient bot,
-            MessageDispatcher dispatcher)
+            MessageDispatcher dispatcher) : base(logger)
         {
+            _logger = logger;
             _bot = bot;
             Token = config.DiscordToken;
 
@@ -31,16 +34,39 @@ namespace calledudeBot.Bots
 
         public override async Task Start()
         {
-            _bot.Log += (e) =>
-            {
-                Log($"{e.Message}.");
-                return Task.CompletedTask;
-            };
+            _bot.Log += Log;
             _bot.MessageReceived += OnMessageReceived;
             _bot.Ready += OnReady;
 
             await _bot.LoginAsync(TokenType.Bot, Token);
             await _bot.StartAsync();
+        }
+
+        private Task Log(LogMessage message)
+        {
+            switch (message.Severity)
+            {
+                case LogSeverity.Critical:
+                    _logger.LogCritical(message.Exception, message.Message ?? "An exception bubbled up: ");
+                    break;
+                case LogSeverity.Debug:
+                    _logger.LogDebug(message.ToString(prependTimestamp: false));
+                    break;
+                case LogSeverity.Warning:
+                    _logger.LogWarning(message.ToString(prependTimestamp: false));
+                    break;
+                case LogSeverity.Error:
+                    _logger.LogError(message.Exception, message.Message ?? "An exception bubbled up: ");
+                    break;
+                case LogSeverity.Info:
+                    _logger.LogInformation(message.ToString(prependTimestamp: false));
+                    break;
+                case LogSeverity.Verbose:
+                    _logger.LogTrace(message.ToString(prependTimestamp: false));
+                    break;
+            }
+
+            return Task.CompletedTask;
         }
 
         private async Task OnReady()

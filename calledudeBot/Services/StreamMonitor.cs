@@ -4,6 +4,7 @@ using calledudeBot.Models;
 using Discord;
 using Discord.WebSocket;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using OBSWebsocketDotNet;
 using System;
 using System.Diagnostics;
@@ -21,6 +22,7 @@ namespace calledudeBot.Services
 
         private readonly OBSWebsocket _obs;
         private readonly System.Timers.Timer _streamStatusTimer;
+        private readonly ILogger<StreamMonitor> _logger;
         private readonly DiscordSocketClient _client;
         private readonly ulong _announceChannelID;
         private readonly ulong _streamerID;
@@ -28,8 +30,9 @@ namespace calledudeBot.Services
         public bool IsStreaming { get; private set; }
         public DateTime StreamStarted { get; private set; }
 
-        public StreamMonitor(BotConfig config, DiscordSocketClient client)
+        public StreamMonitor(ILogger<StreamMonitor> logger, BotConfig config, DiscordSocketClient client)
         {
+            _logger = logger;
             _client = client;
             _obs = new OBSWebsocket();
             _obs.WSTimeout = TimeSpan.FromSeconds(5);
@@ -52,22 +55,19 @@ namespace calledudeBot.Services
             return Task.CompletedTask;
         }
 
-        private void Log(string message)
-            => Logger.Log($"{message}", this);
-
         public async Task Connect()
         {
             _announceChannel = _client.GetChannel(_announceChannelID) as ITextChannel;
             if (_announceChannel == null)
             {
-                Log("Invalid channel. Will not announce when stream goes live.");
+                _logger.LogWarning("Invalid channel. Will not announce when stream goes live.");
                 return;
             }
 
             _streamer = await _announceChannel.Guild.GetUserAsync(_streamerID);
             if (_streamer == null)
             {
-                Log("Invalid StreamerID. Could not find user.");
+                _logger.LogWarning("Invalid StreamerID. Could not find user.");
                 return;
             }
 
@@ -82,7 +82,7 @@ namespace calledudeBot.Services
                 .Select(_ => _obs.Connect("ws://localhost:4444"))
                 .All(x => !x))
             {
-                Log("You need to install the obs-websocket plugin for OBS and configure it to run on port 4444.");
+                _logger.LogWarning("You need to install the obs-websocket plugin for OBS and configure it to run on port 4444.");
                 await Task.Delay(3000);
                 Process.Start("https://github.com/Palakis/obs-websocket/releases");
                 await Task.Delay(10000);
@@ -91,7 +91,7 @@ namespace calledudeBot.Services
 
         private async Task WaitForObsProcess()
         {
-            Log("Waiting for OBS to start.");
+            _logger.LogInformation("Waiting for OBS to start.");
             while (true)
             {
                 var procs = Process.GetProcessesByName("obs32")
@@ -126,7 +126,7 @@ namespace calledudeBot.Services
                     && m.Content.Equals(msg)
                     && StreamStarted - m.Timestamp < TimeSpan.FromMinutes(3)))
                 {
-                    Log($"Streamer went live. Sending announcement to #{_announceChannel.Name}");
+                    _logger.LogInformation("Streamer went live. Sending announcement to #{0}", _announceChannel.Name);
                     await _announceChannel.SendMessageAsync(msg);
                 }
             }

@@ -1,4 +1,5 @@
 ﻿using calledudeBot.Chat;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,6 +19,7 @@ namespace calledudeBot.Bots
         protected event Action<string, string> MessageReceived;
         protected event Action<string> UnhandledMessage;
 
+        private readonly ILogger _logger;
         private readonly string _server;
         private readonly int _port;
         private readonly int _successCode;
@@ -26,16 +28,18 @@ namespace calledudeBot.Bots
         private StreamReader _input;
 
         protected IrcClient(
+            ILogger logger,
             string server,
             int successCode,
             string nick,
             string channelName = null,
-            int port = 6667)
+            int port = 6667) : base(logger)
         {
             Nick = nick;
             ChannelName = channelName;
 
             _port = port;
+            _logger = logger;
             _server = server;
             _successCode = successCode;
 
@@ -60,12 +64,12 @@ namespace calledudeBot.Bots
 
             if (loginTask.IsFaulted)
             {
-                Log("Login failed. Are you sure your credentials are correct?");
+                _logger.LogError(loginTask.Exception, "Login failed. Are you sure your credentials are correct?");
                 throw loginTask.Exception.InnerException;
             }
             else if (completedTask != loginTask)
             {
-                Log("Login timed out. Are you sure your credentials are correct?");
+                _logger.LogError("Login timed out. Are you sure your credentials are correct?");
                 throw new TimeoutException();
             }
 
@@ -75,7 +79,7 @@ namespace calledudeBot.Bots
             }
             catch (Exception e)
             {
-                Log(e.Message);
+                _logger.LogError(e, "An error occured.");
                 await Reconnect(); //Since basically any exception will break the fuck out of the bot, reconnect
             }
         }
@@ -83,7 +87,7 @@ namespace calledudeBot.Bots
         protected async Task SendPong(string ping)
         {
             await WriteLine(ping.Replace("PING", "PONG"));
-            Log($"Heartbeat sent.");
+            _logger.LogInformation("Heartbeat sent.");
         }
 
         protected override async Task SendMessage(IrcMessage message)
@@ -91,7 +95,7 @@ namespace calledudeBot.Bots
 
         protected async Task Reconnect()
         {
-            Log("Disconnected. Re-establishing connection..");
+            _logger.LogWarning("Disconnected. Re-establishing connection..");
             Dispose(true);
 
             while (!_sock.Connected)
@@ -136,7 +140,7 @@ namespace calledudeBot.Bots
                     if (Ready != null)
                         await Ready.Invoke();
 
-                    Log($"Connected to {Name}-IRC.");
+                    _logger.LogInformation("Connected.");
                 }
             }
         }

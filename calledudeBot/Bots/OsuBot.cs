@@ -1,4 +1,5 @@
 ﻿using calledudeBot.Config;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 
 namespace calledudeBot.Bots
@@ -9,10 +10,9 @@ namespace calledudeBot.Bots
 
         protected override string Token { get; }
 
-        public OsuBot(BotConfig config)
-            : base("cho.ppy.sh", 376, config.OsuUsername)
+        public OsuBot(BotConfig config, ILogger<OsuBot> logger)
+            : base(logger, "cho.ppy.sh", 376, config.OsuUsername)
         {
-            Name = "osu!";
             Token = config.OsuIRCToken;
             Failures = new List<string>
             {

@@ -1,5 +1,5 @@
 ﻿using calledudeBot.Chat;
-using calledudeBot.Services;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -9,17 +9,17 @@ namespace calledudeBot.Bots
     {
         Task Start();
         Task Logout();
-        void Log(string message);
     }
 
     public abstract class Bot<T> : IBot where T : Message<T>
     {
-        protected Bot()
+        private readonly ILogger _logger;
+
+        protected Bot(ILogger logger)
         {
-            Name = GetType().Name.Replace("Bot", "");
+            _logger = logger;
         }
 
-        public string Name { get; protected set; }
         protected abstract string Token { get; }
 
         public abstract Task Start();
@@ -32,13 +32,8 @@ namespace calledudeBot.Bots
 
         public async Task SendMessageAsync(T message)
         {
-            Log($"Sending message: {message.Content}");
+            _logger.LogInformation("Sending message: {0}", message.Content);
             await SendMessage(message);
-        }
-
-        public void Log(string message)
-        {
-            Logger.Log(message, Name);
         }
     }
 

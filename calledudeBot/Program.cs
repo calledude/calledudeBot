@@ -1,9 +1,9 @@
 ﻿using calledudeBot.Bots;
 using calledudeBot.Chat.Commands;
 using calledudeBot.Config;
-using calledudeBot.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,6 +18,10 @@ namespace calledudeBot
             Console.Title = "calledudeBot";
 
             var services = new ServiceCollection();
+            services.ConfigureLogging();
+
+            var logger = Log.Logger.ForContext(typeof(calledudeBot));
+
             const string cfgFile = "config.json";
             BotConfig config;
 
@@ -38,8 +42,8 @@ namespace calledudeBot
 
                 File.WriteAllText(cfgFile, cfg);
 
-                Logger.Log("FATAL: No config file detected. Created one for you with default values, please fill it in.");
-                Logger.Log("Press any key to exit..");
+                logger.Fatal("No config file detected. Created one for you with default values, please fill it in.");
+                logger.Information("Press any key to exit..");
                 Console.ReadKey();
                 Environment.Exit(0);
             }
@@ -56,7 +60,7 @@ namespace calledudeBot
                 JsonConvert.DeserializeObject<List<Command>>(File.ReadAllText(CommandUtils.CmdFile))
                 ?? new List<Command>();
             CommandUtils.Commands.AddRange(serviceProvider.GetServices<Command>());
-            Logger.Log($"Done. Loaded {CommandUtils.Commands.Count} commands.");
+            logger.Information($"Done. Loaded {CommandUtils.Commands.Count} commands.");
 
             var bots = services
                 .Where(x => x.ImplementationType?

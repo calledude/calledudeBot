@@ -2,6 +2,7 @@
 using calledudeBot.Config;
 using calledudeBot.Models;
 using calledudeBot.Services;
+using Microsoft.Extensions.Logging;
 using Nito.AsyncEx;
 using System;
 using System.Collections.Generic;
@@ -22,8 +23,9 @@ namespace calledudeBot.Bots
 
         public TwitchBot(
             BotConfig config,
-            MessageDispatcher dispatcher)
-            : base("irc.chat.twitch.tv", 366, config.TwitchBotUsername, config.TwitchChannel)
+            MessageDispatcher dispatcher,
+            ILogger<TwitchBot> logger)
+            : base(logger, "irc.chat.twitch.tv", 366, config.TwitchBotUsername, config.TwitchChannel)
         {
             Failures = new List<string>
             {

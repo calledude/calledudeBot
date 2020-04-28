@@ -1,7 +1,7 @@
 ﻿using calledudeBot.Chat.Commands;
 using calledudeBot.Chat.Info;
-using calledudeBot.Services;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,14 +9,23 @@ namespace calledudeBot.Chat
 {
     public class TwitchCommandHandler : CommandHandler<IrcMessage>
     {
+        public TwitchCommandHandler(ILogger<TwitchCommandHandler> logger) : base(logger) { }
     }
 
     public class DiscordCommandHandler : CommandHandler<DiscordMessage>
     {
+        public DiscordCommandHandler(ILogger<DiscordCommandHandler> logger) : base(logger) { }
     }
 
     public class CommandHandler<T> : IRequestHandler<CommandParameter<T>, T> where T : Message<T>
     {
+        private readonly ILogger _logger;
+
+        public CommandHandler(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         public async Task<T> Handle(CommandParameter<T> request, CancellationToken cancellationToken)
         {
             string response;
@@ -32,7 +41,7 @@ namespace calledudeBot.Chat
             }
             else //Get the appropriate response depending on command-type
             {
-                Logger.Log($"Executing command: {cmd.Name}");
+                _logger.LogInformation("Executing command: {0}", cmd.Name);
                 switch (cmd)
                 {
                     case SpecialCommand<CommandParameter> sp:

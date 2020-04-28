@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -6,28 +7,31 @@ namespace calledudeBot.Services
 {
     public class MessageDispatcher
     {
+        private readonly ILogger<MessageDispatcher> _logger;
         private readonly IMediator _mediator;
 
-        public MessageDispatcher(IMediator mediator)
+        public MessageDispatcher(ILogger<MessageDispatcher> logger, IMediator mediator)
         {
+            _logger = logger;
             _mediator = mediator;
         }
 
         public async Task<TResponse> SendRequest<TResponse>(IRequest<TResponse> request)
         {
-            Logger.Log($"Beginning to publish a {request.GetType().Name} request" +
-                $". Expecting a {typeof(TResponse).Name} response.", this);
+            var requestType = request.GetType().Name;
+
+            _logger.LogInformation("Beginning to publish a {0} request. Expecting a {1} response.", requestType, typeof(TResponse).Name);
 
             TResponse response = default;
             try
             {
                 response = await _mediator.Send(request);
 
-                Logger.Log($"Finished invoking {request.GetType().Name} handlers", this);
+                _logger.LogInformation("Finished invoking {0} handlers", requestType);
             }
             catch (Exception ex)
             {
-                Logger.Log($"An exception was thrown in the MediatR adapter: {ex}", this);
+                _logger.LogError(ex, "An exception was thrown in the MediatR adapter");
             }
 
             return response;
@@ -37,7 +41,8 @@ namespace calledudeBot.Services
         {
             _ = Task.Run(async () =>
             {
-                Logger.Log($"Beginning to publish a {notification.GetType().Name} message", this);
+                var notificationType = notification.GetType().Name;
+                _logger.LogInformation("Beginning to publish a {0} message", notificationType);
 
                 try
                 {
@@ -45,10 +50,10 @@ namespace calledudeBot.Services
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log($"An exception was thrown in the MediatR adapter: {ex}", this);
+                    _logger.LogError(ex, "An exception was thrown in the MediatR adapter");
                 }
 
-                Logger.Log($"Finished invoking {notification.GetType().Name} handlers", this);
+                _logger.LogInformation("Finished invoking {0} handlers", notificationType);
             });
 
             return Task.CompletedTask;

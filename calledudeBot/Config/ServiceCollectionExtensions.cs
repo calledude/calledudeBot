@@ -6,6 +6,8 @@ using Discord;
 using Discord.WebSocket;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Serilog.Events;
 using System.Linq;
 using System.Reflection;
 
@@ -13,6 +15,17 @@ namespace calledudeBot.Config
 {
     public static class ServiceCollectionExtensions
     {
+        public static IServiceCollection ConfigureLogging(this IServiceCollection services)
+        {
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console(LogEventLevel.Information, outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext:l}] {Message:lj}{NewLine}{Exception}")
+                .MinimumLevel.Override("System", LogEventLevel.Warning)
+                .Enrich.FromLogContext()
+                .CreateLogger();
+
+            return services.AddLogging(x => x.AddSerilog());
+        }
+
         public static IServiceCollection AddServices(this IServiceCollection services)
             => services
                 .AddMediatR(Assembly.GetExecutingAssembly())
@@ -50,6 +63,7 @@ namespace calledudeBot.Config
             {
                 services.AddSingleton(typeof(Command), cmd);
             }
+
             return services;
         }
     }

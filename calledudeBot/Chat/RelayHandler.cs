@@ -2,6 +2,7 @@
 using calledudeBot.Chat.Commands;
 using calledudeBot.Config;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -15,17 +16,19 @@ namespace calledudeBot.Chat
         private DateTime _lastMessage;
         private readonly Timer _relayTimer;
         private readonly string _streamerNick;
+        private readonly ILogger<RelayHandler> _logger;
         private readonly OsuBot _relaySubject;
         private readonly TwitchBot _twitch;
 
         public RelayHandler(
+            ILogger<RelayHandler> logger,
             OsuBot osuBot,
             BotConfig config,
             TwitchBot twitch)
         {
             _lastMessage = DateTime.Now;
             _messageQueue = new Queue<IrcMessage>();
-
+            _logger = logger;
             _relaySubject = osuBot;
 
             _streamerNick = config.TwitchChannel.Substring(1).ToLower();
@@ -62,7 +65,7 @@ namespace calledudeBot.Chat
         private async Task Relay(IrcMessage message)
         {
             var response = message.CloneWithMessage($"{message.Sender.Name}: {message.Content}");
-            _twitch.Log($"-> {_relaySubject.Name}: {response.Content}");
+            _logger.LogInformation("Twitch -> osu!: {0}", response.Content);
             await _relaySubject.SendMessageAsync(response);
         }
 

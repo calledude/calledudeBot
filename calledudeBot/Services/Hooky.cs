@@ -1,6 +1,6 @@
 ﻿using calledudeBot.Bots;
 using calledudeBot.Chat;
-using calledudeBot.Services;
+using Microsoft.Extensions.Logging;
 using Open.WinKeyboardHook;
 using System;
 using System.Diagnostics;
@@ -17,10 +17,12 @@ namespace calledudeBot
         private bool _f9KeyToggled;
         private string _messageToSend = "";
         private int _position;
+        private readonly ILogger<Hooky> _logger;
         private readonly TwitchBot _twitchBot;
 
-        public Hooky(TwitchBot twitchBot)
+        public Hooky(TwitchBot twitchBot, ILogger<Hooky> logger)
         {
+            _logger = logger;
             _twitchBot = twitchBot;
         }
 
@@ -34,7 +36,7 @@ namespace calledudeBot
 
             _key.StartCapturing();
 
-            Logger.Log("Started Hooky.", this);
+            _logger.LogInformation("Started.");
             Application.Run();
         }
 
