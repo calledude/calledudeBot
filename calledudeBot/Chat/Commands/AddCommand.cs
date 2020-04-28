@@ -102,9 +102,7 @@ namespace calledudeBot.Chat.Commands
                 }
                 changes++;
             }
-            //Remove the new (wrongly) added new command from commandfile
-            //and save the potentially new version.
-            CommandUtils.RemoveCommand(newCommand);
+
             return changes > 1 ? $"Done. Several changes made to command '{newCommand.Name}'." : response;
         }
     }
