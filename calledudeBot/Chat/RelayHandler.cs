@@ -18,13 +18,11 @@ namespace calledudeBot.Chat
         private readonly string _streamerNick;
         private readonly ILogger<RelayHandler> _logger;
         private readonly OsuBot _relaySubject;
-        private readonly TwitchBot _twitch;
 
         public RelayHandler(
             ILogger<RelayHandler> logger,
             OsuBot osuBot,
-            BotConfig config,
-            TwitchBot twitch)
+            BotConfig config)
         {
             _lastMessage = DateTime.Now;
             _messageQueue = new Queue<IrcMessage>();
@@ -33,7 +31,6 @@ namespace calledudeBot.Chat
 
             _streamerNick = config.TwitchChannel.Substring(1).ToLower();
             _relayTimer = new Timer(TryRelay, null, 0, 200);
-            _twitch = twitch;
         }
 
         public Task Handle(IrcMessage notification, CancellationToken cancellationToken)
