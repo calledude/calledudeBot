@@ -34,8 +34,10 @@ namespace calledudeBot.Services
         {
             _logger = logger;
             _client = client;
-            _obs = new OBSWebsocket();
-            _obs.WSTimeout = TimeSpan.FromSeconds(5);
+            _obs = new OBSWebsocket
+            {
+                WSTimeout = TimeSpan.FromSeconds(5)
+            };
             _obs.StreamStatus += CheckLiveStatus;
 
             _streamStatusTimer = new System.Timers.Timer(2000);

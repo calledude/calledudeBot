@@ -70,9 +70,7 @@ namespace calledudeBot.Bots
         }
 
         private async Task OnReady()
-        {
-            await _dispatcher.PublishAsync(new ReadyNotification(this));
-        }
+            => await _dispatcher.PublishAsync(new ReadyNotification(this));
 
         private async Task OnMessageReceived(SocketMessage messageParam)
         {
@@ -84,7 +82,7 @@ namespace calledudeBot.Bots
                 return;
             }
 
-            DiscordMessage msg = new DiscordMessage(
+            var msg = new DiscordMessage(
                 message.Content,
                 $"#{message.Channel.Name}",
                 new User($"{user.Username}#{user.Discriminator}", () => IsMod(user)),
@@ -122,8 +120,6 @@ namespace calledudeBot.Bots
         }
 
         public override void Dispose(bool disposing)
-        {
-            _bot.Dispose();
-        }
+            => _bot.Dispose();
     }
 }

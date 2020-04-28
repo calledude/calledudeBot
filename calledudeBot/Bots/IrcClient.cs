@@ -50,8 +50,10 @@ namespace calledudeBot.Bots
         {
             _sock = new TcpClient();
             _sock.Connect(_server, _port);
-            _output = new StreamWriter(_sock.GetStream());
-            _output.AutoFlush = true;
+            _output = new StreamWriter(_sock.GetStream())
+            {
+                AutoFlush = true
+            };
             _input = new StreamReader(_sock.GetStream());
         }
 
@@ -114,14 +116,12 @@ namespace calledudeBot.Bots
         }
 
         private bool IsFailure(string buffer)
-        {
-            return Failures?.Any(x => x.Equals(buffer)) == true;
-        }
+            => Failures?.Any(x => x.Equals(buffer)) == true;
 
         protected async Task Login()
         {
             await WriteLine("PASS " + Token + "\r\nNICK " + Nick + "\r\n");
-            int resultCode = 0;
+            var resultCode = 0;
 
             while (resultCode != _successCode)
             {

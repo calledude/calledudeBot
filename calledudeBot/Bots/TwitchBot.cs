@@ -69,7 +69,7 @@ namespace calledudeBot.Bots
         {
             if (buffer.Contains("The moderators of this channel are:"))
             {
-                int modsIndex = buffer.LastIndexOf(':') + 1;
+                var modsIndex = buffer.LastIndexOf(':') + 1;
                 var modsArr = buffer.Substring(modsIndex).Split(',');
 
                 _logger.LogInformation("Fetched moderators: {0}", modsArr);

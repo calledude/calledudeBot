@@ -70,8 +70,6 @@ namespace calledudeBot.Chat
         }
 
         public void Dispose()
-        {
-            _relayTimer.Dispose();
-        }
+            => _relayTimer.Dispose();
     }
 }

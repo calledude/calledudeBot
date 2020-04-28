@@ -23,17 +23,17 @@ namespace calledudeBot
             var logger = Log.Logger.ForContext(typeof(calledudeBot));
 
             const string cfgFile = "config.json";
-            BotConfig config;
 
             if (File.Exists(cfgFile))
             {
                 var jsonString = File.ReadAllText(cfgFile);
 
-                config = JsonConvert.DeserializeObject<BotConfig>(jsonString,
+                var config = JsonConvert.DeserializeObject<BotConfig>(jsonString,
                     new JsonSerializerSettings()
                     {
                         Error = (s, e) => e.ErrorContext.Handled = true
                     });
+
                 services.AddSingleton(config);
             }
             else
