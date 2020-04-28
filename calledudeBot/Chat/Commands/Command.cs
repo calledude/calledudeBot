@@ -41,7 +41,7 @@ namespace calledudeBot.Chat.Commands
 
         private static bool HasSpecialChars(string str)
         {
-            str = str.AddPrefix() == str ? str.Substring(1) : str;
+            str = str[0] == CommandUtils.PREFIX ? str.Substring(1) : str;
             return !str.All(char.IsLetterOrDigit);
         }
     }
