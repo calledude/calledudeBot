@@ -19,31 +19,32 @@ namespace calledudeBot.Chat
         protected override async Task<string> HandleCommand(CommandParameter param)
         {
             const string errorResponse = "You ok there bud? Try again.";
-            var allowed = await param.SenderIsMod();
             var cmdToHelp = param.PrefixedWords.FirstOrDefault() ?? param.Words.FirstOrDefault();
 
             if (cmdToHelp == null)
             {
                 var availableCommands = CommandUtils.Commands
-                                        .Where(x => !x.RequiresMod || allowed)
+                                        .ToAsyncEnumerable()
+                                        .WhereAwait(async x => !x.RequiresMod || await param.SenderIsMod())
                                         .Select(x => x.Name);
 
-                var commands = string.Join(" » ", availableCommands);
+                var commands = string.Join(" » ", availableCommands.ToEnumerable());
 
                 return $"These are the commands you can use: {commands}";
             }
             else if (CommandUtils.GetExistingCommand(cmdToHelp) is Command c) //"!help <command>"
             {
-                if (c.RequiresMod && !allowed) return errorResponse;
+                if (c.RequiresMod && !await param.SenderIsMod())
+                    return errorResponse;
 
-                string cmds = c.Name;
+                var cmds = c.Name;
                 if (c.AlternateName?.Count > 0)
                 {
                     var alts = string.Join("/", c.AlternateName);
                     cmds += $"/{alts}";
                 }
 
-                string responseDescription = string.IsNullOrEmpty(c.Description)
+                var responseDescription = string.IsNullOrEmpty(c.Description)
                     ? "has no description."
                     : $"has the description '{c.Description}'";
 
