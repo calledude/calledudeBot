@@ -93,6 +93,7 @@ namespace calledudeBot.Bots
 
         private Task<bool> IsMod(SocketGuildUser user)
         {
+            _logger.LogInformation("Getting moderators");
             var channel = _bot.GetChannel(_announceChanID) as IGuildChannel;
             var roles = channel.Guild.Roles.Cast<SocketRole>();
             var moderatorUsers = roles
