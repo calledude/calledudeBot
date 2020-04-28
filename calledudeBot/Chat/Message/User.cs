@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nito.AsyncEx;
+using System;
 using System.Threading.Tasks;
 
 namespace calledudeBot.Chat
@@ -7,17 +8,15 @@ namespace calledudeBot.Chat
     {
         public string Name { get; }
 
-        private readonly Func<Task<bool>> _isModFunc;
+        private readonly AsyncLazy<bool> _isModerator;
 
         public User(string userName, Func<Task<bool>> isModFunc)
         {
             Name = userName;
-            _isModFunc = isModFunc;
+            _isModerator = new AsyncLazy<bool>(isModFunc);
         }
 
         public async Task<bool> IsModerator()
-        {
-            return await _isModFunc();
-        }
+            => await _isModerator;
     }
 }
