@@ -17,6 +17,7 @@ namespace calledudeBot.Bots
         private DateTime _lastModCheck;
         private readonly AsyncAutoResetEvent _modWait;
         private readonly MessageDispatcher _dispatcher;
+        private readonly ILogger<TwitchBot> _logger;
 
         protected override List<string> Failures { get; }
         protected override string Token { get; }
@@ -41,6 +42,7 @@ namespace calledudeBot.Bots
             MessageReceived += HandleMessage;
             UnhandledMessage += HandleRawMessage;
             _dispatcher = dispatcher;
+            _logger = logger;
         }
 
         private async Task OnReady()
@@ -69,6 +71,9 @@ namespace calledudeBot.Bots
             {
                 int modsIndex = buffer.LastIndexOf(':') + 1;
                 var modsArr = buffer.Substring(modsIndex).Split(',');
+
+                _logger.LogInformation("Fetched moderators: {0}", modsArr);
+
                 _mods = modsArr.Select(x => x.Trim()).ToList();
                 _modWait.Set();
             }
@@ -78,6 +83,7 @@ namespace calledudeBot.Bots
         {
             if (DateTime.Now > _lastModCheck.AddMinutes(1))
             {
+                _logger.LogInformation("Getting moderators");
                 _lastModCheck = DateTime.Now;
                 await WriteLine($"PRIVMSG {ChannelName} /mods");
                 await _modWait.WaitAsync();
