@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using calledudeBot.Chat.Commands;
+using MediatR;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,14 +15,14 @@ namespace calledudeBot.Chat.Info
         protected CommandParameter(IEnumerable<string> param)
         {
             PrefixedWords = param
-                .TakeWhile(x => x[0] == '!')
+                .TakeWhile(x => x[0] == CommandUtils.PREFIX)
                 .ToList();
 
             EnclosedWords = param
                 .SkipWhile(x => !x.StartsWith("<"));
 
             Words = param
-                .SkipWhile(x => x[0] == '!')
+                .SkipWhile(x => x[0] == CommandUtils.PREFIX)
                 .TakeWhile(x => !x.StartsWith("<"));
         }
 

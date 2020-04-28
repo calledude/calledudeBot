@@ -15,7 +15,7 @@ namespace calledudeBot.Chat.Commands
 
         protected override Task<string> HandleCommand(CommandParameter param)
         {
-            string response = "You ok there bud? Try again.";
+            var response = "You ok there bud? Try again.";
 
             var cmdToDel = param.PrefixedWords.FirstOrDefault()
                 ?? param.Words.FirstOrDefault()?.AddPrefix();

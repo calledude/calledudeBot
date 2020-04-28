@@ -19,11 +19,11 @@ namespace calledudeBot.Chat.Commands
         {
             try
             {
-                Command foundCommand =
+                var foundCommand =
                     CommandUtils.GetExistingCommand(param.PrefixedWords)
                     ?? CommandUtils.GetExistingCommand(param.Words.First());
 
-                Command newCommand = new Command(param);
+                var newCommand = new Command(param);
 
                 if (foundCommand is Command && foundCommand.Name.Equals(newCommand.Name))
                 {
@@ -69,7 +69,7 @@ namespace calledudeBot.Chat.Commands
             if (foundCommand is SpecialCommand || foundCommand is SpecialCommand<CommandParameter>)
                 return "You can't change a special command.";
 
-            int changes = 0;
+            var changes = 0;
             response = $"Command '{newCommand.Name}' already exists.";
 
             if (newCommand.Response != foundCommand.Response)

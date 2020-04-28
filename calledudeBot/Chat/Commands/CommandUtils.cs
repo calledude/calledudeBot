@@ -7,11 +7,12 @@ namespace calledudeBot.Chat.Commands
 {
     public static class CommandUtils
     {
+        internal const char PREFIX = '!';
         internal static List<Command> Commands { get; set; } = new List<Command>();
         internal static string CmdFile { get; } = "commands.json";
 
         public static bool IsCommand(string message)
-            => message[0] == '!' && message.Length > 1;
+            => message[0] == PREFIX && message.Length > 1;
 
         //Returns the Command object or null depending on if it exists or not.
         internal static Command GetExistingCommand(string cmd)
@@ -54,8 +55,6 @@ namespace calledudeBot.Chat.Commands
         }
 
         internal static string AddPrefix(this string str)
-        {
-            return str[0] == '!' ? str : ("!" + str);
-        }
+            => str[0] == PREFIX ? str : (PREFIX + str);
     }
 }
