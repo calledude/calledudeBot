@@ -37,8 +37,6 @@ namespace calledudeBot.Chat.Commands
 
         internal static void SaveCommandsToFile()
         {
-            File.Create(CmdFile).Close();
-
             var filteredCommands = Commands
                 .Where(x => x.GetType() == typeof(Command));
 
