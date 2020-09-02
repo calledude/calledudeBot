@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using OBSWebsocketDotNet;
+using OBSWebsocketDotNet.Enum;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -85,9 +86,10 @@ namespace calledudeBot.Services
         private async Task TryConnect()
         {
             //Trying 5 times just in case.
-            if (Enumerable.Range(1, 5)
-                .Select(_ => _obs.Connect("ws://localhost:4444"))
-                .All(x => !x))
+            if (await Enumerable.Range(1, 5)
+                .ToAsyncEnumerable()
+                .SelectAwait(async _ => await _obs.Connect("ws://localhost:4444"))
+                .AllAsync(x => !x))
             {
                 _logger.LogWarning("You need to install the obs-websocket plugin for OBS and configure it to run on port 4444.");
                 _logger.LogWarning("Go to this URL to download it: {0}", "https://github.com/Palakis/obs-websocket/releases");
