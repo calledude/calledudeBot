@@ -34,11 +34,16 @@ namespace calledudeBot.Services
         {
             _logger = logger;
             _client = client;
+
             _obs = new OBSWebsocket
             {
                 WSTimeout = TimeSpan.FromSeconds(5)
             };
+
             _obs.StreamStatus += CheckLiveStatus;
+            _obs.StreamingStateChanged += StreamingStateChanged;
+            _obs.Disconnected += OnObsExit;
+            _obs.Connected += OnConnected;
 
             _streamStatusTimer = new System.Timers.Timer(2000);
             _streamStatusTimer.Elapsed += CheckDiscordStatus;
@@ -85,8 +90,7 @@ namespace calledudeBot.Services
                 .All(x => !x))
             {
                 _logger.LogWarning("You need to install the obs-websocket plugin for OBS and configure it to run on port 4444.");
-                await Task.Delay(3000);
-                Process.Start("https://github.com/Palakis/obs-websocket/releases");
+                _logger.LogWarning("Go to this URL to download it: {0}", "https://github.com/Palakis/obs-websocket/releases");
                 await Task.Delay(10000);
             }
         }
@@ -106,31 +110,51 @@ namespace calledudeBot.Services
             }
         }
 
+        private void StreamingStateChanged(OBSWebsocket sender, OutputState state)
+        {
+            if (state == OutputState.Started)
+            {
+                _logger.LogInformation("OBS has gone live. Checking discord status for user {0}#{1}..", _streamer.Username, _streamer.Discriminator);
+                _streamStatusTimer.Start();
+            }
+            else if (state == OutputState.Stopped)
+            {
+                IsStreaming = false;
+                _streamStatusTimer.Stop();
+                _logger.LogInformation("Stream stopped.");
+            }
+        }
+
+        private void OnConnected(object sender, EventArgs e)
+            => _logger.LogInformation("Connected to OBS. Start streaming!");
+
         private async void CheckDiscordStatus(object sender, ElapsedEventArgs e)
         {
-            if (_streamer?.Activity is StreamingGame sg)
+            if (!(_streamer?.Activity is StreamingGame sg))
             {
-                _streamStatusTimer.Stop();
-                IsStreaming = true;
+                return;
+            }
 
-                var messages = await _announceChannel
-                    .GetMessagesAsync()
-                    .FlattenAsync();
+            _streamStatusTimer.Stop();
+            IsStreaming = true;
 
-                var twitchUsername = sg.Url.Split('/').Last();
-                var msg = $"🔴 **{twitchUsername}** is now **LIVE**\n- Title: **{sg.Name}**\n- Watch at: {sg.Url}";
+            var messages = await _announceChannel
+                .GetMessagesAsync()
+                .FlattenAsync();
 
-                //StreamStarted returns the _true_ time that the stream started
-                //If any announcement message exists within 3 minutes of that, don't send a new announcement
-                //In that case we assume that the bot has been restarted (for whatever reason)
-                if (!messages.Any(m =>
-                    m.Author.Id == _client.CurrentUser.Id
-                    && m.Content.Equals(msg)
-                    && StreamStarted - m.Timestamp < TimeSpan.FromMinutes(3)))
-                {
-                    _logger.LogInformation("Streamer went live. Sending announcement to #{0}", _announceChannel.Name);
-                    await _announceChannel.SendMessageAsync(msg);
-                }
+            var twitchUsername = sg.Url.Split('/').Last();
+            var msg = $"🔴 **{twitchUsername}** is now **LIVE**\n- Title: **{sg.Name}**\n- Watch at: {sg.Url}";
+
+            //StreamStarted returns the _true_ time that the stream started
+            //If any announcement message exists within 3 minutes of that, don't send a new announcement
+            //In that case we assume that the bot has been restarted (for whatever reason)
+            if (!messages.Any(m =>
+                m.Author.Id == _client.CurrentUser.Id
+                && m.Content.Equals(msg)
+                && StreamStarted - m.Timestamp < TimeSpan.FromMinutes(3)))
+            {
+                _logger.LogInformation("Streamer went live. Sending announcement to #{0}", _announceChannel.Name);
+                await _announceChannel.SendMessageAsync(msg);
             }
         }
 
@@ -152,12 +176,6 @@ namespace calledudeBot.Services
             if (status.Streaming)
             {
                 StreamStarted = DateTime.Now - status.TotalStreamTime;
-                _streamStatusTimer.Start();
-            }
-            else
-            {
-                IsStreaming = false;
-                _streamStatusTimer.Stop();
             }
         }
 
@@ -168,4 +186,3 @@ namespace calledudeBot.Services
         }
     }
 }
-
