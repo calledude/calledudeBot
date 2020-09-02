@@ -23,6 +23,7 @@ namespace calledudeBot.Services
 
         private readonly OBSWebsocket _obs;
         private readonly System.Timers.Timer _streamStatusTimer;
+        private readonly SemaphoreSlim _exitSem;
         private readonly ILogger<StreamMonitor> _logger;
         private readonly DiscordSocketClient _client;
         private readonly ulong _announceChannelID;
@@ -33,6 +34,8 @@ namespace calledudeBot.Services
 
         public StreamMonitor(ILogger<StreamMonitor> logger, BotConfig config, DiscordSocketClient client)
         {
+            _exitSem = new SemaphoreSlim(1);
+
             _logger = logger;
             _client = client;
 
@@ -162,10 +165,17 @@ namespace calledudeBot.Services
 
         private async void OnObsExit(object sender, EventArgs e)
         {
+            if (!await _exitSem.WaitAsync(150))
+            {
+                return;
+            }
+
             IsStreaming = false;
             _streamStatusTimer.Stop();
             _obs.Disconnect();
             await Connect();
+
+            _exitSem.Release();
         }
 
         private void CheckLiveStatus(OBSWebsocket sender, StreamStatus status)
