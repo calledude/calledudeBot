@@ -3,7 +3,7 @@ using calledudeBot.Chat;
 using calledudeBot.Config;
 using calledudeBot.Models;
 using MediatR;
-using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,7 +11,10 @@ namespace calledudeBot.Services
 {
     public sealed class SongRequester : INotificationHandler<IrcMessage>
     {
-        private const string _songRequestLink = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
+        private const string SONGREQUESTLINK = "https://osu.ppy.sh/api/get_beatmaps?k={0}&b={1}";
+
+        private static readonly Regex _beatmapRegex = new Regex(@"https?://osu.ppy.sh/(?:b|beatmapsets/.+?)/(?<BeatmapID>\d+)", RegexOptions.Compiled);
+
         private readonly string _osuAPIToken;
         private readonly OsuBot _osuBot;
         private readonly APIHandler<OsuSong> _api;
@@ -28,15 +31,12 @@ namespace calledudeBot.Services
         //[http://osu.ppy.sh/b/795232 fhana - Wonder Stella [Stella]]
         public async Task Handle(IrcMessage notification, CancellationToken cancellationToken)
         {
-            if (!notification.Content.Contains("://osu.ppy.sh/b/"))
+            var match = _beatmapRegex.Match(notification.Content);
+            if (!match.Success)
                 return;
 
-            var num = notification.Content
-                .SkipWhile(x => !char.IsDigit(x))
-                .TakeWhile(char.IsDigit);
-
-            var beatmapID = string.Concat(num);
-            var reqLink = string.Format(_songRequestLink, _osuAPIToken, beatmapID);
+            var beatmapID = match.Groups["BeatmapID"];
+            var reqLink = string.Format(SONGREQUESTLINK, _osuAPIToken, beatmapID);
 
             var song = await _api.RequestOnce(reqLink);
             if (song != null)
