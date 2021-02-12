@@ -23,12 +23,14 @@ namespace calledudeBot.Chat
 
             if (cmdToHelp == null)
             {
-                var availableCommands = CommandUtils.Commands
-                                        .ToAsyncEnumerable()
-                                        .WhereAwait(async x => !x.RequiresMod || await param.SenderIsMod())
+                var allowed = await param.SenderIsMod();
+
+                var availableCommands = CommandUtils.Commands.Values
+                                        .Distinct()
+                                        .Where(x => !x.RequiresMod || allowed)
                                         .Select(x => x.Name);
 
-                var commands = string.Join(" » ", availableCommands.ToEnumerable());
+                var commands = string.Join(" » ", availableCommands);
 
                 return $"These are the commands you can use: {commands}";
             }

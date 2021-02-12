@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,8 +9,9 @@ namespace calledudeBot.Chat.Commands
     public static class CommandUtils
     {
         internal const char PREFIX = '!';
-        internal static List<Command> Commands { get; set; } = new List<Command>();
         internal const string CMDFILE = "commands.json";
+
+        internal static Dictionary<string, Command> Commands { get; set; } = new Dictionary<string, Command>(StringComparer.OrdinalIgnoreCase);
 
         public static bool IsCommand(string message)
             => message[0] == PREFIX && message.Length > 1;
@@ -20,9 +22,10 @@ namespace calledudeBot.Chat.Commands
             if (string.IsNullOrWhiteSpace(cmd))
                 return null;
 
-            cmd = cmd.ToLower().AddPrefix();
-            return Commands.Find(x => x.Name.Equals(cmd))
-                ?? Commands.Find(x => x.AlternateName?.Any(a => a.Equals(cmd)) ?? false);
+            if (!Commands.TryGetValue(cmd.AddPrefix(), out var command))
+                return null;
+
+            return command;
         }
 
         internal static Command GetExistingCommand(IEnumerable<string> prefixedWords)
@@ -34,6 +37,19 @@ namespace calledudeBot.Chat.Commands
             }
 
             return null;
+        }
+
+        public static void Add(this Dictionary<string, Command> commands, Command command)
+        {
+            commands.Add(command.Name, command);
+
+            if (command.AlternateName == null)
+                return;
+
+            foreach (var alt in command.AlternateName)
+            {
+                commands.Add(alt, command);
+            }
         }
 
         internal static void SaveCommandsToFile()

@@ -56,10 +56,16 @@ namespace calledudeBot
             var serviceProvider = services
                 .BuildServiceProvider();
 
-            CommandUtils.Commands =
-                JsonConvert.DeserializeObject<List<Command>>(File.ReadAllText(CommandUtils.CmdFile))
+            var commands =
+                JsonConvert.DeserializeObject<List<Command>>(File.ReadAllText(CommandUtils.CMDFILE))
                 ?? new List<Command>();
-            CommandUtils.Commands.AddRange(serviceProvider.GetServices<Command>());
+            commands.AddRange(serviceProvider.GetServices<Command>());
+
+            foreach (var cmd in commands)
+            {
+                CommandUtils.Commands.Add(cmd);
+            }
+
             logger.Information($"Done. Loaded {CommandUtils.Commands.Count} commands.");
 
             var bots = services

@@ -42,7 +42,15 @@ namespace calledudeBot.Chat.Commands
             }
             else
             {
-                CommandUtils.Commands.Remove(cmd);
+                CommandUtils.Commands.Remove(cmd.Name);
+
+                if (cmd.AlternateName != null)
+                {
+                    foreach (var alt in cmd.AlternateName)
+                    {
+                        CommandUtils.Commands.Remove(alt);
+                    }
+                }
                 response = $"Deleted command '{altName}'";
             }
 
