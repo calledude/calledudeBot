@@ -136,9 +136,7 @@ namespace calledudeBot.Services
         private async void CheckDiscordStatus(object sender, ElapsedEventArgs e)
         {
             if (!(_streamer?.Activity is StreamingGame sg))
-            {
                 return;
-            }
 
             _streamStatusTimer.Stop();
             IsStreaming = true;
@@ -166,9 +164,7 @@ namespace calledudeBot.Services
         private async void OnObsExit(object sender, EventArgs e)
         {
             if (!await _exitSem.WaitAsync(150))
-            {
                 return;
-            }
 
             IsStreaming = false;
             _streamStatusTimer.Stop();
@@ -181,14 +177,12 @@ namespace calledudeBot.Services
         private void CheckLiveStatus(OBSWebsocket sender, StreamStatus status)
         {
             if (status.Streaming == IsStreaming)
-            {
                 return;
-            }
 
-            if (status.Streaming)
-            {
-                StreamStarted = DateTime.Now - status.TotalStreamTime;
-            }
+            if (!status.Streaming)
+                return;
+
+            StreamStarted = DateTime.Now - status.TotalStreamTime;
         }
 
         public void Dispose()

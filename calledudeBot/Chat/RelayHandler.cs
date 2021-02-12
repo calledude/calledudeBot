@@ -36,9 +36,7 @@ namespace calledudeBot.Chat
         public Task Handle(IrcMessage notification, CancellationToken cancellationToken)
         {
             if (CommandUtils.IsCommand(notification.Content))
-            {
                 return Task.CompletedTask;
-            }
 
             //Only relay messages that aren't from the streamer
             if (!_streamerNick.Equals(notification.Sender.Name, StringComparison.OrdinalIgnoreCase))

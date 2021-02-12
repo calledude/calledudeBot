@@ -93,10 +93,7 @@ namespace calledudeBot.Chat.Commands
                 }
                 else
                 {
-                    if (foundCommand.AlternateName == default)
-                        foundCommand.AlternateName = new List<string>();
-
-                    foundCommand.AlternateName.AddRange(newCommand.AlternateName);
+                    (foundCommand.AlternateName ?? (foundCommand.AlternateName = new List<string>())).AddRange(newCommand.AlternateName);
                     foundCommand.AlternateName = foundCommand.AlternateName.Distinct().ToList();
                     response = $"Changed alternate command names for '{foundCommand.Name}'. It now has {foundCommand.AlternateName.Count} alternates.";
                 }

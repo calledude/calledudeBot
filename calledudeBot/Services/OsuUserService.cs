@@ -38,7 +38,8 @@ namespace calledudeBot.Services
 
         private async void CheckUserUpdateAsync(OsuUser user)
         {
-            if (user == null) throw new ArgumentNullException("Invalid username.", nameof(user));
+            if (user == null)
+                throw new ArgumentNullException("Invalid username.", nameof(user));
 
             if (_oldOsuData != null
                 && _oldOsuData.Rank != user.Rank
@@ -57,6 +58,7 @@ namespace calledudeBot.Services
 
                 await _twitch.SendMessageAsync(newRankMessage);
             }
+
             _oldOsuData = user;
         }
 

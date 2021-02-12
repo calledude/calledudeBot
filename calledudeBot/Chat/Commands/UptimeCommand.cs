@@ -23,9 +23,7 @@ namespace calledudeBot.Chat.Commands
         {
             var wentLiveAt = WentLiveAt();
             if (wentLiveAt == default)
-            {
                 return Task.FromResult("Streamer isn't live.");
-            }
 
             var timeSinceLive = DateTime.Now - wentLiveAt;
             var sb = new StringBuilder();
@@ -33,13 +31,13 @@ namespace calledudeBot.Chat.Commands
             sb.Append("Stream uptime: ");
 
             if (timeSinceLive.Hours > 0)
-                sb.Append($"{timeSinceLive.Hours}h ");
+                sb.Append(timeSinceLive.Hours).Append("h ");
 
             if (timeSinceLive.Minutes > 0)
-                sb.Append($"{timeSinceLive.Minutes}m ");
+                sb.Append(timeSinceLive.Minutes).Append("m ");
 
             if (timeSinceLive.Seconds > 0)
-                sb.Append($"{timeSinceLive.Seconds}s");
+                sb.Append(timeSinceLive.Seconds).Append('s');
 
             return Task.FromResult(sb.ToString());
         }

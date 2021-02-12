@@ -40,7 +40,7 @@ namespace calledudeBot.Chat.Info
 
         public override async Task<bool> SenderIsMod()
         {
-            if (Message == null)
+            if (Message?.Sender == null)
                 return false;
 
             return await Message.Sender.IsModerator();

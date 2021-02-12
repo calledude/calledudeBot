@@ -9,7 +9,7 @@ namespace calledudeBot.Chat.Commands
     {
         internal const char PREFIX = '!';
         internal static List<Command> Commands { get; set; } = new List<Command>();
-        internal static string CmdFile { get; } = "commands.json";
+        internal const string CMDFILE = "commands.json";
 
         public static bool IsCommand(string message)
             => message[0] == PREFIX && message.Length > 1;
@@ -51,7 +51,7 @@ namespace calledudeBot.Chat.Commands
                         DefaultValueHandling = DefaultValueHandling.Ignore
                     });
 
-            File.WriteAllText(CmdFile, commands);
+            File.WriteAllText(CMDFILE, commands);
         }
 
         internal static string AddPrefix(this string str)

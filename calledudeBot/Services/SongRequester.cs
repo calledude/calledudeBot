@@ -29,9 +29,7 @@ namespace calledudeBot.Services
         public async Task Handle(IrcMessage notification, CancellationToken cancellationToken)
         {
             if (!notification.Content.Contains("://osu.ppy.sh/b/"))
-            {
                 return;
-            }
 
             var num = notification.Content
                 .SkipWhile(x => !char.IsDigit(x))

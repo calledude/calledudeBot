@@ -75,12 +75,14 @@ namespace calledudeBot.Bots
         private async Task OnMessageReceived(SocketMessage messageParam)
         {
             // Don't process the command if it was a System Message or if we sent it ourselves
-            if (!(messageParam is SocketUserMessage message)
-                || _bot.CurrentUser.Id == message.Author.Id
-                || !(message.Author is SocketGuildUser user))
-            {
+            if (!(messageParam is SocketUserMessage message))
                 return;
-            }
+
+            if (_bot.CurrentUser.Id == message.Author.Id)
+                return;
+
+            if (!(message.Author is SocketGuildUser user))
+                return;
 
             var msg = new DiscordMessage(
                 message.Content,
